@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppProvider } from "@/contexts/AppContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import TomaBot from "@/components/TomaBot/TomaBot";
 import Index from "./pages/Index";
 import VideoFeed from "./pages/VideoFeed";
 import SellItem from "./pages/SellItem";
@@ -69,6 +70,7 @@ const App = () => (
                 <Route path="/payment-testing" element={<PaymentTesting />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <TomaBot />
             </BrowserRouter>
           </TooltipProvider>
         </AppProvider>

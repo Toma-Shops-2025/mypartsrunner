@@ -6,12 +6,13 @@ interface VideoFeedAdProps {
 }
 
 const VideoFeedAd: React.FC<VideoFeedAdProps> = ({ position }) => {
+  // Replace these placeholder slots with your actual AdSense ad unit IDs after approval
   const getAdSlot = () => {
     switch (position) {
-      case 'top': return '1234567890';
-      case 'middle': return '1234567891';
-      case 'bottom': return '1234567892';
-      default: return '1234567890';
+      case 'top': return 'VIDEO-FEED-TOP'; // Replace with actual ad unit ID
+      case 'middle': return 'VIDEO-FEED-MIDDLE'; // Replace with actual ad unit ID
+      case 'bottom': return 'VIDEO-FEED-BOTTOM'; // Replace with actual ad unit ID
+      default: return 'VIDEO-FEED-DEFAULT'; // Replace with actual ad unit ID
     }
   };
 
