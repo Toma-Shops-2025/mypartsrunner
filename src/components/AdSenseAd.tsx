@@ -15,6 +15,7 @@ const AdSenseAd: React.FC<AdSenseAdProps> = ({
 }) => {
   useEffect(() => {
     try {
+      // Initialize AdSense when component mounts
       // @ts-ignore
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch (error) {
@@ -27,7 +28,7 @@ const AdSenseAd: React.FC<AdSenseAdProps> = ({
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}
-        data-ad-client="ca-pub-XXXXXXXXXXXXXXXXX" // Replace with your AdSense client ID
+        data-ad-client="ca-pub-9061728347766564"
         data-ad-slot={slot}
         data-ad-format={format}
         data-full-width-responsive={responsive.toString()}
