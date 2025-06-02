@@ -1,89 +1,164 @@
-# TomaShops Advertising System
+# TomaShops™ FamousAI 🚀
 
-A comprehensive advertising system for TomaShops, allowing businesses to purchase and manage ad spaces across the platform.
+A modern e-commerce platform with TikTok-style video feeds, built with React, TypeScript, and Tailwind CSS.
 
-## Features
+![TomaShops™ FamousAI](https://img.shields.io/badge/TomaShops™-FamousAI-blue?style=for-the-badge)
+![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat&logo=typescript)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=flat&logo=tailwind-css)
 
-- Multiple ad space locations (sidebar, header, footer, content)
-- Various size options (small, medium, large)
-- Dynamic pricing based on location and size
-- Real-time analytics (views, clicks, CTR)
-- Secure payment processing with Stripe
-- Admin dashboard for ad management
-- Advertiser dashboard for campaign monitoring
+## ✨ Features
 
-## Environment Variables
+- 🛍️ **E-commerce Platform**: Browse and purchase products with ease
+- 📱 **Video Feeds**: TikTok-style product showcase videos
+- 👤 **User Authentication**: Secure login and user profiles
+- 🛒 **Shopping Cart**: Add items and seamless checkout
+- 💬 **Comments & Reviews**: Interactive product feedback
+- 📞 **Contact Sellers**: Direct communication with sellers
+- 🎨 **Modern UI**: Beautiful, responsive design
+- 🌙 **Dark/Light Mode**: Customizable theme switching
+- 📱 **Mobile First**: Optimized for all devices
+- ⚡ **Fast Performance**: Built with Vite for speed
 
-Create a `.env.local` file with the following variables:
+## 🚀 Quick Start
 
-```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+### Prerequisites
+- Node.js 18+ installed
+- Git installed
+- Modern web browser
 
-# Stripe
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
-STRIPE_SECRET_KEY=your_stripe_secret_key
-STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+### Installation
 
-# App
-NEXT_PUBLIC_BASE_URL=https://tomashops.com
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/toma-shops/TomaShops-FamousAI.git
+   cd TomaShops-FamousAI
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Start development server**:
+   ```bash
+   npm run dev
+   ```
+
+4. **Open in browser**: Visit `http://localhost:5173`
+
+## 📁 Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── ui/             # Base UI components (buttons, inputs, etc.)
+│   ├── Header.tsx      # Navigation header
+│   ├── Footer.tsx      # Site footer
+│   ├── ProductCard.tsx # Product display card
+│   └── VideoFeed.tsx   # TikTok-style video feed
+├── pages/              # Page components
+│   ├── Index.tsx       # Homepage
+│   ├── VideoFeed.tsx   # Video feed page
+│   ├── Profile.tsx     # User profile
+│   └── Cart.tsx        # Shopping cart
+├── contexts/           # React contexts for state
+├── hooks/              # Custom React hooks
+├── lib/                # Utilities and configuration
+└── main.tsx           # Application entry point
 ```
 
-## Deployment Steps
+## 🛠️ Available Scripts
 
-1. Install dependencies:
-```bash
-npm install
-```
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+- `npm run deploy` - Build and prepare for deployment
 
-2. Run database migrations:
-```bash
-npx supabase db push
-```
+## 🌐 Deployment
 
-3. Build the application:
-```bash
-npm run build
-```
+### Deploy to Netlify (Recommended)
 
-4. Start the production server:
-```bash
-npm start
-```
+1. **Build the project**:
+   ```bash
+   npm run build
+   ```
 
-## Stripe Setup
+2. **Deploy to Netlify**:
+   - Go to [netlify.com](https://netlify.com)
+   - Drag and drop the `dist` folder
+   - Your site is live!
 
-1. Create a Stripe account at https://stripe.com
-2. Get your API keys from the Stripe Dashboard
-3. Install the Stripe CLI for local webhook testing:
-```bash
-stripe listen --forward-to localhost:3000/api/stripe/webhook
-```
-4. Update your Stripe webhook endpoint in production to:
-```
-https://tomashops.com/api/stripe/webhook
-```
+### Deploy to Vercel
 
-## Security Considerations
+1. **Install Vercel CLI**:
+   ```bash
+   npm i -g vercel
+   ```
 
-- All sensitive data is stored securely in Supabase with Row Level Security (RLS)
-- Stripe handles all payment information, no credit card data is stored on our servers
-- API keys and secrets are stored as environment variables
-- All user actions require authentication
-- Admin actions are protected by role-based access control
+2. **Deploy**:
+   ```bash
+   vercel
+   ```
 
-## Monitoring
+### Deploy to GitHub Pages
 
-Monitor your application using:
-- Supabase Dashboard for database and authentication
-- Stripe Dashboard for payments and subscriptions
-- Vercel Analytics for application performance (if deployed on Vercel)
+Automatic deployment is configured! Just push to the `main` branch and GitHub Actions will deploy your site.
 
-## Support
+## 🔧 Technologies Used
 
-For support, please contact:
-- Technical issues: [Create an issue](https://github.com/tomashops/advertising/issues)
-- Billing questions: billing@tomashops.com
-- General inquiries: support@tomashops.com
+- **Frontend Framework**: React 18 with TypeScript
+- **Build Tool**: Vite for fast development and building
+- **Styling**: Tailwind CSS for utility-first styling
+- **UI Components**: Radix UI for accessible components
+- **Routing**: React Router for navigation
+- **State Management**: React Context and hooks
+- **Icons**: Lucide React for beautiful icons
+- **Backend**: Supabase for database and authentication
+- **Deployment**: GitHub Actions, Netlify, Vercel
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Quick Contribution Steps
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes
+4. Commit: `git commit -m 'Add amazing feature'`
+5. Push: `git push origin feature/amazing-feature`
+6. Open a Pull Request
+
+## 📖 Documentation
+
+- [Deployment Guide](DEPLOYMENT_GUIDE.md) - Complete deployment instructions
+- [Migration Guide](MIGRATION_GUIDE.md) - Moving to GitHub repository
+- [GitHub Setup](GITHUB_SETUP.md) - Repository setup guide
+- [Contributing](CONTRIBUTING.md) - How to contribute
+
+## 🐛 Issues and Support
+
+For help and questions:
+- Check existing [Issues](https://github.com/toma-shops/TomaShops-FamousAI/issues)
+- Create a [new issue](https://github.com/toma-shops/TomaShops-FamousAI/issues/new) if needed
+- Join discussions in Pull Requests
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🌟 Show Your Support
+
+Give a ⭐️ if this project helped you!
+
+## 👥 Contributors
+
+Thanks to all contributors who have helped make this project better!
+
+---
+
+**Ready to build the future of e-commerce?** 🚀
+
+Start by cloning the repository and following the quick start guide above!

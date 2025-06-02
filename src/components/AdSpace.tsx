@@ -9,11 +9,8 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { adPricing } from '@/lib/ad-pricing';
 import { createCheckoutSession } from '@/lib/stripe';
-
-interface AdSpaceProps {
-  location: 'sidebar' | 'header' | 'footer' | 'content';
-  size: 'small' | 'medium' | 'large';
-}
+import { createClient } from '@supabase/supabase-js';
+import { useRouter } from 'next/router';
 
 interface Ad {
   id: string;
@@ -26,7 +23,20 @@ interface Ad {
   start_date: string;
   end_date: string;
   advertiser_id: string;
+  destination_url: string;
+  size: 'small' | 'medium' | 'large';
 }
+
+interface AdSpaceProps {
+  location: Ad['location'];
+  size: Ad['size'];
+  className?: string;
+}
+
+const supabaseClient = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 const sizeToClass = {
   small: 'h-[250px] w-[300px]',
@@ -34,7 +44,7 @@ const sizeToClass = {
   large: 'h-[400px] w-[970px]',
 };
 
-export const AdSpace: React.FC<AdSpaceProps> = ({ location, size }) => {
+export default function AdSpace({ location, size, className = '' }: AdSpaceProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -47,6 +57,8 @@ export const AdSpace: React.FC<AdSpaceProps> = ({ location, size }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [totalPrice, setTotalPrice] = useState(0);
   const { toast } = useToast();
+  const [ad, setAd] = useState<Ad | null>(null);
+  const router = useRouter();
 
   const pricing = adPricing[location]?.[size];
 
@@ -60,6 +72,35 @@ export const AdSpace: React.FC<AdSpaceProps> = ({ location, size }) => {
       setTotalPrice(0);
     }
   }, [formData.start_date, formData.end_date, pricing]);
+
+  useEffect(() => {
+    const fetchAd = async () => {
+      const { data, error } = await supabaseClient
+        .from('ads')
+        .select('*')
+        .eq('location', location)
+        .eq('size', size)
+        .eq('status', 'active')
+        .lte('start_date', new Date().toISOString())
+        .gte('end_date', new Date().toISOString())
+        .order('random()')
+        .limit(1)
+        .single();
+
+      if (!error && data) {
+        setAd(data);
+        // Record view
+        await supabaseClient.from('ad_views').insert({
+          ad_id: data.id,
+          ip_address: await fetch('https://api.ipify.org?format=json')
+            .then(res => res.json())
+            .then(data => data.ip),
+        });
+      }
+    };
+
+    fetchAd();
+  }, [location, size]);
 
   const validateDates = (start: string, end: string): boolean => {
     if (!pricing) return false;

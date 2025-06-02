@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
-import { getAdStats } from '@/lib/ad-analytics';
+import { getAdAnalytics } from '@/lib/ad-analytics';
 
 // Interfaces
 interface Product {
@@ -75,6 +75,7 @@ interface Advertisement {
   end_date: string;
   advertiser_id: string;
   created_at: string;
+  total_price: number;
 }
 
 interface AdStats {
@@ -236,7 +237,7 @@ export const AdminPanel: React.FC = () => {
       // Fetch stats for each ad
       const adsWithStats = await Promise.all(
         (data || []).map(async (ad) => {
-          const stats = await getAdStats(ad.id);
+          const stats = await getAdAnalytics(ad.id);
           return { ...ad, stats };
         })
       );

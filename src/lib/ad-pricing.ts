@@ -1,56 +1,39 @@
-export interface AdPricing {
-  daily_rate: number;
-  min_days: number;
-  max_days: number;
+interface PricingConfig {
+  [key: string]: {
+    [key: string]: number;
+  };
 }
 
-export const adPricing: Record<string, Record<string, AdPricing>> = {
+export const adPricing: PricingConfig = {
   sidebar: {
-    small: {
-      daily_rate: 4.99,
-      min_days: 7,
-      max_days: 30
-    },
-    medium: {
-      daily_rate: 7.99,
-      min_days: 7,
-      max_days: 30
-    }
+    small: 3.99,
+    medium: 9.99,
+    large: 19.99,
   },
   header: {
-    medium: {
-      daily_rate: 9.99,
-      min_days: 7,
-      max_days: 30
-    },
-    large: {
-      daily_rate: 14.99,
-      min_days: 7,
-      max_days: 30
-    }
-  },
-  content: {
-    medium: {
-      daily_rate: 12.99,
-      min_days: 7,
-      max_days: 30
-    },
-    large: {
-      daily_rate: 19.99,
-      min_days: 7,
-      max_days: 30
-    }
+    small: 4.99,
+    medium: 12.99,
+    large: 24.99,
   },
   footer: {
-    small: {
-      daily_rate: 3.99,
-      min_days: 7,
-      max_days: 30
-    },
-    medium: {
-      daily_rate: 5.99,
-      min_days: 7,
-      max_days: 30
-    }
-  }
+    small: 3.99,
+    medium: 9.99,
+    large: 19.99,
+  },
+  content: {
+    small: 5.99,
+    medium: 14.99,
+    large: 29.99,
+  },
+};
+
+export const getAdPrice = (location: string, size: string): number => {
+  return adPricing[location]?.[size] || 0;
+};
+
+export const formatPrice = (price: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(price);
 }; 
