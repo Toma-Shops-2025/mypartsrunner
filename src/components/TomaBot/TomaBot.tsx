@@ -198,55 +198,47 @@ const TomaBot: React.FC = () => {
     e.preventDefault();
     if (!inputMessage.trim() || isLoading) return;
 
-    // Stop speaking when user sends a message
-    stopSpeaking();
+    const userMessage = {
+      role: 'user' as const,
+      content: inputMessage.trim(),
+      timestamp: Date.now()
+    };
 
-    const userMessage = inputMessage.trim();
-    const newUserMessage = { role: 'user' as const, content: userMessage, timestamp: Date.now() };
-    setMessages(prev => [...prev, newUserMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch('/.netlify/functions/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          message: userMessage,
-          context: {
-            currentPath: location.pathname,
-            previousMessages: messages.slice(-3)
-          }
-        }),
+        body: JSON.stringify({ message: userMessage.content }),
       });
 
-      if (!response.ok) throw new Error('Failed to get response');
+      if (!response.ok) {
+        throw new Error('Failed to get response');
+      }
 
       const data = await response.json();
-      const newBotMessage = {
+      const assistantMessage = {
         role: 'assistant' as const,
         content: data.message,
         timestamp: Date.now()
       };
-      setMessages(prev => [...prev, newBotMessage]);
 
-      // Speak the response if voice is enabled
-      if (voiceEnabled) {
-        speak(data.message);
+      setMessages(prev => [...prev, assistantMessage]);
+      if (isSpeaking) {
+        speak(assistantMessage.content);
       }
     } catch (error) {
-      console.error('Error:', error);
-      const errorMessage = 'Sorry, I encountered an error. Please try again later.';
+      console.error('Chat error:', error);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: errorMessage,
+        content: 'Sorry, I encountered an error. Please try again.',
         timestamp: Date.now()
       }]);
-      if (voiceEnabled) {
-        speak(errorMessage);
-      }
     } finally {
       setIsLoading(false);
     }
