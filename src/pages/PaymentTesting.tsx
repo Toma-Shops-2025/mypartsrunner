@@ -1,19 +1,21 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import PaymentTestingPanel from '@/components/PaymentTestingPanel';
 import PaymentTestGuide from '@/components/PaymentTestGuide';
-import PaymentHealthCheck from '@/components/PaymentHealthCheck';
+import HealthCheck from '@/components/PaymentHealthCheck';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { TestTube, CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const PaymentTesting = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [systemStatus, setSystemStatus] = useState<'checking' | 'ready' | 'issues'>('ready');
+  const [isHealthy, setIsHealthy] = useState(true);
 
   const handleHealthCheckComplete = (hasIssues: boolean) => {
-    setSystemStatus(hasIssues ? 'issues' : 'ready');
+    setIsHealthy(!hasIssues);
   };
 
   const getStatusAlert = () => {
@@ -72,7 +74,16 @@ const PaymentTesting = () => {
                     identifies any issues that need to be resolved before deployment.
                   </p>
                 </div>
-                <PaymentHealthCheck onStatusChange={handleHealthCheckComplete} />
+                <HealthCheck onStatusChange={handleHealthCheckComplete} />
+                
+                {isHealthy ? (
+                  <Alert>
+                    <CheckCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      All payment systems are functioning normally.
+                    </AlertDescription>
+                  </Alert>
+                ) : null}
               </div>
             </TabsContent>
             

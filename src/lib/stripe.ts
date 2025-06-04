@@ -12,36 +12,24 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-interface CreateCheckoutParams {
+export interface CreateCheckoutParams {
   adId: string;
   userId: string;
-  location: string;
+  totalAmount: number;
+  locationName: string;
   size: string;
   title: string;
   startDate: string;
   endDate: string;
 }
 
-export async function createCheckoutSession({
-  adId,
-  userId,
-  location,
-  size,
-  title,
-  startDate,
-  endDate,
-}: CreateCheckoutParams) {
+export async function createCheckoutSession(params: CreateCheckoutParams) {
   try {
     // Calculate number of days
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const start = new Date(params.startDate);
+    const end = new Date(params.endDate);
     const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
     
-    // Get daily rate
-    const dailyRate = getAdPrice(location, size);
-    const totalAmount = Math.round(dailyRate * days * 100); // Convert to cents
-
-    // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -49,10 +37,10 @@ export async function createCheckoutSession({
           price_data: {
             currency: 'usd',
             product_data: {
-              name: `Ad Space: ${title}`,
-              description: `${size} ad in ${location} for ${days} days`,
+              name: `Ad Space: ${params.title}`,
+              description: `${params.size} ad in ${params.locationName} for ${days} days`,
             },
-            unit_amount: totalAmount,
+            unit_amount: params.totalAmount * 100, // Convert to cents
           },
           quantity: 1,
         },
@@ -61,24 +49,24 @@ export async function createCheckoutSession({
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/ads/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/ads/cancel`,
       metadata: {
-        ad_id: adId,
-        user_id: userId,
+        ad_id: params.adId,
+        user_id: params.userId,
       },
     });
 
     // Create payment record
     await supabase.from('payments').insert({
-      user_id: userId,
-      ad_id: adId,
+      user_id: params.userId,
+      ad_id: params.adId,
       stripe_session_id: session.id,
-      amount: totalAmount / 100, // Convert back to dollars
-      currency: 'usd',
+      amount: params.totalAmount,
+      status: 'pending',
     });
 
-    return { sessionId: session.id };
-  } catch (error: any) {
+    return session;
+  } catch (error) {
     console.error('Error creating checkout session:', error);
-    throw new Error(error.message);
+    throw error;
   }
 }
 

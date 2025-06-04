@@ -9,10 +9,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const body = await req.text();
-    const signature = headers().get('stripe-signature')!;
+    const body = await request.text();
+    const headers = await request.headers;
+    const signature = headers.get('stripe-signature')!;
 
     let event: Stripe.Event;
 

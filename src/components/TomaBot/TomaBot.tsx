@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import './TomaBot.css';
+import { supabase } from '../../lib/supabase';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -13,6 +14,23 @@ interface Suggestion {
   action: string;
   icon: string;
 }
+
+const SYSTEM_PROMPT = `You are TomaBot, the official AI assistant for TomaShops, a video-first marketplace. You are friendly, helpful, and knowledgeable about all aspects of the platform.
+
+Your core responsibilities include:
+
+SELLER ASSISTANCE:
+1. Video Listing Creation
+   - Guide users on creating compelling video content
+   - Suggest optimal video length, lighting, and angles
+   - Help with product descriptions and pricing strategies
+   - Recommend categories and tags for better visibility
+
+2. Seller Best Practices
+   - Shipping tips and packaging recommendations
+   - Pricing strategies and market research
+   - Customer service excellence tips
+   - Inventory management advice`;
 
 // Smart suggestions based on user context and common needs
 const getSuggestions = (pathname: string): Suggestion[] => {
@@ -60,6 +78,7 @@ const TomaBot: React.FC = () => {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [isConfigured, setIsConfigured] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatHistoryKey = 'tomaBotChatHistory';
   const speechRecognition = useRef<SpeechRecognition | null>(null);
@@ -164,6 +183,61 @@ const TomaBot: React.FC = () => {
     }
   }, [messages]);
 
+  // Add environment testing
+  useEffect(() => {
+    const testEnvironment = async () => {
+      try {
+        console.log('Testing environment configuration...');
+        
+        // Test Supabase connection only
+        const { data: products, error: supabaseError } = await supabase
+          .from('products')
+          .select('count', { count: 'exact' });
+          
+        if (supabaseError) {
+          console.error('Supabase test failed:', supabaseError);
+        } else {
+          console.log('Supabase connection successful:', { count: products });
+        }
+
+        // Verify OpenAI API key format
+        const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+        if (!apiKey) {
+          console.error('OpenAI API key is missing');
+        } else if (!apiKey.startsWith('sk-')) {
+          console.error('OpenAI API key appears to be invalid (should start with "sk-")');
+        } else {
+          console.log('OpenAI API key format appears valid');
+        }
+      } catch (error) {
+        console.error('Environment test failed:', error);
+      }
+    };
+
+    testEnvironment();
+  }, []);
+
+  // Check configuration on mount
+  useEffect(() => {
+    const checkConfiguration = () => {
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      if (!apiKey || !apiKey.startsWith('sk-')) {
+        console.warn('OpenAI API key is not properly configured');
+        setIsConfigured(false);
+        setMessages([{
+          role: 'assistant',
+          content: "I'm currently in maintenance mode. Please try again later or contact support for assistance.",
+          timestamp: Date.now()
+        }]);
+        return false;
+      }
+      setIsConfigured(true);
+      return true;
+    };
+
+    checkConfiguration();
+  }, []);
+
   const initializeChat = () => {
     const welcomeMessage = getContextMessage(location.pathname);
     setMessages([{
@@ -196,7 +270,7 @@ const TomaBot: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputMessage.trim() || isLoading) return;
+    if (!inputMessage.trim() || isLoading || !isConfigured) return;
 
     const userMessage = {
       role: 'user' as const,
@@ -209,22 +283,56 @@ const TomaBot: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/.netlify/functions/chat', {
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      
+      if (!apiKey || !apiKey.startsWith('sk-')) {
+        throw new Error('API_NOT_CONFIGURED');
+      }
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({ message: userMessage.content }),
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: userMessage.content }
+          ],
+          temperature: 0.7,
+          max_tokens: 500,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('OpenAI API error:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData
+        });
+        
+        if (response.status === 429) {
+          throw new Error('RATE_LIMIT_EXCEEDED');
+        } else if (errorData.error?.code === 'insufficient_quota') {
+          throw new Error('QUOTA_EXCEEDED');
+        }
+        
+        throw new Error(errorData.error?.message || 'Failed to get response');
       }
 
       const data = await response.json();
+      const aiResponse = data.choices[0]?.message?.content;
+
+      if (!aiResponse) {
+        throw new Error('No response received');
+      }
+
       const assistantMessage = {
         role: 'assistant' as const,
-        content: data.message,
+        content: aiResponse,
         timestamp: Date.now()
       };
 
@@ -234,9 +342,28 @@ const TomaBot: React.FC = () => {
       }
     } catch (error) {
       console.error('Chat error:', error);
+      let errorMessage = 'An unexpected error occurred. Please try again later.';
+      
+      if (error instanceof Error) {
+        switch (error.message) {
+          case 'API_NOT_CONFIGURED':
+            errorMessage = "I'm currently unavailable due to configuration issues. Please contact support.";
+            setIsConfigured(false);
+            break;
+          case 'RATE_LIMIT_EXCEEDED':
+            errorMessage = "I'm receiving too many requests right now. Please wait a moment and try again.";
+            break;
+          case 'QUOTA_EXCEEDED':
+            errorMessage = "I've reached my usage limit for now. Please try again later.";
+            break;
+          default:
+            errorMessage = error.message;
+        }
+      }
+      
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: errorMessage,
         timestamp: Date.now()
       }]);
     } finally {

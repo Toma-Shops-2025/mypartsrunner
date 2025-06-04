@@ -48,7 +48,18 @@ const VideoFeedPage: React.FC = () => {
 
   return (
     <div className="h-screen flex flex-col">
-      <FeedNavigation categories={categories} selectedCategory={categoryId} />
+      <FeedNavigation 
+        categories={categories.map(cat => cat.name)}
+        selectedCategory={categoryId}
+        activeFeed="category"
+        onFeedChange={(feed) => console.log(feed)}
+        activeCategory={categoryId || undefined}
+        onCategoryChange={(category) => {
+          const searchParams = new URLSearchParams(window.location.search);
+          searchParams.set('category', category);
+          window.history.pushState(null, '', `?${searchParams.toString()}`);
+        }}
+      />
       <div className="flex-1">
         <VideoFeed categoryId={categoryId || undefined} />
       </div>

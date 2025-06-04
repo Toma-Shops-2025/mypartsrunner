@@ -72,7 +72,7 @@ const MessagesModal: React.FC<MessagesModalProps> = ({ isOpen, onClose }) => {
         
         if (!conversationMap.has(otherUserId)) {
           const unreadCount = (messagesData || []).filter(
-            m => m.sender_id === otherUserId && m.receiver_id === user.id && !m.read
+            (message) => !message.read && message.recipient_id === user?.id
           ).length;
           
           conversationMap.set(otherUserId, {
@@ -80,7 +80,7 @@ const MessagesModal: React.FC<MessagesModalProps> = ({ isOpen, onClose }) => {
             other_user_email: 'User', // We'll improve this later
             last_message: message.content,
             last_message_time: message.created_at,
-            unread_count
+            unread_count: unreadCount
           });
         }
       }

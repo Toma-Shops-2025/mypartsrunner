@@ -8,6 +8,7 @@ interface FeedNavigationProps {
   categories: string[];
   activeCategory?: string;
   onCategoryChange?: (category: string) => void;
+  selectedCategory?: string;
 }
 
 const FeedNavigation: React.FC<FeedNavigationProps> = ({

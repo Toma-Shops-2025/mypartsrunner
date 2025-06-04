@@ -1,34 +1,70 @@
-interface PricingConfig {
-  [key: string]: {
-    [key: string]: number;
-  };
+export interface AdPricing {
+  daily_rate: number;
+  min_days: number;
+  max_days: number;
 }
 
-export const adPricing: PricingConfig = {
+export interface LocationPricing {
+  [size: string]: AdPricing;
+}
+
+export interface AdPricingConfig {
+  [location: string]: LocationPricing;
+}
+
+export const adPricing: AdPricingConfig = {
   sidebar: {
-    small: 3.99,
-    medium: 9.99,
-    large: 19.99,
+    small: {
+      daily_rate: 9.99,
+      min_days: 7,
+      max_days: 30
+    },
+    medium: {
+      daily_rate: 14.99,
+      min_days: 7,
+      max_days: 30
+    }
   },
   header: {
-    small: 4.99,
-    medium: 12.99,
-    large: 24.99,
+    medium: {
+      daily_rate: 19.99,
+      min_days: 7,
+      max_days: 30
+    },
+    large: {
+      daily_rate: 29.99,
+      min_days: 7,
+      max_days: 30
+    }
   },
   footer: {
-    small: 3.99,
-    medium: 9.99,
-    large: 19.99,
+    small: {
+      daily_rate: 7.99,
+      min_days: 7,
+      max_days: 30
+    },
+    medium: {
+      daily_rate: 12.99,
+      min_days: 7,
+      max_days: 30
+    }
   },
   content: {
-    small: 5.99,
-    medium: 14.99,
-    large: 29.99,
-  },
+    medium: {
+      daily_rate: 24.99,
+      min_days: 7,
+      max_days: 30
+    },
+    large: {
+      daily_rate: 34.99,
+      min_days: 7,
+      max_days: 30
+    }
+  }
 };
 
 export const getAdPrice = (location: string, size: string): number => {
-  return adPricing[location]?.[size] || 0;
+  return adPricing[location]?.[size]?.daily_rate || 0;
 };
 
 export const formatPrice = (price: number): string => {

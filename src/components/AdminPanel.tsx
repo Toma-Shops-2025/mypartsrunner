@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,9 +7,35 @@ import {
   Trash2, Star, StarOff, Users, ShoppingBag, Settings, Shield,
   BarChart2, AlertTriangle, DollarSign, Bell, Flag, Image
 } from 'lucide-react';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from '@/components/ui/table';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { getAdAnalytics } from '@/lib/ad-analytics';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 // Interfaces
 interface Product {
@@ -88,6 +114,17 @@ interface AdWithStats extends Advertisement {
   stats?: AdStats;
 }
 
+interface AdLocation {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  dimensions: string;
+  price_per_day: number;
+  max_duration_days: number;
+  is_available: boolean;
+}
+
 export const AdminPanel: React.FC = () => {
   // State management
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -105,6 +142,17 @@ export const AdminPanel: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [advertisements, setAdvertisements] = useState<AdWithStats[]>([]);
   const { toast } = useToast();
+  const [adLocations, setAdLocations] = useState<AdLocation[]>([]);
+  const [isAddLocationDialogOpen, setIsAddLocationDialogOpen] = useState(false);
+  const [newLocation, setNewLocation] = useState<Partial<AdLocation>>({
+    name: '',
+    description: '',
+    type: 'banner',
+    dimensions: '',
+    price_per_day: 0,
+    max_duration_days: 30,
+    is_available: true,
+  });
 
   // Fetch data on component mount
   useEffect(() => {
@@ -120,7 +168,8 @@ export const AdminPanel: React.FC = () => {
         fetchOrders(),
         fetchReports(),
         fetchAnalytics(),
-        fetchAdvertisements()
+        fetchAdvertisements(),
+        fetchAdLocations()
       ]);
     } finally {
       setLoading(false);
@@ -248,6 +297,25 @@ export const AdminPanel: React.FC = () => {
       toast({
         title: 'Error',
         description: 'Failed to fetch advertisements',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const fetchAdLocations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('ad_locations')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      setAdLocations(data || []);
+    } catch (error) {
+      console.error('Error fetching ad locations:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load ad locations',
         variant: 'destructive',
       });
     }
@@ -420,6 +488,65 @@ export const AdminPanel: React.FC = () => {
     }
   };
 
+  const handleAddLocation = async () => {
+    try {
+      const { error } = await supabase
+        .from('ad_locations')
+        .insert([newLocation]);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Ad location added successfully',
+      });
+
+      setIsAddLocationDialogOpen(false);
+      setNewLocation({
+        name: '',
+        description: '',
+        type: 'banner',
+        dimensions: '',
+        price_per_day: 0,
+        max_duration_days: 30,
+        is_available: true,
+      });
+      fetchAdLocations();
+    } catch (error) {
+      console.error('Error adding ad location:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to add ad location',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleToggleLocationAvailability = async (location: AdLocation) => {
+    try {
+      const { error } = await supabase
+        .from('ad_locations')
+        .update({ is_available: !location.is_available })
+        .eq('id', location.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: `Ad location ${location.is_available ? 'disabled' : 'enabled'} successfully`,
+      });
+
+      fetchAdLocations();
+    } catch (error) {
+      console.error('Error updating ad location:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update ad location',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (loading) {
     return <div className="p-6">Loading dashboard...</div>;
   }
@@ -503,54 +630,54 @@ export const AdminPanel: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="products">
-          <div className="grid gap-4">
-            {products.map((product) => (
-              <Card key={product.id} className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    {product.image_url && (
-                      <img 
-                        src={product.image_url} 
-                        alt={product.title}
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                    )}
-                    <div>
-                      <h3 className="font-semibold">{product.title}</h3>
-                      <p className="text-sm text-gray-600">${product.price}</p>
-                      <Badge variant="outline">{product.category}</Badge>
-                      {product.featured && (
-                        <Badge className="ml-2" variant="default">Featured</Badge>
-                      )}
+      <div className="grid gap-4">
+        {products.map((product) => (
+          <Card key={product.id} className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                {product.image_url && (
+                  <img 
+                    src={product.image_url} 
+                    alt={product.title}
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                )}
+                <div>
+                  <h3 className="font-semibold">{product.title}</h3>
+                  <p className="text-sm text-gray-600">${product.price}</p>
+                  <Badge variant="outline">{product.category}</Badge>
+                  {product.featured && (
+                    <Badge className="ml-2" variant="default">Featured</Badge>
+                  )}
                       {product.reported && (
                         <Badge className="ml-2" variant="destructive">Reported</Badge>
                       )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex space-x-2">
-                    <Button
-                      variant={product.featured ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => toggleFeatured(product.id, product.featured)}
-                    >
-                      {product.featured ? <StarOff className="w-4 h-4" /> : <Star className="w-4 h-4" />}
-                      {product.featured ? 'Unfeature' : 'Feature'}
-                    </Button>
-                    
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => deleteProduct(product.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete
-                    </Button>
-                  </div>
                 </div>
-              </Card>
-            ))}
-          </div>
+              </div>
+              
+              <div className="flex space-x-2">
+                <Button
+                  variant={product.featured ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => toggleFeatured(product.id, product.featured)}
+                >
+                  {product.featured ? <StarOff className="w-4 h-4" /> : <Star className="w-4 h-4" />}
+                  {product.featured ? 'Unfeature' : 'Feature'}
+                </Button>
+                
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => deleteProduct(product.id)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
         </TabsContent>
 
         <TabsContent value="users">
@@ -787,13 +914,178 @@ export const AdminPanel: React.FC = () => {
             ))}
 
             {advertisements.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-500">
                 No advertisement submissions yet
-              </div>
-            )}
+        </div>
+      )}
           </div>
         </TabsContent>
       </Tabs>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Ad Spaces</CardTitle>
+              <CardDescription>Manage advertising locations and pricing</CardDescription>
+            </div>
+            <Button onClick={() => setIsAddLocationDialogOpen(true)}>
+              Add Location
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Dimensions</TableHead>
+                <TableHead>Price/Day</TableHead>
+                <TableHead>Max Duration</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {adLocations.map((location) => (
+                <TableRow key={location.id}>
+                  <TableCell>{location.name}</TableCell>
+                  <TableCell>{location.type}</TableCell>
+                  <TableCell>{location.dimensions}</TableCell>
+                  <TableCell>${location.price_per_day.toFixed(2)}</TableCell>
+                  <TableCell>{location.max_duration_days} days</TableCell>
+                  <TableCell>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        location.is_available
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {location.is_available ? 'Available' : 'Disabled'}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleToggleLocationAvailability(location)}
+                    >
+                      {location.is_available ? 'Disable' : 'Enable'}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Dialog open={isAddLocationDialogOpen} onOpenChange={setIsAddLocationDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Ad Location</DialogTitle>
+            <DialogDescription>
+              Create a new advertising space location
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                value={newLocation.name}
+                onChange={(e) =>
+                  setNewLocation({ ...newLocation, name: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={newLocation.description}
+                onChange={(e) =>
+                  setNewLocation({ ...newLocation, description: e.target.value })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="type">Type</Label>
+              <Select
+                value={newLocation.type}
+                onValueChange={(value) =>
+                  setNewLocation({ ...newLocation, type: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="banner">Banner</SelectItem>
+                  <SelectItem value="sidebar">Sidebar</SelectItem>
+                  <SelectItem value="video-preroll">Video Pre-roll</SelectItem>
+                  <SelectItem value="video-overlay">Video Overlay</SelectItem>
+                  <SelectItem value="featured">Featured</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="dimensions">Dimensions</Label>
+              <Input
+                id="dimensions"
+                value={newLocation.dimensions}
+                onChange={(e) =>
+                  setNewLocation({ ...newLocation, dimensions: e.target.value })
+                }
+                placeholder="e.g., 728x90"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="price">Price per Day ($)</Label>
+              <Input
+                id="price"
+                type="number"
+                value={newLocation.price_per_day}
+                onChange={(e) =>
+                  setNewLocation({
+                    ...newLocation,
+                    price_per_day: parseFloat(e.target.value),
+                  })
+                }
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="duration">Maximum Duration (days)</Label>
+              <Input
+                id="duration"
+                type="number"
+                value={newLocation.max_duration_days}
+                onChange={(e) =>
+                  setNewLocation({
+                    ...newLocation,
+                    max_duration_days: parseInt(e.target.value),
+                  })
+                }
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddLocationDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddLocation}>Add Location</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

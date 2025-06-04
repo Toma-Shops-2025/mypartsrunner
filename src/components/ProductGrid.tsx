@@ -23,6 +23,7 @@ interface ProductGridProps {
 const ProductGrid: React.FC<ProductGridProps> = ({ categoryId, searchTerm }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -31,6 +32,13 @@ const ProductGrid: React.FC<ProductGridProps> = ({ categoryId, searchTerm }) => 
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
+      console.log('Fetching products with params:', {
+        categoryId,
+        searchTerm,
+        timestamp: new Date().toISOString()
+      });
       
       let query = supabase
         .from('products')
@@ -46,21 +54,59 @@ const ProductGrid: React.FC<ProductGridProps> = ({ categoryId, searchTerm }) => 
         query = query.ilike('title', `%${searchTerm}%`);
       }
       
-      const { data, error } = await query;
+      const { data, error, count } = await query;
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase query error:', {
+          error,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        throw error;
+      }
+      
+      console.log('Products fetch result:', {
+        count: data?.length || 0,
+        hasData: !!data,
+        timestamp: new Date().toISOString()
+      });
+
+      if (!data) {
+        throw new Error('No data returned from Supabase');
+      }
       
       // Process products to ensure proper image URLs
-      const processedProducts = (data || []).map(product => ({
-        ...product,
-        // Ensure images array is properly parsed if it's a string
-        images: Array.isArray(product.images) ? product.images : 
-                 (typeof product.images === 'string' ? JSON.parse(product.images || '[]') : [])
-      }));
+      const processedProducts = data.map(product => {
+        try {
+          return {
+            ...product,
+            // Ensure images array is properly parsed if it's a string
+            images: Array.isArray(product.images) ? product.images : 
+                    (typeof product.images === 'string' ? JSON.parse(product.images || '[]') : [])
+          };
+        } catch (parseError) {
+          console.error('Error processing product:', {
+            productId: product.id,
+            error: parseError,
+            imagesData: product.images
+          });
+          return {
+            ...product,
+            images: []
+          };
+        }
+      });
       
       setProducts(processedProducts);
     } catch (error) {
-      console.error('Error fetching products:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error fetching products';
+      console.error('Error in fetchProducts:', {
+        error,
+        message: errorMessage,
+        params: { categoryId, searchTerm }
+      });
+      setError(errorMessage);
       setProducts([]);
     } finally {
       setLoading(false);
@@ -73,6 +119,21 @@ const ProductGrid: React.FC<ProductGridProps> = ({ categoryId, searchTerm }) => 
         {[...Array(8)].map((_, i) => (
           <div key={i} className="bg-gray-200 animate-pulse rounded-lg h-64"></div>
         ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500 text-lg">Error loading products</p>
+        <p className="text-gray-400 text-sm mt-2">{error}</p>
+        <button 
+          onClick={() => fetchProducts()}
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Try Again
+        </button>
       </div>
     );
   }

@@ -9,7 +9,6 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import { adPricing } from '@/lib/ad-pricing';
 import { createCheckoutSession } from '@/lib/stripe';
-import { createClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/router';
 
 interface Ad {
@@ -32,11 +31,6 @@ interface AdSpaceProps {
   size: Ad['size'];
   className?: string;
 }
-
-const supabaseClient = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 const sizeToClass = {
   small: 'h-[250px] w-[300px]',
@@ -75,7 +69,7 @@ export default function AdSpace({ location, size, className = '' }: AdSpaceProps
 
   useEffect(() => {
     const fetchAd = async () => {
-      const { data, error } = await supabaseClient
+      const { data, error } = await supabase
         .from('ads')
         .select('*')
         .eq('location', location)
@@ -90,7 +84,7 @@ export default function AdSpace({ location, size, className = '' }: AdSpaceProps
       if (!error && data) {
         setAd(data);
         // Record view
-        await supabaseClient.from('ad_views').insert({
+        await supabase.from('ad_views').insert({
           ad_id: data.id,
           ip_address: await fetch('https://api.ipify.org?format=json')
             .then(res => res.json())
@@ -171,6 +165,7 @@ export default function AdSpace({ location, size, className = '' }: AdSpaceProps
           {
             ...formData,
             location,
+            size,
             status: 'draft',
             advertiser_id: user.data.user.id,
             total_price: totalPrice,
@@ -184,8 +179,11 @@ export default function AdSpace({ location, size, className = '' }: AdSpaceProps
       // Create Stripe checkout session
       await createCheckoutSession({
         adId: ad.id,
+        userId: user.data.user.id,
         totalAmount: totalPrice,
         locationName: location,
+        size,
+        title: formData.title,
         startDate: formData.start_date,
         endDate: formData.end_date,
       });

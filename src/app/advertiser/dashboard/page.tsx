@@ -10,7 +10,7 @@ import {
   TrendingUp,
   AlertCircle,
 } from 'lucide-react';
-import { getAdStats } from '@/lib/ad-analytics';
+import { getAdAnalytics as getAdStats } from '@/lib/ad-analytics';
 import { supabase } from '@/lib/supabase';
 
 interface PageProps {

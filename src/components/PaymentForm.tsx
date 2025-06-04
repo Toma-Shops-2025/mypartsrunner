@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, Stripe, StripeElementsOptions } from '@stripe/stripe-js';
 import {
   Elements,
   PaymentElement,
@@ -83,11 +83,9 @@ export const PaymentForm = ({
   clientSecret: string;
   onSuccess: () => void;
 }) => {
-  const options = {
+  const options: StripeElementsOptions = {
     clientSecret,
-    appearance: {
-      theme: 'stripe',
-    },
+    appearance: { theme: 'stripe' },
   };
 
   return (

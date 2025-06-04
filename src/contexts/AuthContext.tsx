@@ -1,20 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { User } from '@supabase/supabase-js';
+import { User, AuthError } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAdmin: boolean;
-  signIn: (email: string, password: string) => Promise<{ error?: any }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error?: any }>;
+  signIn: (email: string, password: string) => Promise<{ error?: AuthError | null }>;
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error?: AuthError | null }>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const ADMIN_EMAIL = 'tomaadkins@tomashops.com';
-const ADMIN_PASSWORD = 'Custom.247';
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -34,9 +33,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     const getSession = async () => {
       try {
+        console.log('Checking auth session...');
         const { data: { session }, error } = await supabase.auth.getSession();
-        if (mounted && !error) {
+        
+        if (error) {
+          console.error('Auth session error:', error);
+          return;
+        }
+
+        if (mounted) {
           const currentUser = session?.user ?? null;
+          console.log('Auth session state:', {
+            hasUser: !!currentUser,
+            email: currentUser?.email,
+            isAdmin: currentUser?.email === ADMIN_EMAIL
+          });
+          
           setUser(currentUser);
           setIsAdmin(currentUser?.email === ADMIN_EMAIL);
         }
@@ -53,6 +65,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', { event, hasSession: !!session });
+        
         if (mounted) {
           const currentUser = session?.user ?? null;
           setUser(currentUser);
@@ -70,49 +84,74 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     try {
-      // Check for admin credentials first
-      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        // Create a mock admin user session
-        const adminUser = {
-          id: 'admin-user-id',
-          email: ADMIN_EMAIL,
-          role: 'admin'
-        } as User;
-        setUser(adminUser);
-        setIsAdmin(true);
-        return { error: null };
+      console.log('Attempting sign in for:', email);
+      const { data, error } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password
+      });
+
+      if (error) {
+        console.error('Sign in error:', error);
+        return { error };
       }
-      
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      return { error };
+
+      console.log('Sign in successful:', {
+        hasUser: !!data.user,
+        isAdmin: data.user?.email === ADMIN_EMAIL
+      });
+
+      return { error: null };
     } catch (err) {
-      return { error: err };
+      console.error('Unexpected sign in error:', err);
+      return { error: err as AuthError };
     }
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log('Attempting sign up for:', email);
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             full_name: fullName,
-          },
-        },
+          }
+        }
       });
-      return { error };
+
+      if (error) {
+        console.error('Sign up error:', error);
+        return { error };
+      }
+
+      console.log('Sign up successful:', {
+        hasUser: !!data.user,
+        needsEmailConfirmation: !data.session
+      });
+
+      return { error: null };
     } catch (err) {
-      return { error: err };
+      console.error('Unexpected sign up error:', err);
+      return { error: err as AuthError };
     }
   };
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      console.log('Attempting sign out...');
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Sign out error:', error);
+        return;
+      }
+
+      setUser(null);
       setIsAdmin(false);
+      console.log('Sign out successful');
     } catch (err) {
-      console.error('Sign out error:', err);
+      console.error('Unexpected sign out error:', err);
     }
   };
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 
 interface Ad {
   id: string;
@@ -22,11 +22,6 @@ interface AdAnalytics {
   clicks_count: number;
   ctr: number;
 }
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export default function ActiveAd({ adId }: { adId: string }) {
   const [ad, setAd] = useState<Ad | null>(null);
