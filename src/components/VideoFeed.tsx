@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import VideoFeedItem from './VideoFeedItem';
 import VideoFeedAd from './VideoFeedAd';
+import { Link } from 'react-router-dom';
 
 interface Product {
   id: string;
@@ -18,6 +19,25 @@ interface Product {
 interface VideoFeedProps {
   categoryId?: string;
 }
+
+const AdPlaceholder = () => (
+  <div className="absolute inset-0 bg-white flex items-center justify-center">
+    <div className="max-w-md text-center p-8">
+      <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        Advertise Here
+      </h2>
+      <p className="text-gray-600 mb-6">
+        Reach thousands of engaged shoppers on TomaShops' video marketplace.
+      </p>
+      <Link
+        to="/advertise"
+        className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+      >
+        Learn About Advertising
+      </Link>
+    </div>
+  </div>
+);
 
 const VideoFeed: React.FC<VideoFeedProps> = ({ categoryId }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -111,9 +131,12 @@ const VideoFeed: React.FC<VideoFeedProps> = ({ categoryId }) => {
           />
           {shouldShowAd(index) && index === currentIndex && (
             <div className="absolute inset-0 z-20">
-              <VideoFeedAd position="middle" />
-              <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
-                <Button onClick={goToNext} className="bg-white text-black">
+              <AdPlaceholder />
+              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+                <Button 
+                  onClick={goToNext} 
+                  className="bg-blue-600 text-white hover:bg-blue-700 px-6 py-3 rounded-lg"
+                >
                   Continue Watching
                 </Button>
               </div>
@@ -122,7 +145,7 @@ const VideoFeed: React.FC<VideoFeedProps> = ({ categoryId }) => {
         </div>
       ))}
       
-      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col space-y-4 z-10">
+      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col space-y-4 z-30">
         <Button
           onClick={goToPrevious}
           size="sm"

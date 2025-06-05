@@ -34,6 +34,7 @@ import Admin from "./pages/Admin";
 import PaymentTesting from "./pages/PaymentTesting";
 import AdSpaceMarketplace from "./components/AdSpaceMarketplace";
 import AdvertiserDashboard from "./components/AdvertiserDashboard";
+import Advertise from './pages/Advertise';
 
 const queryClient = new QueryClient();
 
@@ -72,7 +73,7 @@ const App = () => (
                   <Route path="/stripe-settings" element={<StripeSettings />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/payment-testing" element={<PaymentTesting />} />
-                  <Route path="/advertise" element={<AdSpaceMarketplace />} />
+                  <Route path="/advertise" element={<Advertise />} />
                   <Route path="/advertiser/dashboard" element={<AdvertiserDashboard />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
