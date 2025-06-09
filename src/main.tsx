@@ -1,15 +1,32 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
 import './index.css';
+import { registerServiceWorker, listenForInstallPrompt } from './utils/pwa';
 
-const rootElement = document.getElementById('root');
-if (!rootElement) {
-  throw new Error('Root element not found');
+// Register service worker
+registerServiceWorker();
+
+// Store the install prompt for later use
+let deferredPrompt: BeforeInstallPromptEvent | null = null;
+
+// Listen for install prompt
+listenForInstallPrompt((e) => {
+  deferredPrompt = e;
+  // You can show your install button/prompt here
+  // For example: showInstallPrompt();
+});
+
+// Make deferredPrompt available globally for use in components
+declare global {
+  interface Window {
+    deferredPrompt: BeforeInstallPromptEvent | null;
+  }
 }
+window.deferredPrompt = deferredPrompt;
 
-createRoot(rootElement).render(
-  <StrictMode>
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
     <App />
-  </StrictMode>
+  </React.StrictMode>
 );

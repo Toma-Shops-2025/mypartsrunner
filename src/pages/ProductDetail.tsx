@@ -11,16 +11,17 @@ import ContactSellerModal from '@/components/ContactSellerModal';
 interface Product {
   id: string;
   title: string;
-  price: string;
-  seller_id: string;
-  category: string;
-  description: string;
-  video_url: string;
-  thumbnail_url: string;
-  image_url?: string;
-  images?: string[];
+  description: string | null;
+  price: number;
+  images: string[] | null;
+  video_url: string | null;
+  thumbnail_url: string | null;
   status: string;
+  category_id: string | null;
+  seller_id: string;
   created_at: string;
+  updated_at: string;
+  category?: string;
   latitude?: number;
   longitude?: number;
   address?: string;
@@ -29,6 +30,7 @@ interface Product {
   country?: string;
   shipping_available?: boolean;
   local_pickup?: boolean;
+  condition?: string;
 }
 
 const ProductDetail: React.FC = () => {
@@ -48,20 +50,22 @@ const ProductDetail: React.FC = () => {
         setProduct({
           id: '550e8400-e29b-41d4-a716-446655440000',
           title: 'Demo Product - Video Feed',
-          price: '29.99',
+          price: 29.99,
           seller_id: '550e8400-e29b-41d4-a716-446655440001',
-          category: 'Demo',
+          category_id: null,
           description: 'This is a demo product showcasing our video feed functionality',
           video_url: 'https://drive.google.com/file/d/13e3wz4RKUEI_7K8ZyxSW1BbYJulWjzMd/view?usp=drivesdk',
           thumbnail_url: '/placeholder.svg',
-          image_url: '/placeholder.svg',
+          images: null,
           status: 'active',
           created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
           city: 'San Francisco',
           state: 'CA',
           country: 'United States',
           shipping_available: true,
-          local_pickup: true
+          local_pickup: true,
+          condition: 'new'
         });
         setLoading(false);
         return;
@@ -99,23 +103,13 @@ const ProductDetail: React.FC = () => {
   };
 
   const getImageUrl = (imagePath: string) => {
-    if (imagePath.startsWith('http')) {
-      return imagePath;
-    }
-    const { data } = supabase.storage
-      .from('product-images')
-      .getPublicUrl(imagePath);
-    return data.publicUrl;
+    if (!imagePath) return '/placeholder.svg';
+    return imagePath; // URLs are now stored as full URLs
   };
 
   const getVideoUrl = (videoPath: string) => {
-    if (videoPath.startsWith('http')) {
-      return videoPath;
-    }
-    const { data } = supabase.storage
-      .from('product-videos')
-      .getPublicUrl(videoPath);
-    return data.publicUrl;
+    if (!videoPath) return null;
+    return videoPath; // URLs are now stored as full URLs
   };
 
   const getEmbeddableUrl = (url: string) => {
@@ -133,16 +127,32 @@ const ProductDetail: React.FC = () => {
     
     const images = [];
     
-    if (product.images && product.images.length > 0) {
-      images.push(...product.images.map(img => getImageUrl(img)));
+    // Handle images array, ensuring proper parsing if it's stored as a string
+    if (product.images) {
+      let imageArray = product.images;
+      
+      // If images is stored as a string, try to parse it
+      if (typeof product.images === 'string') {
+        try {
+          imageArray = JSON.parse(product.images);
+        } catch (e) {
+          console.error('Failed to parse images array:', e);
+          imageArray = [];
+        }
+      }
+      
+      // Filter out any invalid entries
+      images.push(...(Array.isArray(imageArray) ? imageArray : [])
+        .filter(img => img && typeof img === 'string' && img.trim() !== '')
+        .map(img => img.startsWith('http') ? img : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-images/${img}`));
     }
     
-    if (product.thumbnail_url && !images.some(img => img.includes(product.thumbnail_url))) {
-      images.push(getImageUrl(product.thumbnail_url));
-    }
-    
-    if (product.image_url && !images.some(img => img.includes(product.image_url!))) {
-      images.push(getImageUrl(product.image_url));
+    // Add thumbnail if it's not already included
+    if (product.thumbnail_url && 
+        typeof product.thumbnail_url === 'string' && 
+        product.thumbnail_url.trim() !== '' && 
+        !images.includes(product.thumbnail_url)) {
+      images.unshift(product.thumbnail_url); // Add thumbnail as first image
     }
     
     return images.length > 0 ? images : ['/placeholder.svg'];
@@ -217,18 +227,73 @@ const ProductDetail: React.FC = () => {
                         }}
                       />
                     )}
+                    
+                    {/* Photo Gallery */}
+                    {displayImages.length > 0 && (
+                      <div className="mt-4">
+                        <h3 className="text-sm font-medium mb-2">Product Photos</h3>
+                        <div className="grid grid-cols-4 gap-2">
+                          {displayImages.map((image, index) => (
+                            <button
+                              key={index}
+                              onClick={() => setCurrentImageIndex(index)}
+                              className={`relative aspect-square rounded-lg overflow-hidden border-2 ${
+                                currentImageIndex === index ? 'border-green-500' : 'border-transparent'
+                              }`}
+                            >
+                              <img
+                                src={image}
+                                alt={`${product.title} - Photo ${index + 1}`}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = '/placeholder.svg';
+                                }}
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <div>
-                    <img
-                      src={displayImages[currentImageIndex] || '/placeholder.svg'}
-                      alt={product.title}
-                      className="w-full h-64 md:h-96 object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder.svg';
-                      }}
-                    />
+                  <div className="space-y-4">
+                    <div className="relative aspect-video">
+                      <img
+                        src={displayImages[currentImageIndex] || '/placeholder.svg'}
+                        alt={product.title}
+                        className="w-full h-full object-contain rounded-lg"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Photo Gallery */}
+                    {displayImages.length > 1 && (
+                      <div className="grid grid-cols-4 gap-2">
+                        {displayImages.map((image, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentImageIndex(index)}
+                            className={`relative aspect-square rounded-lg overflow-hidden border-2 ${
+                              currentImageIndex === index ? 'border-green-500' : 'border-transparent'
+                            }`}
+                          >
+                            <img
+                              src={image}
+                              alt={`${product.title} - Photo ${index + 1}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = '/placeholder.svg';
+                              }}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -238,7 +303,7 @@ const ProductDetail: React.FC = () => {
                   <div>
                     <h1 className="text-2xl font-bold">{product.title}</h1>
                     <p className="text-3xl font-bold text-green-600 mt-2">
-                      ${parseFloat(product.price).toFixed(2)}
+                      ${product.price.toFixed(2)}
                     </p>
                   </div>
 

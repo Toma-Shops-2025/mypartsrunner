@@ -26,16 +26,18 @@ export default defineConfig(({ mode }) => {
     envPrefix: 'VITE_',
     build: {
       outDir: 'dist',
-      sourcemap: true,
-      minify: 'esbuild',
+      sourcemap: false,
       rollupOptions: {
         output: {
           manualChunks: {
-            vendor: ['react', 'react-dom', 'react-router-dom'],
-            ui: ['@/components/ui/toaster', '@/components/ui/sonner', '@/components/ui/tooltip'],
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'ui-vendor': ['@radix-ui/react-dropdown-menu', '@radix-ui/react-slot', '@radix-ui/react-tabs'],
+            'map-vendor': ['mapbox-gl'],
+            'stripe-vendor': ['@stripe/stripe-js', '@stripe/react-stripe-js'],
           },
         },
       },
+      chunkSizeWarningLimit: 1000,
     },
     server: {
       port: 3000,

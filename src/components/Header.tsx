@@ -1,157 +1,101 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, Menu, ShoppingCart, User, Play, Plus, LogOut, Settings, TestTube } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { ShoppingCart, User, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
-import AuthModal from '@/components/AuthModal';
-import { toast } from '@/components/ui/use-toast';
+import { Logo } from '@/components/ui/Logo';
+import { MobileMenu } from './MobileMenu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useCart } from '@/contexts/CartContext';
+import { NotificationBell } from '@/components/NotificationBell';
 
-interface HeaderProps {
-  onMenuClick: () => void;
-  onVideoFeedClick?: () => void;
-}
-
-const Header: React.FC<HeaderProps> = ({ onMenuClick, onVideoFeedClick }) => {
-  const navigate = useNavigate();
-  const { user, isAdmin, signOut } = useAuth();
-  const [showAuthModal, setShowAuthModal] = useState(false);
-
-  const handleSignOut = async () => {
-    await signOut();
-    toast({
-      title: 'Signed out',
-      description: 'You have been successfully signed out.',
-    });
-  };
-
-  const handleProfileClick = () => {
-    if (!user) {
-      setShowAuthModal(true);
-    } else {
-      navigate('/profile');
-    }
-  };
-
-  const handleAdminClick = () => {
-    navigate('/admin');
-  };
-
-  const handlePaymentTestingClick = () => {
-    navigate('/payment-testing');
-  };
-
-  const handleSellClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    navigate('/sell');
-  };
-
-  const handleFeedClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    navigate('/feed');
-  };
-
-  const handleCartClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    navigate('/cart');
-  };
-
-  const handleLogoClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    navigate('/');
-  };
+export function Header() {
+  const { user, signOut } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { itemCount } = useCart();
 
   return (
     <>
-      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" onClick={onMenuClick} className="md:hidden">
-                <Menu className="w-5 h-5" />
-              </Button>
-              <button onClick={handleLogoClick} className="flex items-center space-x-2">
-                <img 
-                  src="https://d64gsuwffb70l.cloudfront.net/682f036004a271a5767d0528_1748779913729_b424db9f.png" 
-                  alt="TomaShops™ Logo" 
-                  className="h-10 w-auto"
-                />
-              </button>
-            </div>
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between">
+          <Link to="/" className="flex items-center">
+            <Logo showText={true} imageClassName="h-8 w-auto" />
+          </Link>
 
-            <div className="flex-1 max-w-lg mx-8 hidden md:block">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <Input
-                  type="text"
-                  placeholder="Search products, categories..."
-                  className="pl-10 pr-4 w-full"
-                />
-              </div>
-            </div>
+          <nav className="hidden md:flex items-center gap-6">
+            <Link to="/stores" className="text-sm font-medium hover:text-primary">
+              Find Stores
+            </Link>
+            <Link to="/how-it-works" className="text-sm font-medium hover:text-primary">
+              How It Works
+            </Link>
+            <Link to="/become-runner" className="text-sm font-medium hover:text-primary">
+              Become a Runner
+            </Link>
+            <Link to="/merchant" className="text-sm font-medium hover:text-primary">
+              For Merchants
+            </Link>
+          </nav>
 
-            <div className="flex items-center space-x-2">
-              <Button 
-                variant="default" 
-                size="sm" 
-                className="hidden md:flex items-center space-x-2 bg-green-600 hover:bg-green-700"
-                onClick={handleSellClick}
-              >
-                <Plus className="w-4 h-4" />
-                <span>Sell</span>
+          <div className="flex items-center gap-4">
+            <NotificationBell />
+            <Link to="/cart">
+              <Button variant="ghost" size="icon" className="relative">
+                <ShoppingCart className="h-5 w-5" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground flex items-center justify-center">
+                    {itemCount}
+                  </span>
+                )}
               </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="hidden md:flex items-center space-x-2"
-                onClick={handleFeedClick}
-              >
-                <Play className="w-4 h-4" />
-                <span>Video Feed</span>
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleCartClick}>
-                <ShoppingCart className="w-5 h-5" />
-              </Button>
-              {user ? (
-                <div className="flex items-center space-x-2">
-                  {isAdmin && (
-                    <>
-                      <Button variant="ghost" size="sm" onClick={handleAdminClick}>
-                        <Settings className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={handlePaymentTestingClick}
-                        title="Payment Testing"
-                      >
-                        <TestTube className="w-4 h-4" />
-                      </Button>
-                    </>
-                  )}
-                  <Button variant="ghost" size="sm" onClick={handleProfileClick}>
-                    <User className="w-5 h-5" />
+            </Link>
+
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <User className="h-5 w-5" />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                    <LogOut className="w-4 h-4" />
-                  </Button>
-                </div>
-              ) : (
-                <Button variant="ghost" size="sm" onClick={handleProfileClick}>
-                  <User className="w-5 h-5" />
-                </Button>
-              )}
-            </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile">Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/orders">Orders</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button asChild variant="default">
+                <Link to="/signin">Sign In</Link>
+              </Button>
+            )}
+
+            <Button 
+              className="md:hidden" 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
           </div>
         </div>
       </header>
       
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
+      <MobileMenu 
+        isOpen={mobileMenuOpen} 
+        onClose={() => setMobileMenuOpen(false)} 
       />
     </>
   );
-};
-
-export default Header;
+}

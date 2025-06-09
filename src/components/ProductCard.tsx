@@ -1,26 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
 import { LocationDisplay } from '@/components/LocationDisplay';
 import { supabase } from '@/lib/supabase';
+import { Database } from '../lib/database.types';
+import { useApp } from '../contexts/AppContext';
 
-interface Product {
-  id: string;
-  title: string;
-  price: number;
-  image_url?: string;
-  thumbnail_url?: string;
-  video_url?: string;
-  images?: string[];
-  description: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  shipping_available?: boolean;
-  local_pickup?: boolean;
-}
+type Product = Database['public']['Tables']['products']['Row'];
 
 interface ProductCardProps {
   product: Product;
@@ -28,41 +16,28 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const navigate = useNavigate();
+  const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useApp();
   
   const handleClick = () => {
     navigate(`/product/${product.id}`);
   };
 
+  const handleAddToCart = () => {
+    addToCart(product, quantity);
+    setQuantity(1);
+  };
+
   // Get the proper image URL
   const getImageUrl = () => {
-    // Check if we have images array with URLs
-    if (product.images && product.images.length > 0) {
-      const firstImage = product.images[0];
-      // If it's already a full URL, use it
-      if (firstImage.startsWith('http')) {
-        return firstImage;
-      }
-      // Otherwise, construct the Supabase storage URL
-      const { data } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(firstImage);
-      return data.publicUrl;
-    }
-    
-    // Fallback to thumbnail_url or image_url
-    if (product.thumbnail_url && product.thumbnail_url.startsWith('http')) {
-      return product.thumbnail_url;
-    }
-    
     if (product.image_url && product.image_url.startsWith('http')) {
       return product.image_url;
     }
     
-    // If we have a path but not a full URL, construct it
-    if (product.thumbnail_url && !product.thumbnail_url.startsWith('http')) {
+    if (product.image_url) {
       const { data } = supabase.storage
         .from('product-images')
-        .getPublicUrl(product.thumbnail_url);
+        .getPublicUrl(product.image_url);
       return data.publicUrl;
     }
     
@@ -70,14 +45,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   const imageUrl = getImageUrl();
-  const hasVideo = !!product.video_url;
+  const hasVideo = false;
 
   return (
-    <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={handleClick}>
+    <Card className="cursor-pointer hover:shadow-lg transition-shadow">
       <div className="relative">
         <img 
           src={imageUrl}
-          alt={product.title}
+          alt={product.name}
           className="w-full h-48 object-cover rounded-t-lg"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
@@ -91,31 +66,73 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         )}
       </div>
       <CardContent className="p-4">
-        <h3 className="font-semibold text-lg mb-2 line-clamp-2">{product.title}</h3>
+        <h3 className="font-semibold text-lg mb-2 line-clamp-2">{product.name}</h3>
         <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
         
         <div className="mb-3">
-          <LocationDisplay
-            city={product.city}
-            state={product.state}
-            country={product.country}
-            shippingAvailable={product.shipping_available}
-            localPickup={product.local_pickup}
-            compact={true}
-            showShippingOptions={false}
-          />
+          {/* Remove LocationDisplay component since it requires unavailable props */}
         </div>
         
-        <div className="flex justify-between items-center">
-          <span className="text-2xl font-bold text-green-600">
+        <div className="mt-2">
+          <span className="text-lg font-medium text-gray-900">
             ${product.price.toFixed(2)}
           </span>
-          <Button size="sm" onClick={(e) => {
-            e.stopPropagation();
-            handleClick();
-          }}>
-            View Details
-          </Button>
+          <span className="ml-2 text-sm text-gray-500">
+            {product.quantity} in stock
+          </span>
+        </div>
+        
+        <div className="mt-4 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setQuantity(Math.max(1, quantity - 1));
+              }}
+              className="p-1 text-gray-500 hover:text-gray-700"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+            <span className="text-gray-700">{quantity}</span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setQuantity(Math.min(product.quantity, quantity + 1));
+              }}
+              className="p-1 text-gray-500 hover:text-gray-700"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
+          <button
+            onClick={handleAddToCart}
+            disabled={product.quantity === 0}
+            className="flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand-blue hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+          </button>
         </div>
       </CardContent>
     </Card>

@@ -1,3 +1,54 @@
+-- Create the ad_locations table
+CREATE TABLE ad_locations (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    name VARCHAR NOT NULL UNIQUE,
+    description TEXT,
+    price_per_day DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Create the ad_location_bookings table
+CREATE TABLE ad_location_bookings (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    location_id UUID REFERENCES ad_locations(id) NOT NULL,
+    advertiser_id UUID REFERENCES auth.users(id) NOT NULL,
+    title VARCHAR NOT NULL,
+    description TEXT,
+    image_url TEXT NOT NULL,
+    click_url TEXT NOT NULL,
+    start_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    end_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    status VARCHAR NOT NULL CHECK (status IN ('pending', 'active', 'completed', 'cancelled')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Insert some initial ad locations
+INSERT INTO ad_locations (name, description, price_per_day) VALUES
+    ('video-feed-top', 'Premium ad space at the top of the video feed', 99.99),
+    ('video-feed-middle', 'High-visibility ad space in the middle of the video feed', 79.99),
+    ('video-feed-bottom', 'Effective ad space at the bottom of the video feed', 59.99);
+
+-- Enable Row Level Security (RLS)
+ALTER TABLE ad_locations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ad_location_bookings ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for ad_locations
+CREATE POLICY "Allow public read access to ad_locations"
+    ON ad_locations FOR SELECT
+    TO public
+    USING (true);
+
+-- Create policies for ad_location_bookings
+CREATE POLICY "Allow public read access to active ad_location_bookings"
+    ON ad_location_bookings FOR SELECT
+    TO public
+    USING (status = 'active');
+
+CREATE POLICY "Allow advertisers to manage their own bookings"
+    ON ad_location_bookings FOR ALL
+    TO authenticated
+    USING (advertiser_id = auth.uid());
+
 -- Create ad_locations table
 create table public.ad_locations (
     id uuid default gen_random_uuid() primary key,

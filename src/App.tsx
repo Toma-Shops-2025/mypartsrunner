@@ -2,7 +2,7 @@ import { Toaster } from "./components/ui/toaster";
 import { Toaster as Sonner } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./components/theme-provider";
 import { AppProvider } from "./contexts/AppContext";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -35,56 +35,73 @@ import PaymentTesting from "./pages/PaymentTesting";
 import AdSpaceMarketplace from "./components/AdSpaceMarketplace";
 import AdvertiserDashboard from "./components/AdvertiserDashboard";
 import Advertise from './pages/Advertise';
+import { Suspense, lazy } from 'react';
+import { HelmetProvider } from 'react-helmet-async';
+import { MapProvider } from './contexts/MapContext';
+import { Metadata } from './components/Metadata';
+import { Layout } from './components/Layout';
+import { LoadingSpinner } from './components/ui/LoadingSpinner';
+import { CartProvider } from './contexts/CartContext';
+import { Header } from './components/Header';
+import { ErrorFallback } from './components/ErrorBoundary';
+import { NotificationProvider } from './contexts/NotificationContext';
+import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary';
 
 const queryClient = new QueryClient();
 
+// Lazy-loaded components
+const Home = lazy(() => import('./pages/Home'));
+const CustomerDashboard = lazy(() => import('./pages/customer/Dashboard'));
+const MerchantDashboard = lazy(() => import('./pages/merchant/Dashboard'));
+const RunnerDashboard = lazy(() => import('./pages/runner/Dashboard'));
+
 const App = () => (
-  <ErrorBoundary>
+  <ReactErrorBoundary FallbackComponent={ErrorFallback}>
     <ThemeProvider defaultTheme="light">
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <AppProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/video-feed" element={<VideoFeed />} />
-                  <Route path="/feed" element={<VideoFeed />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/sell" element={<SellItem />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/checkout" element={<Checkout />} />
-                  <Route path="/how-it-works" element={<HowItWorks />} />
-                  <Route path="/why-choose" element={<WhyChoose />} />
-                  <Route path="/faq" element={<FAQ />} />
-                  <Route path="/safety" element={<SafetyGuide />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/shipping" element={<Shipping />} />
-                  <Route path="/project-help" element={<ProjectHelp />} />
-                  <Route path="/project-location" element={<ProjectLocation />} />
-                  <Route path="/android-downloads" element={<AndroidDownloads />} />
-                  <Route path="/code-access" element={<CodeAccess />} />
-                  <Route path="/project-saver" element={<ProjectSaverPage />} />
-                  <Route path="/stripe-settings" element={<StripeSettings />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="/payment-testing" element={<PaymentTesting />} />
-                  <Route path="/advertise" element={<Advertise />} />
-                  <Route path="/advertiser/dashboard" element={<AdvertiserDashboard />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-                {/* <TomaBot /> */}
-              </BrowserRouter>
-            </TooltipProvider>
-          </AppProvider>
-        </AuthProvider>
+        <NotificationProvider>
+          <CartProvider>
+            <HelmetProvider>
+              <AuthProvider>
+                <AppProvider>
+                  <MapProvider>
+                    <Metadata />
+                    <TooltipProvider>
+                      <Toaster />
+                      <Sonner />
+                      <Router>
+                        <Layout>
+                          <Suspense fallback={
+                            <div className="flex items-center justify-center min-h-screen">
+                              <LoadingSpinner size="lg" />
+                            </div>
+                          }>
+                            <Routes>
+                              {/* Public Routes */}
+                              <Route path="/" element={<Home />} />
+                              
+                              {/* Customer Routes */}
+                              <Route path="/customer/*" element={<CustomerDashboard />} />
+                              
+                              {/* Merchant Routes */}
+                              <Route path="/merchant/*" element={<MerchantDashboard />} />
+                              
+                              {/* Runner Routes */}
+                              <Route path="/runner/*" element={<RunnerDashboard />} />
+                            </Routes>
+                          </Suspense>
+                        </Layout>
+                      </Router>
+                    </TooltipProvider>
+                  </MapProvider>
+                </AppProvider>
+              </AuthProvider>
+            </HelmetProvider>
+          </CartProvider>
+        </NotificationProvider>
       </QueryClientProvider>
     </ThemeProvider>
-  </ErrorBoundary>
+  </ReactErrorBoundary>
 );
 
 export default App;

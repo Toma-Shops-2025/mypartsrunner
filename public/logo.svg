@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="200" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Runner with Package -->
+  <g id="runner">
+    <!-- Package -->
+    <rect x="20" y="30" width="60" height="60" fill="#8B6B4D" stroke="#2B80FF" stroke-width="2"/>
+    
+    <!-- Body -->
+    <path d="M50 80 Q65 90 80 120" stroke="#2B80FF" stroke-width="4" fill="none"/>
+    <circle cx="70" cy="90" r="25" fill="#FFB6A6"/>
+    
+    <!-- Cap -->
+    <path d="M50 80 Q70 70 90 80" fill="#2B80FF"/>
+    <circle cx="70" cy="75" r="15" fill="#2B80FF"/>
+    
+    <!-- Legs -->
+    <path d="M65 120 L85 150" stroke="#2B80FF" stroke-width="6" fill="none"/>
+    <path d="M85 120 L65 150" stroke="#2B80FF" stroke-width="6" fill="none"/>
+  </g>
+
+  <!-- Text "MyParts" -->
+  <text x="150" y="120" font-family="Arial" font-size="80" fill="#6FD7D7">
+    My<tspan fill="#0097B2">Parts</tspan>
+  </text>
+  
+  <!-- Text "Runner" -->
+  <text x="150" y="180" font-family="Arial" font-size="80" fill="#0097B2">
+    Runner
+  </text>
+
+  <!-- Wrench Icon -->
+  <path d="M650 140 Q670 130 690 140 L700 130 L690 120 Q670 130 650 120 Z" fill="#0097B2"/>
+</svg> 

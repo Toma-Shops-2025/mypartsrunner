@@ -2,9 +2,10 @@ import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import { getAdPrice } from './ad-pricing';
 
-// Initialize Stripe with your secret key
-const stripe = new Stripe(import.meta.env.VITE_STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16', // Use the latest API version
+// Initialize Stripe with environment-specific keys
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2023-10-16',
+  typescript: true,
 });
 
 const supabase = createClient(
@@ -130,5 +131,104 @@ export async function createAdPayment(adData: {
     throw error;
   }
 }
+
+export const payments = {
+  // Customer payments
+  async processDeliveryPayment(amount: number, customerId: string) {
+    try {
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: 'usd',
+        customer: customerId,
+        payment_method_types: ['card'],
+        capture_method: 'manual', // Only capture after delivery confirmation
+        metadata: {
+          type: 'delivery_fee'
+        }
+      });
+      return paymentIntent;
+    } catch (error) {
+      console.error('Payment processing error:', error);
+      throw error;
+    }
+  },
+
+  // Merchant payouts
+  async processMerchantPayout(merchantId: string, amount: number) {
+    try {
+      const transfer = await stripe.transfers.create({
+        amount: Math.round(amount * 100),
+        currency: 'usd',
+        destination: merchantId, // Merchant's Stripe Connect account
+        metadata: {
+          type: 'merchant_payout'
+        }
+      });
+      return transfer;
+    } catch (error) {
+      console.error('Merchant payout error:', error);
+      throw error;
+    }
+  },
+
+  // Runner payouts
+  async processRunnerPayout(runnerId: string, amount: number) {
+    try {
+      const transfer = await stripe.transfers.create({
+        amount: Math.round(amount * 100),
+        currency: 'usd',
+        destination: runnerId, // Runner's Stripe Connect account
+        metadata: {
+          type: 'runner_payout'
+        }
+      });
+      return transfer;
+    } catch (error) {
+      console.error('Runner payout error:', error);
+      throw error;
+    }
+  },
+
+  // Refund processing
+  async processRefund(paymentIntentId: string, amount?: number) {
+    try {
+      const refund = await stripe.refunds.create({
+        payment_intent: paymentIntentId,
+        amount: amount ? Math.round(amount * 100) : undefined,
+      });
+      return refund;
+    } catch (error) {
+      console.error('Refund processing error:', error);
+      throw error;
+    }
+  },
+
+  // Payment method management
+  async addPaymentMethod(customerId: string, paymentMethodId: string) {
+    try {
+      await stripe.paymentMethods.attach(paymentMethodId, {
+        customer: customerId,
+      });
+      return true;
+    } catch (error) {
+      console.error('Add payment method error:', error);
+      throw error;
+    }
+  },
+
+  // Account verification
+  async verifyConnectedAccount(accountId: string) {
+    try {
+      const account = await stripe.accounts.retrieve(accountId);
+      return {
+        verified: account.charges_enabled && account.payouts_enabled,
+        requirements: account.requirements,
+      };
+    } catch (error) {
+      console.error('Account verification error:', error);
+      throw error;
+    }
+  }
+};
 
 export { stripe }; 

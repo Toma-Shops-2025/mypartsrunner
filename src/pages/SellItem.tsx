@@ -15,11 +15,21 @@ import { LocationPicker } from '@/components/LocationPicker';
 import { supabase } from '@/lib/supabase';
 import { toast } from '@/components/ui/use-toast';
 
+interface MediaData {
+  images: string[];
+  video_url: string | null;
+  thumbnail_url: string | null;
+}
+
 const SellItem = () => {
   const { user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [mediaUrls, setMediaUrls] = useState<string[]>([]);
+  const [mediaData, setMediaData] = useState<MediaData>({
+    images: [],
+    video_url: null,
+    thumbnail_url: null
+  });
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -53,10 +63,29 @@ const SellItem = () => {
 
     setLoading(true);
     try {
-      const videoUrls = mediaUrls.filter(url => url.includes('product-videos'));
-      const imageUrls = mediaUrls.filter(url => url.includes('product-images'));
+      // Ensure images is an array
+      const imageUrls = Array.isArray(mediaData.images) ? mediaData.images : [];
       
-      const productData: any = {
+      const productData: {
+        title: string;
+        description: string;
+        price: number;
+        condition: string;
+        seller_id: string;
+        status: string;
+        images: string[];
+        video_url: string | null;
+        thumbnail_url: string | null;
+        latitude: number;
+        longitude: number;
+        address: string;
+        city: string;
+        state: string;
+        country: string;
+        shipping_available: boolean;
+        local_pickup: boolean;
+        category_id?: string;
+      } = {
         title: formData.title,
         description: formData.description,
         price: parseFloat(formData.price),
@@ -64,10 +93,8 @@ const SellItem = () => {
         seller_id: user.id,
         status: 'active',
         images: imageUrls,
-        media_urls: mediaUrls,
-        video_url: videoUrls.length > 0 ? videoUrls[0] : null,
-        image_url: imageUrls.length > 0 ? imageUrls[0] : null,
-        thumbnail_url: imageUrls.length > 0 ? imageUrls[0] : null,
+        video_url: mediaData.video_url,
+        thumbnail_url: mediaData.thumbnail_url,
         latitude: location.latitude,
         longitude: location.longitude,
         address: location.address,
@@ -88,7 +115,7 @@ const SellItem = () => {
 
       toast({ title: 'Success', description: 'Product listed successfully!' });
       setFormData({ title: '', description: '', price: '', category: '', condition: 'new', shippingAvailable: true, localPickup: true });
-      setMediaUrls([]);
+      setMediaData({ images: [], video_url: null, thumbnail_url: null });
       setLocation(null);
     } catch (error) {
       console.error('Error creating listing:', error);
@@ -115,7 +142,11 @@ const SellItem = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <MediaUpload onMediaUpload={setMediaUrls} maxFiles={5} />
+                <MediaUpload 
+                  onMediaUpload={setMediaData} 
+                  maxFiles={5} 
+                  initialMedia={mediaData}
+                />
 
                 <div>
                   <Label htmlFor="title">Title *</Label>
