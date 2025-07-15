@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useAppContext } from '@/contexts/AppContext';
+import { useApp } from '@/contexts/AppContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Link } from 'react-router-dom';
 import { X, Home, ShoppingCart, User, Play, Plus, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import Header from './Header';
-import Footer from './Footer';
+import { Header } from './Header';
+import { Footer } from './Footer';
 
 interface AppLayoutProps {
   children?: React.ReactNode;
@@ -13,7 +13,7 @@ interface AppLayoutProps {
 }
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children, showHero = false }) => {
-  const { sidebarOpen, toggleSidebar } = useAppContext();
+  const { sidebarOpen, toggleSidebar } = useApp();
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

@@ -1,76 +1,64 @@
 {
-  "name": "MyPartsRunner",
-  "short_name": "PartsRunner",
-  "description": "Auto Parts & Hardware Delivery in Minutes",
+  "name": "TomaShops",
+  "short_name": "TomaShops",
+  "description": "Video First Marketplace Platform",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FFFFFF",
-  "theme_color": "#6FD7D7",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-384x384.png",
+      "src": "/icon-384x384.png",
       "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ],
   "shortcuts": [
     {
-      "name": "Find Stores",
-      "short_name": "Stores",
-      "description": "Browse local auto parts and hardware stores",
-      "url": "/stores",
-      "icons": [{ "src": "/icons/stores.png", "sizes": "192x192" }]
+      "name": "Add Listing",
+      "short_name": "Add",
+      "description": "Create a new listing",
+      "url": "/sell",
+      "icons": [{ "src": "/add-listing.png", "sizes": "192x192" }]
     },
     {
-      "name": "Track Order",
-      "short_name": "Track",
-      "description": "Track your current delivery",
-      "url": "/track",
-      "icons": [{ "src": "/icons/track.png", "sizes": "192x192" }]
+      "name": "Video Feed",
+      "short_name": "Videos",
+      "description": "Browse video listings",
+      "url": "/?view=video",
+      "icons": [{ "src": "/video-feed.png", "sizes": "192x192" }]
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Homepage of TomaShops"
+    },
+    {
+      "src": "/screenshot2.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Video Feed View"
+    }
+  ],
+  "categories": ["shopping", "social", "lifestyle"],
+  "dir": "ltr",
+  "lang": "en",
+  "prefer_related_applications": false
 } 

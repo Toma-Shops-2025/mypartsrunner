@@ -1,151 +1,115 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { Location, MapContextType } from '@/types/map';
 
 // Replace with your Mapbox token
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
-interface Location {
-  latitude: number;
-  longitude: number;
-}
-
-export interface MapContextType {
-  userLocation: Location | null;
-  initializeMap: (containerId: string) => Promise<mapboxgl.Map>;
-  addMarker: (map: mapboxgl.Map, location: Location, color?: string) => mapboxgl.Marker;
-  drawRoute: (
-    map: mapboxgl.Map,
-    start: Location,
-    end: Location
-  ) => Promise<void>;
-  geocodeAddress: (address: string) => Promise<Location>;
-}
-
 const MapContext = createContext<MapContextType | undefined>(undefined);
 
 export function MapProvider({ children }: { children: React.ReactNode }) {
-  const [userLocation, setUserLocation] = useState<Location | null>(null);
+  const [map, setMap] = useState<mapboxgl.Map | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const routeLayerRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Get user's location on mount
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-        }
-      );
-    }
+    mapboxgl.accessToken = process.env.VITE_MAPBOX_TOKEN || '';
   }, []);
 
-  const initializeMap = async (containerId: string): Promise<mapboxgl.Map> => {
-    const map = new mapboxgl.Map({
-      container: containerId,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [userLocation?.longitude || -74.006, userLocation?.latitude || 40.7128],
-      zoom: 12,
+  const addMarker = (location: Location, options?: mapboxgl.MarkerOptions) => {
+    if (!map) throw new Error('Map not initialized');
+
+    const marker = new mapboxgl.Marker(options)
+      .setLngLat([location.lng, location.lat])
+      .addTo(map);
+
+    markersRef.current.push(marker);
+    return marker;
+  };
+
+  const removeMarker = (marker: mapboxgl.Marker) => {
+    marker.remove();
+    markersRef.current = markersRef.current.filter(m => m !== marker);
+  };
+
+  const drawRoute = async (start: Location, end: Location, waypoints: Location[] = []) => {
+    if (!map) throw new Error('Map not initialized');
+
+    // Clear existing route
+    clearRoute();
+
+    // Convert locations to coordinates
+    const coordinates = [
+      [start.lng, start.lat],
+      ...waypoints.map(point => [point.lng, point.lat]),
+      [end.lng, end.lat]
+    ];
+
+    // Create GeoJSON object
+    const geojson = {
+      type: 'Feature' as const,
+      properties: {},
+      geometry: {
+        type: 'LineString' as const,
+        coordinates
+      }
+    };
+
+    // Add the route to the map
+    const layerId = 'route-' + Date.now();
+    map.addLayer({
+      id: layerId,
+      type: 'line',
+      source: {
+        type: 'geojson',
+        data: geojson
+      },
+      layout: {
+        'line-join': 'round',
+        'line-cap': 'round'
+      },
+      paint: {
+        'line-color': '#0066FF',
+        'line-width': 4
+      }
     });
 
-    await new Promise((resolve) => map.on('load', resolve));
-    return map;
+    routeLayerRef.current = layerId;
   };
 
-  const addMarker = (
-    map: mapboxgl.Map,
-    location: Location,
-    color = '#FF0000'
-  ): mapboxgl.Marker => {
-    return new mapboxgl.Marker({ color })
-      .setLngLat([location.longitude, location.latitude])
-      .addTo(map);
-  };
+  const clearRoute = () => {
+    if (!map || !routeLayerRef.current) return;
 
-  const drawRoute = async (
-    map: mapboxgl.Map,
-    start: Location,
-    end: Location
-  ): Promise<void> => {
-    try {
-      const query = await fetch(
-        `https://api.mapbox.com/directions/v5/mapbox/driving/${start.longitude},${start.latitude};${end.longitude},${end.latitude}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`
-      );
-
-      const json = await query.json();
-      const data = json.routes[0];
-      const route = data.geometry.coordinates;
-
-      const geojson = {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'LineString',
-          coordinates: route,
-        },
-      };
-
-      if (map.getSource('route')) {
-        (map.getSource('route') as mapboxgl.GeoJSONSource).setData(geojson as any);
-      } else {
-        map.addLayer({
-          id: 'route',
-          type: 'line',
-          source: {
-            type: 'geojson',
-            data: geojson as any,
-          },
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round',
-          },
-          paint: {
-            'line-color': '#3b82f6',
-            'line-width': 5,
-            'line-opacity': 0.75,
-          },
-        });
-      }
-    } catch (error) {
-      console.error('Error drawing route:', error);
+    if (map.getLayer(routeLayerRef.current)) {
+      map.removeLayer(routeLayerRef.current);
     }
-  };
-
-  const geocodeAddress = async (address: string): Promise<Location> => {
-    try {
-      const query = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          address
-        )}.json?access_token=${mapboxgl.accessToken}`
-      );
-
-      const json = await query.json();
-      const [longitude, latitude] = json.features[0].center;
-
-      return { latitude, longitude };
-    } catch (error) {
-      console.error('Error geocoding address:', error);
-      throw new Error('Failed to geocode address');
+    if (map.getSource(routeLayerRef.current)) {
+      map.removeSource(routeLayerRef.current);
     }
+
+    routeLayerRef.current = null;
   };
 
-  return (
-    <MapContext.Provider
-      value={{
-        userLocation,
-        initializeMap,
-        addMarker,
-        drawRoute,
-        geocodeAddress,
-      }}
-    >
-      {children}
-    </MapContext.Provider>
-  );
+  const fitBounds = (bounds: mapboxgl.LngLatBounds) => {
+    if (!map) throw new Error('Map not initialized');
+
+    map.fitBounds(bounds, {
+      padding: 50,
+      maxZoom: 15
+    });
+  };
+
+  const value: MapContextType = {
+    map,
+    addMarker,
+    removeMarker,
+    drawRoute,
+    clearRoute,
+    fitBounds
+  };
+
+  return <MapContext.Provider value={value}>{children}</MapContext.Provider>;
 }
 
 export function useMap() {

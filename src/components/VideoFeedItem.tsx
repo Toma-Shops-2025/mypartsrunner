@@ -1,196 +1,97 @@
-import React, { useState } from 'react';
-import { Heart, Share, MessageCircle, Mail } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
-import { useAppContext } from '@/contexts/AppContext';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
-import CommentModal from './CommentModal';
-import ContactSellerModal from './ContactSellerModal';
-
-interface Product {
-  id: string;
-  title: string;
-  price: string;
-  video_url: string;
-  thumbnail_url: string;
-  seller_id: string;
-  description: string;
-}
+import { Card, CardContent } from '@/components/ui/card';
+import { Play, Pause, Volume2, VolumeX, Share2, Heart } from 'lucide-react';
+import { useApp } from '@/contexts/AppContext';
 
 interface VideoFeedItemProps {
-  product: Product;
-  isActive: boolean;
-  onNext: () => void;
-  onPrevious: () => void;
+  video: Product;
 }
 
-const VideoFeedItem: React.FC<VideoFeedItemProps> = ({ product, isActive }) => {
-  const { toggleLike, shareProduct, likedProducts } = useAppContext();
-  const navigate = useNavigate();
-  const [showComments, setShowComments] = useState(false);
-  const [showContactSeller, setShowContactSeller] = useState(false);
-  
-  if (!isActive) return null;
+export function VideoFeedItem({ video }: VideoFeedItemProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const { shareProduct } = useApp();
 
-  const handleViewListing = () => {
-    navigate(`/product/${product.id}`);
-  };
-
-  const getVideoUrl = (videoPath: string) => {
-    if (videoPath.startsWith('http')) {
-      return videoPath;
-    }
-    const { data } = supabase.storage
-      .from('product-videos')
-      .getPublicUrl(videoPath);
-    return data.publicUrl;
-  };
-
-  const getThumbnailUrl = (thumbnailPath: string) => {
-    if (thumbnailPath.startsWith('http')) {
-      return thumbnailPath;
-    }
-    const { data } = supabase.storage
-      .from('product-images')
-      .getPublicUrl(thumbnailPath);
-    return data.publicUrl;
-  };
-
-  const isLiked = likedProducts.includes(product.id);
-  const videoUrl = getVideoUrl(product.video_url);
-  const thumbnailUrl = getThumbnailUrl(product.thumbnail_url);
-  const getEmbeddableUrl = (url: string) => {
-    if (url.includes('drive.google.com')) {
-      const fileId = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-      if (fileId) {
-        return `https://drive.google.com/file/d/${fileId[1]}/preview`;
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
       }
+      setIsPlaying(!isPlaying);
     }
-    return url;
   };
-  const embeddableUrl = getEmbeddableUrl(videoUrl);
-  const isGoogleDrive = videoUrl.includes('drive.google.com');
-  const isTikTok = videoUrl.includes('tiktok.com');
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
 
   return (
-    <>
-      <div className="absolute inset-0 bg-black flex items-center justify-center">
-        <div className="relative w-full max-w-md mx-auto h-full">
-          {isTikTok ? (
-            <div className="w-full h-full flex items-center justify-center bg-gray-900">
-              <div className="text-center text-white p-8">
-                <p className="text-lg mb-4">TikTok Video</p>
-                <p className="text-sm opacity-75 mb-4">Click "View Listing" to see more details</p>
-                <img 
-                  src={thumbnailUrl || '/placeholder.svg'}
-                  alt={product.title}
-                  className="w-full max-w-xs mx-auto rounded-lg"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = '/placeholder.svg';
-                  }}
-                />
-              </div>
-            </div>
-          ) : isGoogleDrive ? (
-            <iframe
-              src={embeddableUrl}
-              className="w-full h-full"
-              allow="autoplay"
-              title={product.title}
-            />
-          ) : (
-            <video
-              src={videoUrl}
-              poster={thumbnailUrl}
-              className="w-full h-full object-cover"
-              controls
-              autoPlay
-              loop
-              onError={(e) => {
-                console.error('Video failed to load:', videoUrl);
-                const target = e.target as HTMLVideoElement;
-                target.style.display = 'none';
-                const img = document.createElement('img');
-                img.src = thumbnailUrl || '/placeholder.svg';
-                img.className = 'w-full h-full object-cover';
-                img.alt = product.title;
-                target.parentNode?.appendChild(img);
-              }}
-            />
-          )}
-          
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-            <div className="text-white space-y-3">
-              <h3 className="font-bold text-lg">{product.title}</h3>
-              <p className="text-green-400 font-bold text-xl">${parseFloat(product.price).toFixed(0)}</p>
-              <p className="text-sm opacity-90 line-clamp-2">{product.description}</p>
-              <p className="text-xs opacity-75">Seller: {product.seller_id.slice(0, 12)}</p>
-              
-              <div className="flex space-x-2 mt-3">
-                <Button 
-                  onClick={handleViewListing}
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg flex-1"
-                >
-                  View Listing
-                </Button>
-              </div>
-              
-              <Button 
-                onClick={() => setShowContactSeller(true)}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 py-2 rounded-lg mt-2"
-              >
-                <Mail className="w-4 h-4 mr-2" />
-                Contact Seller
-              </Button>
-            </div>
+    <Card className="overflow-hidden">
+      <CardContent className="p-0">
+        <div className="relative aspect-video">
+          <video
+            ref={videoRef}
+            src={video.video_url}
+            poster={video.thumbnail_url}
+            className="w-full h-full object-cover"
+            loop
+            muted={isMuted}
+            playsInline
+            onClick={togglePlay}
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="bg-white/80 hover:bg-white"
+              onClick={togglePlay}
+            >
+              {isPlaying ? (
+                <Pause className="h-6 w-6" />
+              ) : (
+                <Play className="h-6 w-6" />
+              )}
+            </Button>
           </div>
-          
-          <div className="absolute right-4 bottom-32 flex flex-col space-y-4">
-            <Button 
-              onClick={() => toggleLike(product.id)}
-              size="sm" 
-              variant="ghost" 
-              className={`rounded-full ${isLiked ? 'bg-red-500 text-white' : 'bg-white/20 text-white'} hover:bg-red-500`}
+          <div className="absolute bottom-4 right-4 flex gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="bg-white/80 hover:bg-white"
+              onClick={toggleMute}
             >
-              <Heart className={`h-6 w-6 ${isLiked ? 'fill-current' : ''}`} />
-            </Button>
-            <Button 
-              onClick={() => setShowComments(true)}
-              size="sm" 
-              variant="ghost" 
-              className="rounded-full bg-white/20 text-white hover:bg-white/30"
-            >
-              <MessageCircle className="h-6 w-6" />
-            </Button>
-            <Button 
-              onClick={() => shareProduct(product)}
-              size="sm" 
-              variant="ghost" 
-              className="rounded-full bg-white/20 text-white hover:bg-white/30"
-            >
-              <Share className="h-6 w-6" />
+              {isMuted ? (
+                <VolumeX className="h-4 w-4" />
+              ) : (
+                <Volume2 className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
-      </div>
-      
-      <CommentModal
-        isOpen={showComments}
-        onClose={() => setShowComments(false)}
-        productId={product.id}
-        productTitle={product.title}
-      />
-      
-      <ContactSellerModal
-        isOpen={showContactSeller}
-        onClose={() => setShowContactSeller(false)}
-        sellerId={product.seller_id}
-        productId={product.id}
-        productTitle={product.title}
-      />
-    </>
+        <div className="p-4">
+          <h3 className="font-semibold text-lg mb-2">{video.title}</h3>
+          <p className="text-gray-600 text-sm mb-4">{video.description}</p>
+          <div className="flex items-center justify-between">
+            <div className="text-lg font-bold">${video.price.toFixed(2)}</div>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="icon" onClick={() => shareProduct(video)}>
+                <Share2 className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon">
+                <Heart className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
-};
-
-export default VideoFeedItem;
+}

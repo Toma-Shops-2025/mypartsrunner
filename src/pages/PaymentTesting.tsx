@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import PaymentTestingPanel from '@/components/PaymentTestingPanel';
 import PaymentTestGuide from '@/components/PaymentTestGuide';
 import HealthCheck from '@/components/PaymentHealthCheck';

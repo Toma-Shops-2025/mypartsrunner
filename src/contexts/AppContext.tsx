@@ -1,12 +1,12 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState, ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Database } from '../lib/database.types';
 import { supabase } from '../lib/supabase';
+import { Product } from '@/types/product';
 
 type Store = Database['public']['Tables']['stores']['Row'];
-type Product = Database['public']['Tables']['products']['Row'];
 type Order = Database['public']['Tables']['orders']['Row'];
 
 interface CartItem {
@@ -24,6 +24,8 @@ interface AppState {
   currentOrder: Order | null;
   userLocation: { lat: number; lng: number } | null;
   likedProducts: string[];
+  sidebarOpen: boolean;
+  selectedProduct: Product | null;
 }
 
 type AppAction =
@@ -34,7 +36,9 @@ type AppAction =
   | { type: 'SET_STORE'; payload: Store }
   | { type: 'SET_CURRENT_ORDER'; payload: Order | null }
   | { type: 'SET_USER_LOCATION'; payload: { lat: number; lng: number } }
-  | { type: 'TOGGLE_LIKE'; payload: { productId: string } };
+  | { type: 'TOGGLE_LIKE'; payload: { productId: string } }
+  | { type: 'TOGGLE_SIDEBAR' }
+  | { type: 'SET_SELECTED_PRODUCT'; payload: Product | null };
 
 interface AppContextType {
   state: AppState;
@@ -50,6 +54,13 @@ interface AppContextType {
   shareProduct: (product: Product) => void;
   cartTotal: number;
   likedProducts: string[];
+  sidebarOpen: boolean;
+  toggleSidebar: () => void;
+  setSelectedProduct: (product: Product | null) => void;
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
+  error: string | null;
+  setError: (error: string | null) => void;
 }
 
 const initialState: AppState = {
@@ -57,7 +68,9 @@ const initialState: AppState = {
   selectedStore: null,
   currentOrder: null,
   userLocation: null,
-  likedProducts: []
+  likedProducts: [],
+  sidebarOpen: false,
+  selectedProduct: null
 };
 
 function appReducer(state: AppState, action: AppAction): AppState {
@@ -136,6 +149,18 @@ function appReducer(state: AppState, action: AppAction): AppState {
           : [...state.likedProducts, action.payload.productId]
       };
 
+    case 'TOGGLE_SIDEBAR':
+      return {
+        ...state,
+        sidebarOpen: !state.sidebarOpen
+      };
+
+    case 'SET_SELECTED_PRODUCT':
+      return {
+        ...state,
+        selectedProduct: action.payload
+      };
+
     default:
       return state;
   }
@@ -143,9 +168,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-function AppProvider({ children }: { children: React.ReactNode }) {
+export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
   const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Get user's location
@@ -235,7 +262,15 @@ function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const value = {
+  const toggleSidebar = () => {
+    dispatch({ type: 'TOGGLE_SIDEBAR' });
+  };
+
+  const setSelectedProduct = (product: Product | null) => {
+    dispatch({ type: 'SET_SELECTED_PRODUCT', payload: product });
+  };
+
+  const value: AppContextType = {
     state,
     dispatch,
     addToCart,
@@ -248,7 +283,14 @@ function AppProvider({ children }: { children: React.ReactNode }) {
     toggleLike,
     shareProduct,
     cartTotal: state.cart.reduce((total, item) => total + item.price * item.quantity, 0),
-    likedProducts: state.likedProducts
+    likedProducts: state.likedProducts,
+    sidebarOpen: state.sidebarOpen,
+    toggleSidebar,
+    setSelectedProduct,
+    isLoading,
+    setIsLoading,
+    error,
+    setError
   };
 
   return (
@@ -258,12 +300,10 @@ function AppProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-function useAppContext() {
+export function useApp() {
   const context = useContext(AppContext);
   if (context === undefined) {
-    throw new Error('useAppContext must be used within an AppProvider');
+    throw new Error('useApp must be used within an AppProvider');
   }
   return context;
 }
-
-export { AppProvider, useAppContext };

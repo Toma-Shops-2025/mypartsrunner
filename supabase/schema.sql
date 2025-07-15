@@ -161,3 +161,66 @@ VALUES
   (uuid_generate_v4(), 'Home & Garden', 'Home decor, furniture, and garden supplies'),
   (uuid_generate_v4(), 'Sports & Outdoors', 'Sports equipment and outdoor gear')
 ON CONFLICT DO NOTHING; 
+
+-- Delivery App Tables
+
+-- Runners Table
+CREATE TABLE IF NOT EXISTS public.runners (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    phone TEXT,
+    email TEXT,
+    avatar_url TEXT,
+    rating DECIMAL(3,2) DEFAULT 5.0,
+    total_deliveries INT DEFAULT 0,
+    is_available BOOLEAN DEFAULT TRUE,
+    current_latitude DECIMAL(9,6),
+    current_longitude DECIMAL(9,6),
+    last_updated TIMESTAMP WITH TIME ZONE
+);
+
+-- Orders Table
+CREATE TABLE IF NOT EXISTS public.orders (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) NOT NULL, -- customer
+    store_id UUID REFERENCES public.stores(id) NOT NULL,
+    runner_id UUID REFERENCES public.runners(id),
+    status TEXT NOT NULL CHECK (status IN ('pending', 'confirmed', 'preparing', 'ready_for_pickup', 'picked_up', 'in_transit', 'delivered', 'cancelled')),
+    subtotal DECIMAL(10,2) NOT NULL,
+    delivery_fee DECIMAL(10,2) NOT NULL,
+    tax DECIMAL(10,2) NOT NULL,
+    total DECIMAL(10,2) NOT NULL,
+    delivery_address JSONB NOT NULL,
+    payment_intent_id TEXT,
+    payment_status TEXT CHECK (payment_status IN ('pending', 'paid', 'failed')) DEFAULT 'pending',
+    estimated_delivery_time TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Order Items Table
+CREATE TABLE IF NOT EXISTS public.order_items (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    order_id UUID REFERENCES public.orders(id) ON DELETE CASCADE,
+    product_id UUID REFERENCES public.products(id),
+    quantity INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    subtotal DECIMAL(10,2) NOT NULL
+);
+
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON public.orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_store_id ON public.orders(store_id);
+CREATE INDEX IF NOT EXISTS idx_orders_runner_id ON public.orders(runner_id);
+CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON public.order_items(order_id);
+
+-- Enable Row Level Security
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.runners ENABLE ROW LEVEL SECURITY;
+
+-- Policies (examples, adjust as needed)
+CREATE POLICY "Users can view their own orders" ON public.orders FOR SELECT USING (user_id = auth.uid());
+CREATE POLICY "Stores can view their own orders" ON public.orders FOR SELECT USING (store_id IN (SELECT id FROM public.stores WHERE owner_id = auth.uid()));
+CREATE POLICY "Runners can view their assigned orders" ON public.orders FOR SELECT USING (runner_id = (SELECT id FROM public.runners WHERE user_id = auth.uid())); 

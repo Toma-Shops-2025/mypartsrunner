@@ -1,83 +1,75 @@
-import { useEffect, useRef } from 'react';
-import { useMap } from '../contexts/MapContext';
+import React, { useEffect, useRef } from 'react';
+import mapboxgl from 'mapbox-gl';
+import { useMap } from '@/contexts/MapContext';
+import { Location } from '@/types/map';
 
 interface MapProps {
-  className?: string;
-  markers?: Array<{
-    coordinates: [number, number];
-    color?: string;
-    popup?: {
-      title: string;
-      description?: string;
-    };
-  }>;
-  route?: Array<[number, number]>;
-  fitMarkers?: boolean;
-  onMarkerClick?: (coordinates: [number, number]) => void;
+  center?: [number, number];
+  zoom?: number;
+  markers?: Location[];
+  route?: Location[];
 }
 
-export default function Map({
-  className = '',
-  markers = [],
-  route,
-  fitMarkers = true,
-  onMarkerClick,
-}: MapProps) {
+export function Map({ center = [-74.5, 40], zoom = 9, markers = [], route = [] }: MapProps) {
+  const mapContainer = useRef<HTMLDivElement>(null);
   const { map, addMarker, removeMarker, drawRoute, clearRoute, fitBounds } = useMap();
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const markersRef = useRef<Location[]>([]);
 
   useEffect(() => {
-    // Clear existing markers
-    markersRef.current.forEach(marker => removeMarker(marker));
-    markersRef.current = [];
+    if (!mapContainer.current) return;
 
-    // Add new markers
-    markers.forEach(({ coordinates, color = '#0066FF', popup }) => {
-      const marker = addMarker(coordinates, {
-        color,
-      });
-
-      if (popup) {
-        const popupContent = document.createElement('div');
-        popupContent.innerHTML = `
-          <h3 class="font-medium">${popup.title}</h3>
-          ${popup.description ? `<p class="text-sm text-gray-600">${popup.description}</p>` : ''}
-        `;
-
-        marker.setPopup(new mapboxgl.Popup().setDOMContent(popupContent));
-      }
-
-      if (onMarkerClick) {
-        marker.getElement().addEventListener('click', () => {
-          onMarkerClick(coordinates);
-        });
-      }
-
-      markersRef.current.push(marker);
+    const mapInstance = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center,
+      zoom
     });
 
-    // Fit markers within view
-    if (fitMarkers && markers.length > 0) {
-      const bounds = new mapboxgl.LngLatBounds();
-      markers.forEach(({ coordinates }) => {
-        bounds.extend(coordinates);
-      });
-      fitBounds(bounds, { padding: 50 });
-    }
+    return () => {
+      mapInstance.remove();
+    };
+  }, [center, zoom]);
 
-    // Draw route if provided
-    if (route) {
-      drawRoute(route);
-    } else {
-      clearRoute();
-    }
+  useEffect(() => {
+    if (!map) return;
+
+    // Clear existing markers
+    markersRef.current.forEach(location => {
+      if (location.marker) {
+        removeMarker(location.marker);
+      }
+    });
+
+    // Add new markers
+    const newMarkers = markers.map(location => {
+      const marker = addMarker(location);
+      return { ...location, marker };
+    });
+
+    markersRef.current = newMarkers;
+  }, [map, markers, addMarker, removeMarker]);
+
+  useEffect(() => {
+    if (!map || !route.length) return;
+
+    // Create bounds
+    const bounds = new mapboxgl.LngLatBounds();
+
+    // Extend bounds with all route points
+    route.forEach(point => {
+      bounds.extend([point.lng, point.lat]);
+    });
+
+    // Draw route
+    drawRoute(route[0], route[route.length - 1], route.slice(1, -1));
+
+    // Fit map to bounds
+    fitBounds(bounds);
 
     return () => {
-      markersRef.current.forEach(marker => removeMarker(marker));
-      markersRef.current = [];
       clearRoute();
     };
-  }, [markers, route, fitMarkers, onMarkerClick]);
+  }, [map, route, drawRoute, clearRoute, fitBounds]);
 
-  return <div className={`relative ${className}`} />;
+  return <div ref={mapContainer} className="w-full h-full" />;
 } 

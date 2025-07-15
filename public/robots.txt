@@ -1,4 +1,10 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /account/
+Disallow: /chat/
+Disallow: /messages/
 
-Sitemap: https://mypartsrunner.com/sitemap.xml
+Sitemap: https://tomashops.com/sitemap.xml

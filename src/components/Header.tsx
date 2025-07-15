@@ -14,7 +14,11 @@ import {
 import { useCart } from '@/contexts/CartContext';
 import { NotificationBell } from '@/components/NotificationBell';
 
-export function Header() {
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
+
+export function Header({ onMenuClick }: HeaderProps) {
   const { user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { itemCount } = useCart();
