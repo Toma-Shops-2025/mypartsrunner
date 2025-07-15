@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # TomaShops Video First Marketplace
 
 A modern video-first marketplace platform that enables users to buy and sell items through video listings, with features similar to OfferUp.
@@ -126,3 +127,6 @@ Proprietary - All rights reserved
 ## Contact
 
 For support or inquiries, please contact support@tomashops.com
+=======
+# mypartsrunner
+>>>>>>> a96325d70333dfb0e9bc0fac091ccb6f89e285df
