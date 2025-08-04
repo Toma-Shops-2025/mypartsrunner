@@ -2,6 +2,11 @@
   command = "npm run build"
   publish = "dist"
 
+# Explicitly disable Next.js plugin
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+  enabled = false
+
 [build.environment]
   NODE_VERSION = "18"
 
