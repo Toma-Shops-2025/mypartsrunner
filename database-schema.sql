@@ -382,23 +382,5 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Insert sample data for testing
-INSERT INTO profiles (id, email, name, firstName, lastName, role) VALUES
-('00000000-0000-0000-0000-000000000001', 'admin@mypartsrunner.com', 'Admin User', 'Admin', 'User', 'admin'),
-('00000000-0000-0000-0000-000000000002', 'merchant@mypartsrunner.com', 'Auto Parts Store', 'John', 'Merchant', 'merchant'),
-('00000000-0000-0000-0000-000000000003', 'driver@mypartsrunner.com', 'Delivery Driver', 'Mike', 'Driver', 'driver'),
-('00000000-0000-0000-0000-000000000004', 'customer@mypartsrunner.com', 'Regular Customer', 'Sarah', 'Customer', 'customer')
-ON CONFLICT (id) DO NOTHING;
-
--- Insert sample store
-INSERT INTO stores (id, merchantId, name, description, storeType, address, city, state, zipCode, latitude, longitude) VALUES
-('00000000-0000-0000-0000-000000000101', '00000000-0000-0000-0000-000000000002', 'Auto Parts Plus', 'Your one-stop shop for all auto parts', 'auto', '123 Main St', 'Dallas', 'TX', '75001', 32.7767, -96.7970)
-ON CONFLICT (id) DO NOTHING;
-
--- Insert sample products
-INSERT INTO products (id, storeId, name, description, price, category, imageUrl, stockQuantity) VALUES
-('00000000-0000-0000-0000-000000000201', '00000000-0000-0000-0000-000000000101', 'Premium Brake Pads', 'High-quality brake pads for optimal stopping power', 89.99, 'Brakes', '/images/brake-pads.jpg', 50),
-('00000000-0000-0000-0000-000000000202', '00000000-0000-0000-0000-000000000101', 'Engine Oil Filter', 'Premium oil filter for engine protection', 24.99, 'Engine', '/images/oil-filter.jpg', 100),
-('00000000-0000-0000-0000-000000000203', '00000000-0000-0000-0000-000000000101', 'LED Headlight Bulbs', 'Bright LED headlight bulbs for better visibility', 45.00, 'Lighting', '/images/headlight-bulbs.jpg', 75),
-('00000000-0000-0000-0000-000000000204', '00000000-0000-0000-0000-000000000101', 'Air Filter', 'High-flow air filter for improved performance', 19.99, 'Engine', '/images/air-filter.jpg', 60)
-ON CONFLICT (id) DO NOTHING; 
+-- Note: Sample data will be created when users register through the application
+-- The database is now ready for production use! 

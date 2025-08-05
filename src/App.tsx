@@ -26,6 +26,12 @@ import BrowsePage from "@/pages/BrowsePage";
 import CartPage from "@/pages/CartPage";
 import CheckoutPage from "@/pages/CheckoutPage";
 import OrderConfirmationPage from "@/pages/OrderConfirmationPage";
+import CustomerGuidePage from "@/pages/CustomerGuidePage";
+import DriverGuidePage from "@/pages/DriverGuidePage";
+import MerchantGuidePage from "@/pages/MerchantGuidePage";
+import AdminGuidePage from "@/pages/AdminGuidePage";
+import DriverApplicationPage from "@/pages/DriverApplicationPage";
+import MerchantApplicationPage from "@/pages/MerchantApplicationPage";
 
 const App = () => (
   <ThemeProvider defaultTheme="light">
@@ -56,6 +62,12 @@ const App = () => (
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+                <Route path="/customer-guide" element={<CustomerGuidePage />} />
+                <Route path="/driver-guide" element={<DriverGuidePage />} />
+                <Route path="/merchant-guide" element={<MerchantGuidePage />} />
+                <Route path="/admin-guide" element={<AdminGuidePage />} />
+                <Route path="/driver-application" element={<DriverApplicationPage />} />
+                <Route path="/merchant-application" element={<MerchantApplicationPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AppLayout>
