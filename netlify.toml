@@ -7,11 +7,17 @@
 [build.environment]
   NODE_VERSION = "18"
 
-# Force HTTPS redirects
+# Force HTTPS redirects - more aggressive
 [[redirects]]
   from = "http://*"
   to = "https://:splat"
   status = 301
+  force = true
+
+[[redirects]]
+  from = "https://mypartsrunner.netlify.app"
+  to = "https://mypartsrunner.netlify.app"
+  status = 200
   force = true
 
 # Handle SPA routing
@@ -20,7 +26,7 @@
   to = "/index.html"
   status = 200
 
-# Security headers
+# Security headers - enhanced
 [[headers]]
   for = "/*"
   [headers.values]
@@ -30,6 +36,14 @@
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Force HTTPS for all pages
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
 
 # Cache static assets
 [[headers]]
