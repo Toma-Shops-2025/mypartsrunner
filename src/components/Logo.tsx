@@ -12,12 +12,12 @@ const Logo: React.FC<LogoProps> = ({ size = 'medium', withText = true }) => {
   const getSizeClass = () => {
     switch (size) {
       case 'small':
-        return 'h-8';
+        return 'h-10';
       case 'large':
-        return 'h-16';
+        return 'h-20';
       case 'medium':
       default:
-        return 'h-12';
+        return 'h-16';
     }
   };
 
