@@ -76,6 +76,16 @@ const ContactPage: React.FC = () => {
             Have questions about MyPartsRunner™? We're here to help! Get in touch with our team for support, partnerships, or general inquiries.
           </p>
         </div>
+        
+        <div className="text-center mb-8 p-6 bg-muted rounded-lg">
+          <h3 className="text-xl font-semibold mb-4">Contact Information</h3>
+          <div className="space-y-2">
+            <p className="font-medium">TomaAdkins - Founder/CEO</p>
+            <p>LOUISVILLE, KENTUCKY</p>
+            <p className="text-primary font-semibold">1+502 812-2456</p>
+            <p className="text-primary font-semibold">support@mypartsrunner.com</p>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Contact Form */}
@@ -195,7 +205,7 @@ const ContactPage: React.FC = () => {
                   <Phone className="h-5 w-5 text-primary" />
                   <div>
                     <p className="font-medium">Phone</p>
-                    <p className="text-sm text-muted-foreground">(555) 123-4567</p>
+                    <p className="text-sm text-muted-foreground">1+502 812-2456</p>
                   </div>
                 </div>
                 
@@ -204,8 +214,8 @@ const ContactPage: React.FC = () => {
                   <div>
                     <p className="font-medium">Address</p>
                     <p className="text-sm text-muted-foreground">
-                      123 Auto Plaza<br />
-                      Dallas, TX 75001
+                      LOUISVILLE, KENTUCKY<br />
+                      Jefferson County
                     </p>
                   </div>
                 </div>

@@ -239,23 +239,15 @@ const ShippingHandlingPage: React.FC = () => {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Dallas Metro Area</span>
+                    <span className="font-medium">Louisville Metro Area</span>
                     <Badge variant="secondary">Available</Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Fort Worth</span>
+                    <span className="font-medium">Jefferson County</span>
                     <Badge variant="secondary">Available</Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Arlington</span>
-                    <Badge variant="secondary">Available</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">Plano</span>
-                    <Badge variant="secondary">Available</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">Irving</span>
+                    <span className="font-medium">Surrounding Areas</span>
                     <Badge variant="secondary">Available</Badge>
                   </div>
                 </div>
@@ -272,24 +264,24 @@ const ShippingHandlingPage: React.FC = () => {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Austin</span>
-                    <Badge variant="outline">Q2 2024</Badge>
+                    <span className="font-medium">Frankfort, KY</span>
+                    <Badge variant="outline">Coming Soon</Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Houston</span>
-                    <Badge variant="outline">Q3 2024</Badge>
+                    <span className="font-medium">Lexington, KY</span>
+                    <Badge variant="outline">Coming Soon</Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">San Antonio</span>
-                    <Badge variant="outline">Q3 2024</Badge>
+                    <span className="font-medium">Indianapolis, IN</span>
+                    <Badge variant="outline">Coming Soon</Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">El Paso</span>
-                    <Badge variant="outline">Q4 2024</Badge>
+                    <span className="font-medium">Cincinnati, OH</span>
+                    <Badge variant="outline">Coming Soon</Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">Corpus Christi</span>
-                    <Badge variant="outline">Q4 2024</Badge>
+                    <span className="font-medium">More Cities</span>
+                    <Badge variant="outline">Very Near Future</Badge>
                   </div>
                 </div>
               </CardContent>

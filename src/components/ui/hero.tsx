@@ -14,7 +14,7 @@ interface HeroProps {
 
 const Hero: React.FC<HeroProps> = ({
   title = "Fast Delivery for Auto Parts & Hardware",
-  subtitle = "Get the parts you need delivered quickly from local auto and hardware stores. Sign up today!",
+  subtitle = "Get the parts you need delivered quickly from local auto and hardware stores in Louisville, Kentucky and surrounding Jefferson County. Coming soon to Frankfort KY, Lexington KY, Indianapolis IN, Cincinnati OH, and more!",
   ctaText = "Get Started",
   ctaLink = "/register",
   secondaryCtaText = "Learn More",

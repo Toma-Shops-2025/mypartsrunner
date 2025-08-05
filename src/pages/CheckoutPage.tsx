@@ -176,7 +176,7 @@ const CheckoutPage: React.FC = () => {
                       name="deliveryCity"
                       value={formData.deliveryCity}
                       onChange={handleInputChange}
-                      placeholder="Dallas"
+                      placeholder="Louisville"
                       required
                     />
                   </div>
@@ -187,7 +187,7 @@ const CheckoutPage: React.FC = () => {
                       name="deliveryState"
                       value={formData.deliveryState}
                       onChange={handleInputChange}
-                      placeholder="TX"
+                      placeholder="KY"
                       required
                     />
                   </div>
@@ -201,7 +201,7 @@ const CheckoutPage: React.FC = () => {
                       name="deliveryZipCode"
                       value={formData.deliveryZipCode}
                       onChange={handleInputChange}
-                      placeholder="75001"
+                      placeholder="40201"
                       required
                     />
                   </div>
@@ -212,7 +212,7 @@ const CheckoutPage: React.FC = () => {
                       name="contactPhone"
                       value={formData.contactPhone}
                       onChange={handleInputChange}
-                      placeholder="(555) 123-4567"
+                      placeholder="1+502 812-2456"
                     />
                   </div>
                 </div>

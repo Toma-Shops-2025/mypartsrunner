@@ -240,7 +240,7 @@ const TermsOfServicePage: React.FC = () => {
             <div>
               <h3 className="font-semibold mb-2">Governing Law</h3>
               <p className="text-muted-foreground">
-                These Terms shall be governed by and construed in accordance with the laws of the State of Texas, without regard to its conflict of law provisions.
+                These Terms shall be governed by and construed in accordance with the laws of the State of Kentucky, without regard to its conflict of law provisions.
               </p>
             </div>
 
@@ -306,8 +306,8 @@ const TermsOfServicePage: React.FC = () => {
             </p>
             <div className="space-y-2 text-muted-foreground">
               <p>Email: legal@mypartsrunner.com</p>
-              <p>Phone: (555) 123-4567</p>
-              <p>Address: 123 Auto Plaza, Dallas, TX 75001</p>
+                              <p>Phone: 1+502 812-2456</p>
+              <p>Address: LOUISVILLE, KENTUCKY</p>
             </div>
           </CardContent>
         </Card>

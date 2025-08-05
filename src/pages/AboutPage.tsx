@@ -38,9 +38,8 @@ const AboutPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              <li className="font-medium">John Doe - CEO & Co-Founder</li>
-              <li className="font-medium">Jane Smith - CTO & Co-Founder</li>
-              <li className="font-medium">Robert Johnson - COO</li>
+              <li className="font-medium">TomaAdkins - Founder/CEO</li>
+              <li className="font-medium">LOUISVILLE, KENTUCKY</li>
             </ul>
           </CardContent>
         </Card>
@@ -63,9 +62,9 @@ const AboutPage: React.FC = () => {
       <Card>
         <CardContent className="pt-6">
           <p className="mb-4">Have questions or feedback? We'd love to hear from you!</p>
-          <p className="font-medium">Email: info@mypartsrunner.com</p>
-          <p className="font-medium">Phone: (555) 123-4567</p>
-          <p className="font-medium">Address: 123 Auto Plaza, Dallas, TX 75001</p>
+          <p className="font-medium">Email: support@mypartsrunner.com</p>
+          <p className="font-medium">Phone: 1+502 812-2456</p>
+          <p className="font-medium">Address: LOUISVILLE, KENTUCKY</p>
         </CardContent>
       </Card>
     </div>

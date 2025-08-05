@@ -243,8 +243,8 @@ const PrivacyPolicyPage: React.FC = () => {
             </p>
             <div className="space-y-2 text-muted-foreground">
               <p>Email: privacy@mypartsrunner.com</p>
-              <p>Phone: (555) 123-4567</p>
-              <p>Address: 123 Auto Plaza, Dallas, TX 75001</p>
+                              <p>Phone: 1+502 812-2456</p>
+              <p>Address: LOUISVILLE, KENTUCKY</p>
             </div>
           </CardContent>
         </Card>
