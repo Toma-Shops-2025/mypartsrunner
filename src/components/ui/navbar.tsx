@@ -20,7 +20,7 @@ const Navbar: React.FC = () => {
       <div className="container flex h-28 items-center">
         <div className="flex items-center gap-2 flex-grow max-w-[90%] mr-4">
           <Link to="/" className="flex items-center gap-2 w-full">
-            <Logo size="small" withText={true} />
+            <Logo size="medium" withText={true} />
           </Link>
         </div>
         
