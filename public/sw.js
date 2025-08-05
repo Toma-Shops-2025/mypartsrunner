@@ -1,24 +1,16 @@
-const CACHE_NAME = 'mypartsrunner-v1.0.0';
-const STATIC_CACHE = 'mypartsrunner-static-v1.0.0';
-const DYNAMIC_CACHE = 'mypartsrunner-dynamic-v1.0.0';
+const CACHE_NAME = 'mypartsrunner-v2.0.0';
+const STATIC_CACHE = 'mypartsrunner-static-v2.0.0';
+const DYNAMIC_CACHE = 'mypartsrunner-dynamic-v2.0.0';
 
-// Files to cache immediately
+// Files to cache immediately - updated for Vite build structure
 const STATIC_FILES = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
+  '/logo.png',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
   '/offline.html'
-];
-
-// API endpoints to cache
-const API_CACHE = [
-  '/api/products',
-  '/api/stores',
-  '/api/user/profile'
 ];
 
 // Install event - cache static files
@@ -74,9 +66,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle API requests
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(handleApiRequest(request));
+  // Handle navigation requests (HTML pages)
+  if (request.mode === 'navigate') {
+    event.respondWith(handleNavigationRequest(request));
     return;
   }
 
@@ -90,90 +82,74 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(handleExternalRequest(request));
 });
 
-// Handle API requests with network-first strategy
-async function handleApiRequest(request) {
+// Handle navigation requests with network-first strategy
+async function handleNavigationRequest(request) {
   try {
     // Try network first
     const networkResponse = await fetch(request);
     
     if (networkResponse.ok) {
-      // Cache successful responses
+      return networkResponse;
+    }
+  } catch (error) {
+    console.log('Service Worker: Network failed for navigation, trying cache');
+  }
+
+  // Fallback to cache
+  const cachedResponse = await caches.match('/index.html');
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+
+  // Final fallback to offline page
+  return caches.match('/offline.html');
+}
+
+// Handle static file requests with cache-first strategy
+async function handleStaticRequest(request) {
+  const cachedResponse = await caches.match(request);
+  
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+
+  try {
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.ok) {
       const cache = await caches.open(DYNAMIC_CACHE);
       cache.put(request, networkResponse.clone());
     }
     
     return networkResponse;
   } catch (error) {
-    console.log('Service Worker: Network failed, trying cache', error);
-    
-    // Fallback to cache
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-    
-    // Return offline response for API requests
-    return new Response(
-      JSON.stringify({ error: 'Offline - Please check your connection' }),
-      {
-        status: 503,
-        statusText: 'Service Unavailable',
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+    console.log('Service Worker: Failed to fetch static file', request.url);
+    return new Response('Not found', { status: 404 });
   }
 }
 
-// Handle static file requests with cache-first strategy
-async function handleStaticRequest(request) {
-  try {
-    // Try cache first
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-    
-    // Fallback to network
-    const networkResponse = await fetch(request);
-    
-    if (networkResponse.ok) {
-      // Cache successful responses
-      const cache = await caches.open(STATIC_CACHE);
-      cache.put(request, networkResponse.clone());
-    }
-    
-    return networkResponse;
-  } catch (error) {
-    console.log('Service Worker: Cache and network failed', error);
-    
-    // Return offline page for navigation requests
-    if (request.destination === 'document') {
-      return caches.match('/offline.html');
-    }
-    
-    // Return empty response for other static files
-    return new Response('', { status: 404 });
-  }
-}
-
-// Handle external requests with network-only strategy
+// Handle external requests (like Supabase, Mapbox)
 async function handleExternalRequest(request) {
   try {
-    return await fetch(request);
+    const response = await fetch(request);
+    return response;
   } catch (error) {
-    console.log('Service Worker: External request failed', error);
-    return new Response('', { status: 503 });
+    console.log('Service Worker: Failed to fetch external resource', request.url);
+    return new Response('Network error', { status: 503 });
   }
 }
 
-// Background sync for offline actions
+// Background sync for offline functionality
 self.addEventListener('sync', (event) => {
-  console.log('Service Worker: Background sync', event.tag);
-  
   if (event.tag === 'background-sync') {
     event.waitUntil(doBackgroundSync());
   }
 });
+
+async function doBackgroundSync() {
+  console.log('Service Worker: Background sync triggered');
+  // Implement background sync logic here
+}
 
 // Handle push notifications
 self.addEventListener('push', (event) => {
@@ -228,20 +204,6 @@ self.addEventListener('notificationclick', (event) => {
     );
   }
 });
-
-// Background sync function
-async function doBackgroundSync() {
-  try {
-    // Sync any pending orders or cart items
-    console.log('Service Worker: Performing background sync');
-    
-    // This would sync any offline actions when connection is restored
-    // For now, just log the sync attempt
-    
-  } catch (error) {
-    console.error('Service Worker: Background sync failed', error);
-  }
-}
 
 // Handle message events from the main thread
 self.addEventListener('message', (event) => {

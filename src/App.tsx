@@ -32,50 +32,79 @@ import MerchantGuidePage from "@/pages/MerchantGuidePage";
 import AdminGuidePage from "@/pages/AdminGuidePage";
 import DriverApplicationPage from "@/pages/DriverApplicationPage";
 import MerchantApplicationPage from "@/pages/MerchantApplicationPage";
+import { useState, useEffect } from "react";
+import Logo from "@/components/Logo";
 
-const App = () => (
-  <ThemeProvider defaultTheme="light">
-    <AppProvider>
-      <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AppLayout>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/how-it-works" element={<HowItWorksPage />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-                <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-                <Route path="/safety-guide" element={<SafetyGuidePage />} />
-                <Route path="/shipping-handling" element={<ShippingHandlingPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/map" element={<MapPage />} />
-                <Route path="/add-product" element={<AddProductPage />} />
-                <Route path="/store-settings" element={<StoreSettingsPage />} />
-                <Route path="/wishlist" element={<WishlistPage />} />
-                <Route path="/browse" element={<BrowsePage />} />
-                <Route path="/cart" element={<CartPage />} />
-                <Route path="/checkout" element={<CheckoutPage />} />
-                <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
-                <Route path="/customer-guide" element={<CustomerGuidePage />} />
-                <Route path="/driver-guide" element={<DriverGuidePage />} />
-                <Route path="/merchant-guide" element={<MerchantGuidePage />} />
-                <Route path="/admin-guide" element={<AdminGuidePage />} />
-                <Route path="/driver-application" element={<DriverApplicationPage />} />
-                <Route path="/merchant-application" element={<MerchantApplicationPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AppLayout>
-          </BrowserRouter>
-        </TooltipProvider>
-      </CartProvider>
-    </AppProvider>
-  </ThemeProvider>
-);
+const App = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading time and ensure everything is ready
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="mb-6 flex justify-center">
+            <Logo size="large" withText={true} />
+          </div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading MyPartsRunner...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <ThemeProvider defaultTheme="light">
+      <AppProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppLayout>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/how-it-works" element={<HowItWorksPage />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                  <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                  <Route path="/safety-guide" element={<SafetyGuidePage />} />
+                  <Route path="/shipping-handling" element={<ShippingHandlingPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/map" element={<MapPage />} />
+                  <Route path="/add-product" element={<AddProductPage />} />
+                  <Route path="/store-settings" element={<StoreSettingsPage />} />
+                  <Route path="/wishlist" element={<WishlistPage />} />
+                  <Route path="/browse" element={<BrowsePage />} />
+                  <Route path="/cart" element={<CartPage />} />
+                  <Route path="/checkout" element={<CheckoutPage />} />
+                  <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+                  <Route path="/customer-guide" element={<CustomerGuidePage />} />
+                  <Route path="/driver-guide" element={<DriverGuidePage />} />
+                  <Route path="/merchant-guide" element={<MerchantGuidePage />} />
+                  <Route path="/admin-guide" element={<AdminGuidePage />} />
+                  <Route path="/driver-application" element={<DriverApplicationPage />} />
+                  <Route path="/merchant-application" element={<MerchantApplicationPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AppLayout>
+            </BrowserRouter>
+          </TooltipProvider>
+        </CartProvider>
+      </AppProvider>
+    </ThemeProvider>
+  );
+};
 
 export default App;
