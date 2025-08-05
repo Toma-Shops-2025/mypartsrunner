@@ -19,7 +19,7 @@ const Hero: React.FC<HeroProps> = ({
   ctaLink = "/register",
   secondaryCtaText = "Learn More",
   secondaryCtaLink = "/how-it-works",
-  imageUrl = "https://d64gsuwffb70l.cloudfront.net/6828bd34e19b9a417662c460_1747502820250_5dcc0c63.png"
+  imageUrl = "/logo.png"
 }) => {
   return (
     <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r from-blue-50 to-cyan-50">
@@ -44,7 +44,7 @@ const Hero: React.FC<HeroProps> = ({
           <div className="flex justify-center">
             <img
               src={imageUrl}
-              alt="MyPartsRunner™ Hero"
+              alt="MyPartsRunner Logo"
               className="mx-auto aspect-video overflow-hidden rounded-xl object-contain object-center sm:w-full lg:order-last"
             />
           </div>

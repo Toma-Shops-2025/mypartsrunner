@@ -8,16 +8,16 @@ interface LogoProps {
 const Logo: React.FC<LogoProps> = ({ size = 'medium', withText = true }) => {
   const logoUrl = "/logo.png";
   
-  // Adjust size classes to make the logo image smaller relative to text
+  // Adjust size classes to make the logo image larger and more prominent
   const getSizeClass = () => {
     switch (size) {
       case 'small':
-        return 'h-6';
+        return 'h-8';
       case 'large':
-        return 'h-12';
+        return 'h-16';
       case 'medium':
       default:
-        return 'h-8';
+        return 'h-12';
     }
   };
 
@@ -32,7 +32,7 @@ const Logo: React.FC<LogoProps> = ({ size = 'medium', withText = true }) => {
       </div>
       {withText && (
         <div className="flex-grow overflow-hidden">
-          <span className="ml-2 font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-primary whitespace-nowrap inline-block transform scale-100 origin-left">
+          <span className="ml-3 font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-primary whitespace-nowrap inline-block transform scale-100 origin-left">
             MyPartsRunner™
           </span>
         </div>
