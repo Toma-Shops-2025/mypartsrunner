@@ -6,7 +6,7 @@ interface LogoProps {
 }
 
 const Logo: React.FC<LogoProps> = ({ size = 'medium', withText = true }) => {
-  const logoUrl = "https://d64gsuwffb70l.cloudfront.net/6828bd34e19b9a417662c460_1747502820250_5dcc0c63.png";
+  const logoUrl = "/logo.png";
   
   // Adjust size classes to make the logo image smaller relative to text
   const getSizeClass = () => {
@@ -26,7 +26,7 @@ const Logo: React.FC<LogoProps> = ({ size = 'medium', withText = true }) => {
       <div className="flex-shrink-0">
         <img 
           src={logoUrl} 
-          alt="MyPartsRunner™ Logo" 
+          alt="MyPartsRunner Logo" 
           className={`${getSizeClass()} w-auto`} 
         />
       </div>
