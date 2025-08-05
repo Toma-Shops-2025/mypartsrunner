@@ -15,8 +15,8 @@
   force = true
 
 [[redirects]]
-  from = "https://mypartsrunner.netlify.app"
-  to = "https://mypartsrunner.netlify.app"
+  from = "https://mypartsrunner.com"
+  to = "https://mypartsrunner.com"
   status = 200
   force = true
 
