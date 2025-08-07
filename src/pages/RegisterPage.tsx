@@ -18,7 +18,10 @@ const RegisterPage: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    firstName: '',
+    lastName: '',
     companyName: '',
+    businessName: '',
     role: defaultRole as UserRole,
     loading: false
   });
@@ -43,7 +46,10 @@ const RegisterPage: React.FC = () => {
       setFormData({ ...formData, loading: true });
       
       await signUp(formData.email, formData.password, {
-        name: formData.companyName,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        name: formData.role === 'merchant' ? formData.companyName : `${formData.firstName} ${formData.lastName}`.trim(),
+        businessName: formData.role === 'customer' ? formData.businessName : undefined,
         role: formData.role
       });
       
@@ -66,17 +72,59 @@ const RegisterPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="companyName">Company Name</Label>
-              <Input 
-                id="companyName" 
-                name="companyName" 
-                required 
-                value={formData.companyName}
-                onChange={handleChange}
-                placeholder="Enter your company name"
-              />
-            </div>
+            {/* Role-specific name fields */}
+            {formData.role === 'merchant' ? (
+              <div className="space-y-2">
+                <Label htmlFor="companyName">Company Name *</Label>
+                <Input 
+                  id="companyName" 
+                  name="companyName" 
+                  required 
+                  value={formData.companyName}
+                  onChange={handleChange}
+                  placeholder="Enter your company name"
+                />
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name *</Label>
+                    <Input 
+                      id="firstName" 
+                      name="firstName" 
+                      required 
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      placeholder="Enter first name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name *</Label>
+                    <Input 
+                      id="lastName" 
+                      name="lastName" 
+                      required 
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      placeholder="Enter last name"
+                    />
+                  </div>
+                </div>
+                {formData.role === 'customer' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="businessName">Business Name (Optional)</Label>
+                    <Input 
+                      id="businessName" 
+                      name="businessName" 
+                      value={formData.businessName}
+                      onChange={handleChange}
+                      placeholder="Enter business name if applicable"
+                    />
+                  </div>
+                )}
+              </>
+            )}
             
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
