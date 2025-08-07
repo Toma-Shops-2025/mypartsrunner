@@ -18,8 +18,7 @@ const RegisterPage: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    firstName: '',
-    lastName: '',
+    companyName: '',
     role: defaultRole as UserRole,
     loading: false
   });
@@ -44,8 +43,7 @@ const RegisterPage: React.FC = () => {
       setFormData({ ...formData, loading: true });
       
       await signUp(formData.email, formData.password, {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
+        name: formData.companyName,
         role: formData.role
       });
       
@@ -68,27 +66,16 @@ const RegisterPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First name</Label>
-                <Input 
-                  id="firstName" 
-                  name="firstName" 
-                  required 
-                  value={formData.firstName}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last name</Label>
-                <Input 
-                  id="lastName" 
-                  name="lastName" 
-                  required 
-                  value={formData.lastName}
-                  onChange={handleChange}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="companyName">Company Name</Label>
+              <Input 
+                id="companyName" 
+                name="companyName" 
+                required 
+                value={formData.companyName}
+                onChange={handleChange}
+                placeholder="Enter your company name"
+              />
             </div>
             
             <div className="space-y-2">

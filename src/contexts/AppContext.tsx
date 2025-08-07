@@ -95,7 +95,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const profile = {
           id: data.user.id,
           email: data.user.email!,
-          name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+          name: userData.name || '',
           role: userData.role || 'customer',
           createdAt: new Date().toISOString(),
           ...userData
