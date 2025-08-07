@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     name TEXT,
     firstName TEXT,
     lastName TEXT,
+    businessName TEXT,
     phone TEXT,
     role TEXT CHECK (role IN ('customer', 'driver', 'merchant', 'admin')) DEFAULT 'customer',
     createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
