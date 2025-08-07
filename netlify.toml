@@ -14,11 +14,12 @@
   status = 301
   force = true
 
-[[redirects]]
-  from = "https://mypartsrunner.com"
-  to = "https://mypartsrunner.com"
-  status = 200
-  force = true
+# Custom domain redirect (if needed)
+# [[redirects]]
+#   from = "https://mypartsrunner.com"
+#   to = "https://mypartsrunner.com"
+#   status = 200
+#   force = true
 
 # Handle SPA routing
 [[redirects]]
