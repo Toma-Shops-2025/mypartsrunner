@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAppContext } from '@/contexts/AppContext';
 import { UserRole } from '@/types';
+import { Eye, EyeOff } from 'lucide-react';
 
 const RegisterPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -25,6 +26,9 @@ const RegisterPage: React.FC = () => {
     role: defaultRole as UserRole,
     loading: false
   });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -45,13 +49,24 @@ const RegisterPage: React.FC = () => {
     try {
       setFormData({ ...formData, loading: true });
       
-      await signUp(formData.email, formData.password, {
+      const userData: any = {
         firstName: formData.firstName,
         lastName: formData.lastName,
-        name: formData.role === 'merchant' ? formData.companyName : `${formData.firstName} ${formData.lastName}`.trim(),
-        businessName: formData.role === 'customer' ? formData.businessName : undefined,
         role: formData.role
-      });
+      };
+
+      // Handle role-specific name fields
+      if (formData.role === 'merchant') {
+        userData.name = formData.companyName;
+        userData.businessName = formData.companyName;
+      } else {
+        userData.name = `${formData.firstName} ${formData.lastName}`.trim();
+        if (formData.role === 'customer' && formData.businessName) {
+          userData.businessName = formData.businessName;
+        }
+      }
+      
+      await signUp(formData.email, formData.password, userData);
       
       navigate('/login');
     } catch (error) {
@@ -72,6 +87,24 @@ const RegisterPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Role selection moved to top */}
+            <div className="space-y-2">
+              <Label htmlFor="role">I want to register as a</Label>
+              <Select 
+                value={formData.role} 
+                onValueChange={handleRoleChange}
+              >
+                <SelectTrigger id="role">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="customer">Customer</SelectItem>
+                  <SelectItem value="driver">Driver</SelectItem>
+                  <SelectItem value="merchant">Merchant</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Role-specific name fields */}
             {formData.role === 'merchant' ? (
               <div className="space-y-2">
@@ -135,48 +168,64 @@ const RegisterPage: React.FC = () => {
                 required 
                 value={formData.email}
                 onChange={handleChange}
+                placeholder="Enter your email"
               />
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input 
-                id="password" 
-                name="password" 
-                type="password" 
-                required 
-                value={formData.password}
-                onChange={handleChange}
-              />
+              <div className="relative">
+                <Input 
+                  id="password" 
+                  name="password" 
+                  type={showPassword ? "text" : "password"}
+                  required 
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
             
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input 
-                id="confirmPassword" 
-                name="confirmPassword" 
-                type="password" 
-                required 
-                value={formData.confirmPassword}
-                onChange={handleChange}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="role">I want to register as a</Label>
-              <Select 
-                value={formData.role} 
-                onValueChange={handleRoleChange}
-              >
-                <SelectTrigger id="role">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="customer">Customer</SelectItem>
-                  <SelectItem value="driver">Driver</SelectItem>
-                  <SelectItem value="merchant">Merchant</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="relative">
+                <Input 
+                  id="confirmPassword" 
+                  name="confirmPassword" 
+                  type={showConfirmPassword ? "text" : "password"}
+                  required 
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Confirm your password"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
             
             <Button type="submit" className="w-full" disabled={formData.loading}>
