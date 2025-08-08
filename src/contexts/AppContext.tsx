@@ -98,9 +98,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           name: userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
           firstName: userData.firstName,
           lastName: userData.lastName,
+          businessName: userData.businessName || '',
           role: userData.role || 'customer',
           createdAt: new Date().toISOString(),
-          ...userData
         };
 
         const { error: profileError } = await supabase
