@@ -9,8 +9,10 @@ export interface User {
   name: string;
   firstName?: string;
   lastName?: string;
+  businessName?: string;
   role: UserRole;
-  createdAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // Store interface
