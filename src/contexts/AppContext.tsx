@@ -100,7 +100,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           lastName: userData.lastName,
           businessName: userData.businessName || '',
           role: userData.role || 'customer',
-          createdAt: new Date().toISOString(),
+          // createdAt will be handled by database default or trigger
         };
 
         const { error: profileError } = await supabase
