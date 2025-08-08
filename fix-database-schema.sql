@@ -264,7 +264,7 @@ CREATE INDEX IF NOT EXISTS idx_external_orders_merchant_id ON external_orders(me
 CREATE INDEX IF NOT EXISTS idx_external_orders_status ON external_orders(status);
 
 -- =====================================================
--- CREATE TRIGGERS
+-- CREATE TRIGGERS (WITH EXISTING CHECK)
 -- =====================================================
 
 -- Create updated_at trigger function
@@ -276,16 +276,54 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Create triggers for updated_at
-CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_stores_updated_at BEFORE UPDATE ON stores FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON products FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_orders_updated_at BEFORE UPDATE ON orders FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_cart_items_updated_at BEFORE UPDATE ON cart_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_driver_profiles_updated_at BEFORE UPDATE ON driver_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_merchant_profiles_updated_at BEFORE UPDATE ON merchant_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_merchant_integrations_updated_at BEFORE UPDATE ON merchant_integrations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_external_orders_updated_at BEFORE UPDATE ON external_orders FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Create triggers for updated_at (only if they don't exist)
+DO $$
+BEGIN
+    -- Profiles trigger
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_profiles_updated_at') THEN
+        CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+    
+    -- Stores trigger
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_stores_updated_at') THEN
+        CREATE TRIGGER update_stores_updated_at BEFORE UPDATE ON stores FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+    
+    -- Products trigger
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_products_updated_at') THEN
+        CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON products FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+    
+    -- Orders trigger
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_orders_updated_at') THEN
+        CREATE TRIGGER update_orders_updated_at BEFORE UPDATE ON orders FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+    
+    -- Cart items trigger
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_cart_items_updated_at') THEN
+        CREATE TRIGGER update_cart_items_updated_at BEFORE UPDATE ON cart_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+    
+    -- Driver profiles trigger
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_driver_profiles_updated_at') THEN
+        CREATE TRIGGER update_driver_profiles_updated_at BEFORE UPDATE ON driver_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+    
+    -- Merchant profiles trigger
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_merchant_profiles_updated_at') THEN
+        CREATE TRIGGER update_merchant_profiles_updated_at BEFORE UPDATE ON merchant_profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+    
+    -- Merchant integrations trigger
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_merchant_integrations_updated_at') THEN
+        CREATE TRIGGER update_merchant_integrations_updated_at BEFORE UPDATE ON merchant_integrations FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+    
+    -- External orders trigger
+    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_external_orders_updated_at') THEN
+        CREATE TRIGGER update_external_orders_updated_at BEFORE UPDATE ON external_orders FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+END $$;
 
 -- =====================================================
 -- ENABLE RLS AND CREATE POLICIES
