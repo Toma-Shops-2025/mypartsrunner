@@ -183,6 +183,16 @@ CREATE POLICY "Enable delete for users based on user_id" ON profiles
 CREATE POLICY "Public profiles are viewable by everyone" ON profiles
     FOR SELECT USING (true);
 
+-- CRITICAL FIX: Create a more permissive insert policy for registration
+-- This allows new users to create profiles during signup
+DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON profiles;
+CREATE POLICY "Allow profile creation during signup" ON profiles
+    FOR INSERT WITH CHECK (true);
+
+-- Also create a policy that allows authenticated users to insert their own profile
+CREATE POLICY "Allow authenticated users to insert own profile" ON profiles
+    FOR INSERT WITH CHECK (auth.uid() = id);
+
 -- Verify the final setup
 SELECT column_name, data_type, is_nullable, column_default
 FROM information_schema.columns 
