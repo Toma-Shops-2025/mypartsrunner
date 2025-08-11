@@ -1,7 +1,47 @@
 -- Comprehensive fix for profiles table and RLS policies
 -- Run this in your Supabase SQL Editor
 
--- First, let's see the current table structure
+-- First, let's see what tables actually exist
+SELECT table_name, table_type 
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+ORDER BY table_name;
+
+-- Check if there's a users table and what it contains
+SELECT table_name, column_name, data_type, is_nullable
+FROM information_schema.columns 
+WHERE table_name IN ('users', 'profiles', 'auth.users')
+ORDER BY table_name, ordinal_position;
+
+-- Check foreign key constraints on profiles table
+SELECT 
+    tc.constraint_name, 
+    tc.table_name, 
+    kcu.column_name, 
+    ccu.table_name AS foreign_table_name,
+    ccu.column_name AS foreign_column_name 
+FROM 
+    information_schema.table_constraints AS tc 
+    JOIN information_schema.key_column_usage AS kcu
+      ON tc.constraint_name = kcu.constraint_name
+      AND tc.table_schema = kcu.table_schema
+    JOIN information_schema.constraint_column_usage AS ccu
+      ON ccu.constraint_name = tc.constraint_name
+      AND ccu.table_schema = tc.table_schema
+WHERE tc.constraint_type = 'FOREIGN KEY' 
+    AND tc.table_name='profiles';
+
+-- Check if profiles table references auth.users
+SELECT 
+    schemaname, 
+    tablename, 
+    constraintname, 
+    contype,
+    pg_get_constraintdef(oid) as constraint_definition
+FROM pg_constraint 
+WHERE tablename = 'profiles';
+
+-- Now let's see the current profiles table structure
 SELECT column_name, data_type, is_nullable, column_default
 FROM information_schema.columns 
 WHERE table_name = 'profiles' 
@@ -18,6 +58,34 @@ UPDATE profiles SET "firstName" = '' WHERE "firstName" IS NULL;
 UPDATE profiles SET "lastName" = '' WHERE "lastName" IS NULL;
 UPDATE profiles SET "businessName" = '' WHERE "businessName" IS NULL;
 UPDATE profiles SET "createdAt" = NOW() WHERE "createdAt" IS NULL;
+
+-- Check if we need to drop and recreate the foreign key constraint
+-- First, let's see what the current constraint looks like
+SELECT 
+    conname as constraint_name,
+    pg_get_constraintdef(oid) as constraint_definition
+FROM pg_constraint 
+WHERE conrelid = 'profiles'::regclass 
+    AND contype = 'f';
+
+-- Drop the problematic foreign key constraint if it exists
+DO $$
+DECLARE
+    constraint_name text;
+BEGIN
+    SELECT conname INTO constraint_name
+    FROM pg_constraint 
+    WHERE conrelid = 'profiles'::regclass 
+        AND contype = 'f'
+        AND pg_get_constraintdef(oid) LIKE '%users%';
+    
+    IF constraint_name IS NOT NULL THEN
+        EXECUTE 'ALTER TABLE profiles DROP CONSTRAINT ' || constraint_name;
+        RAISE NOTICE 'Dropped foreign key constraint: %', constraint_name;
+    ELSE
+        RAISE NOTICE 'No foreign key constraint to users table found';
+    END IF;
+END $$;
 
 -- Create a function to handle profile creation during signup
 CREATE OR REPLACE FUNCTION create_user_profile(
