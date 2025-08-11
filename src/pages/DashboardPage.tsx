@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppContext } from '@/contexts/AppContext';
+import DriverProfile from '@/components/DriverProfile';
+import { Driver } from '@/types';
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -142,17 +144,27 @@ const DashboardPage: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="profile">
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Profile</CardTitle>
-              <CardDescription>
-                Manage your account information
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>Profile management features will be available soon.</p>
-            </CardContent>
-          </Card>
+          {user.role === 'driver' ? (
+            <DriverProfile 
+              driver={user as Driver}
+              onUpdate={async (updates) => {
+                // TODO: Implement profile update logic
+                console.log('Profile updates:', updates);
+              }}
+            />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Your Profile</CardTitle>
+                <CardDescription>
+                  Manage your account information
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p>Profile management features will be available soon.</p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
         
         {user.role === 'customer' && (

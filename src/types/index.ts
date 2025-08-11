@@ -46,15 +46,72 @@ export interface Customer extends User {
 // Driver specific data
 export interface Driver extends User {
   role: 'driver';
+  // Personal Information
+  firstName: string;
+  lastName: string;
+  phone: string;
+  dateOfBirth?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  
+  // Driver Information
+  licenseNumber?: string;
+  licenseState?: string;
+  licenseExpiryDate?: string;
   licenseVerified: boolean;
-  insuranceVerified: boolean;
+  licenseFrontImage?: string;
+  licenseBackImage?: string;
+  
+  // Vehicle Information
   vehicleType: 'car' | 'suv' | 'truck' | 'van';
+  vehicleMake?: string;
+  vehicleModel?: string;
+  vehicleYear?: string;
+  vehicleColor?: string;
+  licensePlate?: string;
+  
+  // Insurance Information
+  insuranceCompany?: string;
+  insurancePolicyNumber?: string;
+  insuranceExpiryDate?: string;
+  insuranceVerified: boolean;
+  insurancePolicyImage?: string;
+  
+  // Driver Status
   isAvailable: boolean;
+  isActive: boolean;
+  rating?: number;
+  totalDeliveries?: number;
+  totalEarnings?: number;
+  
+  // Payment Methods
   paymentMethods: {
     stripe?: string;
     cashApp?: string;
     venmo?: string;
+    bankAccount?: string;
   };
+  
+  // Emergency Contact
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  emergencyContactRelationship?: string;
+  
+  // Background Check
+  backgroundCheckCompleted?: boolean;
+  backgroundCheckDate?: string;
+  
+  // Documents
+  documents: {
+    id: string;
+    type: 'license_front' | 'license_back' | 'insurance_policy' | 'background_check' | 'vehicle_registration';
+    fileName: string;
+    fileUrl: string;
+    uploadedAt: string;
+    verified: boolean;
+  }[];
 }
 
 // Merchant specific data
