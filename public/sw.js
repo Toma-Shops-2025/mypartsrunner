@@ -78,7 +78,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle external requests (like Supabase, Mapbox)
+  // Handle external requests (like Supabase, Mapbox, Google Fonts)
   event.respondWith(handleExternalRequest(request));
 });
 
@@ -128,11 +128,20 @@ async function handleStaticRequest(request) {
   }
 }
 
-// Handle external requests (like Supabase, Mapbox)
+// Handle external requests (like Supabase, Mapbox, Google Fonts)
 async function handleExternalRequest(request) {
   try {
-    const response = await fetch(request);
-    return response;
+    // Allow Google Fonts and other external resources
+    if (request.url.includes('fonts.googleapis.com') || 
+        request.url.includes('fonts.gstatic.com') ||
+        request.url.includes('supabase.co') ||
+        request.url.includes('mapbox.com')) {
+      const response = await fetch(request);
+      return response;
+    }
+    
+    // For other external requests, return network error
+    return new Response('External resource not allowed', { status: 403 });
   } catch (error) {
     console.log('Service Worker: Failed to fetch external resource', request.url);
     return new Response('Network error', { status: 503 });
