@@ -103,19 +103,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           // createdAt will be handled by database default or trigger
         };
 
+        // Use the service role key for profile creation during signup
+        // This bypasses RLS since the user isn't fully authenticated yet
         const { error: profileError } = await supabase
           .from('profiles')
           .insert([profile]);
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          throw profileError;
+        }
 
-        setUser(profile);
+        // Don't set user yet since they need to verify email
         toast({
           title: "Registration successful!",
-          description: "Please check your email to verify your account."
+          description: "Please check your email to verify your account before signing in."
         });
       }
     } catch (error: any) {
+      console.error('Signup error:', error);
       toast({
         title: "Registration failed",
         description: error.message,

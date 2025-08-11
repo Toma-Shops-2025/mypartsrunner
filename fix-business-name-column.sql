@@ -1,5 +1,11 @@
--- Simple fix for missing columns in profiles table
+-- Comprehensive fix for profiles table and RLS policies
 -- Run this in your Supabase SQL Editor
+
+-- First, let's see the current table structure
+SELECT column_name, data_type, is_nullable, column_default
+FROM information_schema.columns 
+WHERE table_name = 'profiles' 
+ORDER BY ordinal_position;
 
 -- Add missing columns directly
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS "firstName" TEXT DEFAULT '';
@@ -13,11 +19,54 @@ UPDATE profiles SET "lastName" = '' WHERE "lastName" IS NULL;
 UPDATE profiles SET "businessName" = '' WHERE "businessName" IS NULL;
 UPDATE profiles SET "createdAt" = NOW() WHERE "createdAt" IS NULL;
 
--- Fix RLS policies for profiles table
--- Enable RLS
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+-- Create a function to handle profile creation during signup
+CREATE OR REPLACE FUNCTION create_user_profile(
+    user_id UUID,
+    user_email TEXT,
+    user_name TEXT,
+    user_first_name TEXT,
+    user_last_name TEXT,
+    user_business_name TEXT,
+    user_role TEXT
+) RETURNS void AS $$
+BEGIN
+    INSERT INTO profiles (
+        id, 
+        email, 
+        name, 
+        "firstName", 
+        "lastName", 
+        "businessName", 
+        role, 
+        "createdAt"
+    ) VALUES (
+        user_id,
+        user_email,
+        user_name,
+        COALESCE(user_first_name, ''),
+        COALESCE(user_last_name, ''),
+        COALESCE(user_business_name, ''),
+        user_role,
+        NOW()
+    ) ON CONFLICT (id) DO UPDATE SET
+        email = EXCLUDED.email,
+        name = EXCLUDED.name,
+        "firstName" = EXCLUDED."firstName",
+        "lastName" = EXCLUDED."lastName",
+        "businessName" = EXCLUDED."businessName",
+        role = EXCLUDED.role,
+        "createdAt" = EXCLUDED."createdAt";
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Drop existing policies if they exist
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION create_user_profile(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) TO authenticated;
+
+-- Completely reset RLS policies for profiles table
+-- First, disable RLS temporarily
+ALTER TABLE profiles DISABLE ROW LEVEL SECURITY;
+
+-- Drop ALL existing policies
 DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
@@ -25,8 +74,15 @@ DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON profiles;
 DROP POLICY IF EXISTS "Enable select for users based on user_id" ON profiles;
 DROP POLICY IF EXISTS "Enable update for users based on user_id" ON profiles;
 DROP POLICY IF EXISTS "Enable delete for users based on user_id" ON profiles;
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON profiles;
+DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can delete their own profile" ON profiles;
 
--- Create new RLS policies
+-- Re-enable RLS
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Create comprehensive RLS policies
 -- Allow users to insert their own profile during registration
 CREATE POLICY "Enable insert for authenticated users only" ON profiles
     FOR INSERT WITH CHECK (auth.uid() = id);
@@ -43,7 +99,11 @@ CREATE POLICY "Enable update for users based on user_id" ON profiles
 CREATE POLICY "Enable delete for users based on user_id" ON profiles
     FOR DELETE USING (auth.uid() = id);
 
--- Verify columns exist
+-- Allow public read access to basic profile info (for search/discovery)
+CREATE POLICY "Public profiles are viewable by everyone" ON profiles
+    FOR SELECT USING (true);
+
+-- Verify the final setup
 SELECT column_name, data_type, is_nullable, column_default
 FROM information_schema.columns 
 WHERE table_name = 'profiles' 
@@ -52,4 +112,29 @@ ORDER BY ordinal_position;
 -- Verify RLS policies exist
 SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
 FROM pg_policies 
-WHERE tablename = 'profiles'; 
+WHERE tablename = 'profiles';
+
+-- Test the function (this should work now)
+SELECT create_user_profile(
+    gen_random_uuid(),
+    'test@example.com',
+    'Test User',
+    'Test',
+    'User',
+    'Test Business',
+    'customer'
+);
+
+-- Clean up test data
+DELETE FROM profiles WHERE email = 'test@example.com';
+
+-- Show final table structure
+SELECT 
+    table_name,
+    column_name,
+    data_type,
+    is_nullable,
+    column_default
+FROM information_schema.columns 
+WHERE table_name = 'profiles' 
+ORDER BY ordinal_position; 
