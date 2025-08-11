@@ -91,7 +91,9 @@ export interface Driver extends User {
     stripe?: string;
     cashApp?: string;
     venmo?: string;
+    paypal?: string;
     bankAccount?: string;
+    debitCard?: string;
   };
   
   // Emergency Contact

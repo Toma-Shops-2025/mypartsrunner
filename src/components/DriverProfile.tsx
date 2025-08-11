@@ -466,6 +466,36 @@ const DriverProfile: React.FC<DriverProfileProps> = ({ driver, onUpdate }) => {
                 placeholder="@username"
               />
             </div>
+            <div>
+              <Label htmlFor="paypal">PayPal</Label>
+              <Input
+                id="paypal"
+                value={formData.paymentMethods?.paypal || ''}
+                onChange={(e) => handleInputChange('paymentMethods', { ...formData.paymentMethods, paypal: e.target.value })}
+                disabled={!isEditing}
+                placeholder="email@example.com"
+              />
+            </div>
+            <div>
+              <Label htmlFor="bankAccount">Bank Account</Label>
+              <Input
+                id="bankAccount"
+                value={formData.paymentMethods?.bankAccount || ''}
+                onChange={(e) => handleInputChange('paymentMethods', { ...formData.paymentMethods, bankAccount: e.target.value })}
+                disabled={!isEditing}
+                placeholder="Account ending in ****"
+              />
+            </div>
+            <div>
+              <Label htmlFor="debitCard">Debit Card</Label>
+              <Input
+                id="debitCard"
+                value={formData.paymentMethods?.debitCard || ''}
+                onChange={(e) => handleInputChange('paymentMethods', { ...formData.paymentMethods, debitCard: e.target.value })}
+                disabled={!isEditing}
+                placeholder="Card ending in ****"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
