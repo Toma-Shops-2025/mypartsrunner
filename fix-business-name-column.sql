@@ -31,15 +31,13 @@ FROM
 WHERE tc.constraint_type = 'FOREIGN KEY' 
     AND tc.table_name='profiles';
 
--- Check if profiles table references auth.users
+-- Check if profiles table references auth.users using pg_constraint
 SELECT 
-    schemaname, 
-    tablename, 
-    constraintname, 
+    conname as constraint_name,
     contype,
     pg_get_constraintdef(oid) as constraint_definition
 FROM pg_constraint 
-WHERE tablename = 'profiles';
+WHERE conrelid = 'profiles'::regclass;
 
 -- Now let's see the current profiles table structure
 SELECT column_name, data_type, is_nullable, column_default
@@ -177,8 +175,15 @@ FROM information_schema.columns
 WHERE table_name = 'profiles' 
 ORDER BY ordinal_position;
 
--- Verify RLS policies exist
-SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
+-- Verify RLS policies exist using pg_policies
+SELECT 
+    tablename, 
+    policyname, 
+    permissive, 
+    roles, 
+    cmd, 
+    qual, 
+    with_check
 FROM pg_policies 
 WHERE tablename = 'profiles';
 
