@@ -45,7 +45,21 @@ FROM information_schema.columns
 WHERE table_name = 'profiles' 
 ORDER BY ordinal_position;
 
--- Add missing columns directly
+-- Clean up duplicate columns - standardize to camelCase
+-- First, update data from lowercase columns to camelCase columns
+UPDATE profiles 
+SET "firstName" = COALESCE("firstName", firstname, '')
+WHERE "firstName" IS NULL OR "firstName" = '';
+
+UPDATE profiles 
+SET "lastName" = COALESCE("lastName", lastname, '')
+WHERE "lastName" IS NULL OR "lastName" = '';
+
+-- Now drop the lowercase columns
+ALTER TABLE profiles DROP COLUMN IF EXISTS firstname;
+ALTER TABLE profiles DROP COLUMN IF EXISTS lastname;
+
+-- Ensure all required columns exist with proper names
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS "firstName" TEXT DEFAULT '';
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS "lastName" TEXT DEFAULT '';
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS "businessName" TEXT DEFAULT '';
