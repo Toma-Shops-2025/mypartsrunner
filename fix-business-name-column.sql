@@ -1,4 +1,4 @@
--- Comprehensive fix for profiles table and RLS policies
+-- Simplified fix for profiles table and RLS policies
 -- Run this in your Supabase SQL Editor
 
 -- First, let's see what tables actually exist
@@ -45,21 +45,7 @@ FROM information_schema.columns
 WHERE table_name = 'profiles' 
 ORDER BY ordinal_position;
 
--- Clean up duplicate columns - standardize to camelCase
--- First, update data from lowercase columns to camelCase columns
-UPDATE profiles 
-SET "firstName" = COALESCE("firstName", firstname, '')
-WHERE "firstName" IS NULL OR "firstName" = '';
-
-UPDATE profiles 
-SET "lastName" = COALESCE("lastName", lastname, '')
-WHERE "lastName" IS NULL OR "lastName" = '';
-
--- Now drop the lowercase columns
-ALTER TABLE profiles DROP COLUMN IF EXISTS firstname;
-ALTER TABLE profiles DROP COLUMN IF EXISTS lastname;
-
--- Ensure all required columns exist with proper names
+-- Ensure all required columns exist with proper names (skip cleanup since table is clean)
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS "firstName" TEXT DEFAULT '';
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS "lastName" TEXT DEFAULT '';
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS "businessName" TEXT DEFAULT '';
@@ -158,14 +144,17 @@ DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON profiles;
 DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can delete their own profile" ON profiles;
+DROP POLICY IF EXISTS "Allow profile creation during signup" ON profiles;
+DROP POLICY IF EXISTS "Allow authenticated users to insert own profile" ON profiles;
 
 -- Re-enable RLS
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
 -- Create comprehensive RLS policies
--- Allow users to insert their own profile during registration
-CREATE POLICY "Enable insert for authenticated users only" ON profiles
-    FOR INSERT WITH CHECK (auth.uid() = id);
+-- CRITICAL FIX: Create a more permissive insert policy for registration
+-- This allows new users to create profiles during signup
+CREATE POLICY "Allow profile creation during signup" ON profiles
+    FOR INSERT WITH CHECK (true);
 
 -- Allow users to view their own profile
 CREATE POLICY "Enable select for users based on user_id" ON profiles
@@ -182,16 +171,6 @@ CREATE POLICY "Enable delete for users based on user_id" ON profiles
 -- Allow public read access to basic profile info (for search/discovery)
 CREATE POLICY "Public profiles are viewable by everyone" ON profiles
     FOR SELECT USING (true);
-
--- CRITICAL FIX: Create a more permissive insert policy for registration
--- This allows new users to create profiles during signup
-DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON profiles;
-CREATE POLICY "Allow profile creation during signup" ON profiles
-    FOR INSERT WITH CHECK (true);
-
--- Also create a policy that allows authenticated users to insert their own profile
-CREATE POLICY "Allow authenticated users to insert own profile" ON profiles
-    FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- Verify the final setup
 SELECT column_name, data_type, is_nullable, column_default
