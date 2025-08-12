@@ -1,19 +1,54 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppContext } from '@/contexts/AppContext';
 import DriverProfile from '@/components/DriverProfile';
+import { DriverDashboard } from '@/components/DriverDashboard';
+import { DriverEarnings } from '@/components/DriverEarnings';
+import { DriverAnalytics } from '@/components/DriverAnalytics';
+import { DriverSafety } from '@/components/DriverSafety';
+import { DriverTraining } from '@/components/DriverTraining';
+import { DriverNotifications } from '@/components/DriverNotifications';
 import { Driver } from '@/types';
+import { toast } from '@/hooks/use-toast';
+import { Loader2, Wifi, WifiOff } from 'lucide-react';
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, loading, signOut } = useAppContext();
+  const { user, loading, signOut, updateUserProfile } = useAppContext();
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/login');
+  };
+
+  const handleToggleDriverStatus = async () => {
+    if (!user || user.role !== 'driver') return;
+    
+    setIsTogglingStatus(true);
+    try {
+      const newStatus = !user.isAvailable;
+      await updateUserProfile({ isAvailable: newStatus });
+      
+      toast({
+        title: newStatus ? "You're now Online!" : "You're now Offline",
+        description: newStatus 
+          ? "You're available to receive delivery requests" 
+          : "You're not receiving delivery requests",
+        variant: newStatus ? "default" : "secondary"
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to update status",
+        description: "Please try again",
+        variant: "destructive"
+      });
+    } finally {
+      setIsTogglingStatus(false);
+    }
   };
 
   if (loading) {
@@ -63,7 +98,14 @@ const DashboardPage: React.FC = () => {
             <TabsTrigger value="orders">My Orders</TabsTrigger>
           )}
           {user.role === 'driver' && (
-            <TabsTrigger value="deliveries">My Deliveries</TabsTrigger>
+            <>
+              <TabsTrigger value="deliveries">My Deliveries</TabsTrigger>
+              <TabsTrigger value="earnings">Earnings</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="safety">Safety</TabsTrigger>
+              <TabsTrigger value="training">Training</TabsTrigger>
+              <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            </>
           )}
           {user.role === 'merchant' && (
             <TabsTrigger value="products">My Products</TabsTrigger>
@@ -110,17 +152,7 @@ const DashboardPage: React.FC = () => {
                 )}
                 
                 {user.role === 'driver' && (
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">Driver Status</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="mb-2">You're currently <span className="text-red-500 font-bold">Offline</span></p>
-                      <Button className="w-full">
-                        Go Online
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <DriverDashboard />
                 )}
                 
                 {user.role === 'merchant' && (
@@ -196,6 +228,80 @@ const DashboardPage: React.FC = () => {
                 <p>You don't have any active deliveries.</p>
               </CardContent>
             </Card>
+          </TabsContent>
+        )}
+
+        {user.role === 'driver' && (
+          <TabsContent value="earnings">
+            <DriverEarnings 
+              driver={user}
+              onUpdatePaymentMethods={async (methods) => {
+                // TODO: Implement payment method updates
+                console.log('Payment methods:', methods);
+              }}
+            />
+          </TabsContent>
+        )}
+
+        {user.role === 'driver' && (
+          <TabsContent value="analytics">
+            <DriverAnalytics 
+              stats={{
+                totalEarnings: 1250.75,
+                totalDeliveries: 47,
+                averageRating: 4.8,
+                totalDistance: 125000,
+                totalTime: 2840,
+                weeklyGoal: 500,
+                weeklyProgress: 325,
+                topEarningDay: 'Friday',
+                topEarningAmount: 89.50
+              }}
+            />
+          </TabsContent>
+        )}
+
+        {user.role === 'driver' && (
+          <TabsContent value="safety">
+            <DriverSafety 
+              driver={user}
+              onReportIncident={async (incident) => {
+                // TODO: Implement incident reporting
+                console.log('Incident report:', incident);
+              }}
+              onUpdateEmergencyContacts={async (contacts) => {
+                // TODO: Implement emergency contact updates
+                console.log('Emergency contacts:', contacts);
+              }}
+            />
+          </TabsContent>
+        )}
+
+        {user.role === 'driver' && (
+          <TabsContent value="training">
+            <DriverTraining 
+              driver={user}
+              onCompleteModule={async (moduleId, score) => {
+                // TODO: Implement module completion
+                console.log('Module completed:', moduleId, score);
+              }}
+            />
+          </TabsContent>
+        )}
+        
+        {user.role === 'driver' && (
+          <TabsContent value="notifications">
+            <DriverNotifications 
+              driver={user}
+              onMarkAsRead={async (notificationId) => {
+                // TODO: Implement mark as read
+                console.log('Mark as read:', notificationId);
+              }}
+              onDeleteNotification={async (notificationId) => {
+                // TODO: Implement delete notification
+                console.log('Delete notification:', notificationId);
+              }}
+            />
           </TabsContent>
         )}
         

@@ -11,6 +11,7 @@ export interface User {
   lastName?: string;
   businessName?: string;
   role: UserRole;
+  isAvailable?: boolean; // Add this field for driver availability
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -1,0 +1,267 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useAppContext } from '@/contexts/AppContext';
+import { toast } from '@/hooks/use-toast';
+
+interface Location {
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+  timestamp: number;
+}
+
+interface DriverStatus {
+  isOnline: boolean;
+  lastActive: Date;
+  currentLocation: Location | null;
+  isTrackingLocation: boolean;
+  autoOfflineTimer: NodeJS.Timeout | null;
+}
+
+const AUTO_OFFLINE_DELAY = 30 * 60 * 1000; // 30 minutes
+const LOCATION_UPDATE_INTERVAL = 30000; // 30 seconds
+const LOCATION_ACCURACY_THRESHOLD = 100; // 100 meters
+
+export const useDriverStatus = () => {
+  const { user, updateUserProfile } = useAppContext();
+  const [status, setStatus] = useState<DriverStatus>({
+    isOnline: false,
+    lastActive: new Date(),
+    currentLocation: null,
+    isTrackingLocation: false,
+    autoOfflineTimer: null,
+  });
+
+  // Start location tracking
+  const startLocationTracking = useCallback(async () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Location not supported",
+        description: "Your browser doesn't support location tracking",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        });
+      });
+
+      const location: Location = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy || 0,
+        timestamp: Date.now()
+      };
+
+      setStatus(prev => ({
+        ...prev,
+        currentLocation: location,
+        isTrackingLocation: true
+      }));
+
+      // Start periodic location updates
+      const locationInterval = setInterval(async () => {
+        try {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const newLocation: Location = {
+                latitude: pos.coords.latitude,
+                longitude: pos.coords.longitude,
+                accuracy: pos.coords.accuracy || 0,
+                timestamp: Date.now()
+              };
+
+              setStatus(prev => ({
+                ...prev,
+                currentLocation: newLocation,
+                lastActive: new Date()
+              }));
+
+              // Update location in database if online
+              if (status.isOnline && user?.role === 'driver') {
+                updateUserProfile({
+                  currentLocation: newLocation
+                });
+              }
+            },
+            (error) => {
+              console.error('Location update failed:', error);
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 5000,
+              maximumAge: 30000
+            }
+          );
+        } catch (error) {
+          console.error('Location tracking error:', error);
+        }
+      }, LOCATION_UPDATE_INTERVAL);
+
+      return () => clearInterval(locationInterval);
+    } catch (error) {
+      toast({
+        title: "Location access denied",
+        description: "Please enable location access to go online",
+        variant: "destructive"
+      });
+      return false;
+    }
+  }, [status.isOnline, user?.role, updateUserProfile]);
+
+  // Go online with location tracking
+  const goOnline = useCallback(async () => {
+    if (user?.role !== 'driver') return false;
+
+    const locationStarted = await startLocationTracking();
+    if (!locationStarted) return false;
+
+    try {
+      await updateUserProfile({ 
+        isAvailable: true,
+        lastActive: new Date().toISOString()
+      });
+
+      setStatus(prev => ({
+        ...prev,
+        isOnline: true,
+        lastActive: new Date()
+      }));
+
+      // Start auto-offline timer
+      const timer = setTimeout(() => {
+        toast({
+          title: "Auto-offline reminder",
+          description: "You've been inactive for 30 minutes. Going offline automatically.",
+          variant: "default"
+        });
+        goOffline();
+      }, AUTO_OFFLINE_DELAY);
+
+      setStatus(prev => ({
+        ...prev,
+        autoOfflineTimer: timer
+      }));
+
+      toast({
+        title: "You're now Online! 🚗",
+        description: "Location tracking active. You're available for deliveries.",
+        variant: "default"
+      });
+
+      return true;
+    } catch (error) {
+      toast({
+        title: "Failed to go online",
+        description: "Please try again",
+        variant: "destructive"
+      });
+      return false;
+    }
+  }, [user?.role, startLocationTracking, updateUserProfile]);
+
+  // Go offline
+  const goOffline = useCallback(async () => {
+    if (user?.role !== 'driver') return;
+
+    try {
+      await updateUserProfile({ 
+        isAvailable: false,
+        lastActive: new Date().toISOString()
+      });
+
+      // Clear auto-offline timer
+      if (status.autoOfflineTimer) {
+        clearTimeout(status.autoOfflineTimer);
+      }
+
+      setStatus(prev => ({
+        ...prev,
+        isOnline: false,
+        isTrackingLocation: false,
+        autoOfflineTimer: null
+      }));
+
+      toast({
+        title: "You're now Offline",
+        description: "Location tracking stopped. You're not available for deliveries.",
+        variant: "secondary"
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to go offline",
+        description: "Please try again",
+        variant: "destructive"
+      });
+    }
+  }, [user?.role, status.autoOfflineTimer, updateUserProfile]);
+
+  // Reset auto-offline timer when driver is active
+  const resetAutoOfflineTimer = useCallback(() => {
+    if (!status.isOnline || user?.role !== 'driver') return;
+
+    // Clear existing timer
+    if (status.autoOfflineTimer) {
+      clearTimeout(status.autoOfflineTimer);
+    }
+
+    // Start new timer
+    const timer = setTimeout(() => {
+      toast({
+        title: "Auto-offline reminder",
+        description: "You've been inactive for 30 minutes. Going offline automatically.",
+        variant: "default"
+      });
+      goOffline();
+    }, AUTO_OFFLINE_DELAY);
+
+    setStatus(prev => ({
+      ...prev,
+      autoOfflineTimer: timer,
+      lastActive: new Date()
+    }));
+  }, [status.isOnline, status.autoOfflineTimer, user?.role, goOffline]);
+
+  // Activity detection
+  useEffect(() => {
+    const handleActivity = () => {
+      resetAutoOfflineTimer();
+    };
+
+    if (status.isOnline) {
+      window.addEventListener('mousedown', handleActivity);
+      window.addEventListener('keydown', handleActivity);
+      window.addEventListener('touchstart', handleActivity);
+      window.addEventListener('scroll', handleActivity);
+
+      return () => {
+        window.removeEventListener('mousedown', handleActivity);
+        window.removeEventListener('keydown', handleActivity);
+        window.removeEventListener('touchstart', handleActivity);
+        window.removeEventListener('scroll', handleActivity);
+      };
+    }
+  }, [status.isOnline, resetAutoOfflineTimer]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (status.autoOfflineTimer) {
+        clearTimeout(status.autoOfflineTimer);
+      }
+    };
+  }, [status.autoOfflineTimer]);
+
+  return {
+    ...status,
+    goOnline,
+    goOffline,
+    resetAutoOfflineTimer,
+    startLocationTracking
+  };
+}; 
