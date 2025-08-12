@@ -11,6 +11,8 @@ import { DriverAnalytics } from '@/components/DriverAnalytics';
 import { DriverSafety } from '@/components/DriverSafety';
 import { DriverTraining } from '@/components/DriverTraining';
 import { DriverNotifications } from '@/components/DriverNotifications';
+import { PayoutDashboard } from '@/components/PayoutDashboard';
+import { OrderManagement } from '@/components/OrderManagement';
 import { Driver } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, Wifi, WifiOff } from 'lucide-react';
@@ -108,7 +110,13 @@ const DashboardPage: React.FC = () => {
             </>
           )}
           {user.role === 'merchant' && (
-            <TabsTrigger value="products">My Products</TabsTrigger>
+            <>
+              <TabsTrigger value="products">My Products</TabsTrigger>
+              <TabsTrigger value="orders">Order Management</TabsTrigger>
+            </>
+          )}
+          {(user.role === 'driver' || user.role === 'merchant') && (
+            <TabsTrigger value="payouts">Payouts</TabsTrigger>
           )}
           <TabsTrigger value="profile">Profile</TabsTrigger>
         </TabsList>
@@ -215,94 +223,99 @@ const DashboardPage: React.FC = () => {
           </TabsContent>
         )}
         
-        {user.role === 'driver' && (
-          <TabsContent value="deliveries">
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Deliveries</CardTitle>
-                <CardDescription>
-                  Track and manage your deliveries
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p>You don't have any active deliveries.</p>
-              </CardContent>
-            </Card>
+        {/* Add Order Management tab content for merchants */}
+        {user.role === 'merchant' && (
+          <TabsContent value="orders">
+            <OrderManagement />
           </TabsContent>
         )}
 
-        {user.role === 'driver' && (
-          <TabsContent value="earnings">
-            <DriverEarnings 
-              driver={user}
-              onUpdatePaymentMethods={async (methods) => {
-                // TODO: Implement payment method updates
-                console.log('Payment methods:', methods);
-              }}
-            />
+        {/* Add Payouts tab content */}
+        {(user.role === 'driver' || user.role === 'merchant') && (
+          <TabsContent value="payouts">
+            <PayoutDashboard />
           </TabsContent>
         )}
 
+        {/* Driver-specific tabs */}
         {user.role === 'driver' && (
-          <TabsContent value="analytics">
-            <DriverAnalytics 
-              stats={{
-                totalEarnings: 1250.75,
-                totalDeliveries: 47,
-                averageRating: 4.8,
-                totalDistance: 125000,
-                totalTime: 2840,
-                weeklyGoal: 500,
-                weeklyProgress: 325,
-                topEarningDay: 'Friday',
-                topEarningAmount: 89.50
-              }}
-            />
-          </TabsContent>
-        )}
-
-        {user.role === 'driver' && (
-          <TabsContent value="safety">
-            <DriverSafety 
-              driver={user}
-              onReportIncident={async (incident) => {
-                // TODO: Implement incident reporting
-                console.log('Incident report:', incident);
-              }}
-              onUpdateEmergencyContacts={async (contacts) => {
-                // TODO: Implement emergency contact updates
-                console.log('Emergency contacts:', contacts);
-              }}
-            />
-          </TabsContent>
-        )}
-
-        {user.role === 'driver' && (
-          <TabsContent value="training">
-            <DriverTraining 
-              driver={user}
-              onCompleteModule={async (moduleId, score) => {
-                // TODO: Implement module completion
-                console.log('Module completed:', moduleId, score);
-              }}
-            />
-          </TabsContent>
-        )}
-        
-        {user.role === 'driver' && (
-          <TabsContent value="notifications">
-            <DriverNotifications 
-              driver={user}
-              onMarkAsRead={async (notificationId) => {
-                // TODO: Implement mark as read
-                console.log('Mark as read:', notificationId);
-              }}
-              onDeleteNotification={async (notificationId) => {
-                // TODO: Implement delete notification
-                console.log('Delete notification:', notificationId);
-              }}
-            />
-          </TabsContent>
+          <>
+            <TabsContent value="deliveries">
+              <Card>
+                <CardHeader>
+                  <CardTitle>My Deliveries</CardTitle>
+                  <CardDescription>Track your current and completed deliveries</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p>Delivery tracking features will be available soon.</p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="earnings">
+              <DriverEarnings 
+                driver={user}
+                onUpdatePaymentMethods={async (methods) => {
+                  // TODO: Implement payment method updates
+                  console.log('Payment methods:', methods);
+                }}
+              />
+            </TabsContent>
+            
+            <TabsContent value="analytics">
+              <DriverAnalytics 
+                stats={{
+                  totalEarnings: 1250.75,
+                  totalDeliveries: 47,
+                  averageRating: 4.8,
+                  totalDistance: 125000,
+                  totalTime: 2840,
+                  weeklyGoal: 500,
+                  weeklyProgress: 325,
+                  topEarningDay: 'Friday',
+                  topEarningAmount: 89.50
+                }}
+              />
+            </TabsContent>
+            
+            <TabsContent value="safety">
+              <DriverSafety 
+                driver={user}
+                onReportIncident={async (incident) => {
+                  // TODO: Implement incident reporting
+                  console.log('Incident report:', incident);
+                }}
+                onUpdateEmergencyContacts={async (contacts) => {
+                  // TODO: Implement emergency contact updates
+                  console.log('Emergency contacts:', contacts);
+                }}
+              />
+            </TabsContent>
+            
+            <TabsContent value="training">
+              <DriverTraining 
+                driver={user}
+                onCompleteModule={async (moduleId, score) => {
+                  // TODO: Implement module completion
+                  console.log('Module completed:', moduleId, score);
+                }}
+              />
+            </TabsContent>
+            
+            <TabsContent value="notifications">
+              <DriverNotifications 
+                driver={user}
+                onMarkAsRead={async (notificationId) => {
+                  // TODO: Implement mark as read
+                  console.log('Mark as read:', notificationId);
+                }}
+                onDeleteNotification={async (notificationId) => {
+                  // TODO: Implement delete notification
+                  console.log('Delete notification:', notificationId);
+                }}
+              />
+            </TabsContent>
+          </>
         )}
         
         {user.role === 'merchant' && (
