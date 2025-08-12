@@ -117,16 +117,8 @@ export const useDeliveryRequests = () => {
           // Show notification for new request
           toast({
             title: "New Delivery Request! 📦",
-            description: `$${newRequest.deliveryFee} delivery from ${newRequest.storeName}`,
-            variant: "default",
-            action: (
-              <button
-                onClick={() => acceptRequest(newRequest.id)}
-                className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
-              >
-                Accept
-              </button>
-            )
+            description: `$${newRequest.deliveryFee} delivery from ${newRequest.storeName} - Click to view details`,
+            variant: "default"
           });
 
           // Add to requests list
