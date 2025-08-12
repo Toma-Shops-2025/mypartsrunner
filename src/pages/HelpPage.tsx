@@ -305,4 +305,6 @@ export const HelpPage: React.FC = () => {
       </Card>
     </div>
   );
-}; 
+};
+
+export default HelpPage; 
