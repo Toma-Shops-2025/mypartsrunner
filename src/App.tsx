@@ -32,6 +32,7 @@ import MerchantGuidePage from "@/pages/MerchantGuidePage";
 import AdminGuidePage from "@/pages/AdminGuidePage";
 import DriverApplicationPage from "@/pages/DriverApplicationPage";
 import MerchantApplicationPage from "@/pages/MerchantApplicationPage";
+import HelpPage from "@/pages/HelpPage";
 import { useState, useEffect } from "react";
 import Logo from "@/components/Logo";
 
@@ -96,6 +97,7 @@ const App = () => {
                   <Route path="/admin-guide" element={<AdminGuidePage />} />
                   <Route path="/driver-application" element={<DriverApplicationPage />} />
                   <Route path="/merchant-application" element={<MerchantApplicationPage />} />
+                  <Route path="/help" element={<HelpPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </AppLayout>

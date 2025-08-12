@@ -28,6 +28,7 @@ const Navbar: React.FC = () => {
           <nav className="flex items-center gap-4">
             <Link to="/about" className="text-sm font-medium hover:underline">About</Link>
             <Link to="/how-it-works" className="text-sm font-medium hover:underline">How It Works</Link>
+            <Link to="/help" className="text-sm font-medium hover:underline">Help</Link>
             <Link to="/contact" className="text-sm font-medium hover:underline">Contact</Link>
             {isAuthenticated && (
               <Link to="/browse" className="text-sm font-medium hover:underline">Browse</Link>
@@ -83,6 +84,7 @@ const Navbar: React.FC = () => {
             <div className="grid gap-4 py-4">
               <Link to="/about" className="text-sm font-medium hover:underline">About</Link>
               <Link to="/how-it-works" className="text-sm font-medium hover:underline">How It Works</Link>
+              <Link to="/help" className="text-sm font-medium hover:underline">Help</Link>
               <Link to="/contact" className="text-sm font-medium hover:underline">Contact</Link>
               
               {isAuthenticated ? (
