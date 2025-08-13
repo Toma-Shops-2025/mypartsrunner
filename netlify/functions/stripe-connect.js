@@ -1,9 +1,16 @@
 const Stripe = require('stripe');
+const { createClient } = require('@supabase/supabase-js');
 
 // Initialize Stripe with your secret key
 const stripe = new Stripe(process.env.VITE_STRIPE_SECRET_KEY, {
   apiVersion: '2024-12-18.acacia',
 });
+
+// Initialize Supabase
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.VITE_SUPABASE_ANON_KEY
+);
 
 exports.handler = async (event, context) => {
   // Only allow POST requests
@@ -16,15 +23,17 @@ exports.handler = async (event, context) => {
 
   try {
     const body = JSON.parse(event.body);
-    const { action, userId, email, country, accountId } = body;
+    const { action, userId, email, country, accountId, businessType } = body;
 
     switch (action) {
       case 'create_connect_account':
-        return await createConnectAccount(userId, email, country);
+        return await createConnectAccount(userId, email, country, businessType);
       case 'check_account_status':
         return await checkAccountStatus(accountId);
       case 'check_account':
         return await checkExistingAccount(userId);
+      case 'get_onboarding_link':
+        return await getOnboardingLink(accountId);
       default:
         return {
           statusCode: 400,
@@ -42,8 +51,19 @@ exports.handler = async (event, context) => {
 };
 
 // Create a new Stripe Connect account
-async function createConnectAccount(userId, email, country = 'US') {
+async function createConnectAccount(userId, email, country = 'US', businessType = 'individual') {
   try {
+    // Check if user already has a merchant profile
+    const { data: existingProfile, error: profileError } = await supabase
+      .from('merchant_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (profileError && profileError.code !== 'PGRST116') {
+      throw new Error(`Database error: ${profileError.message}`);
+    }
+
     // Create the Connect account
     const account = await stripe.accounts.create({
       type: 'express',
@@ -53,7 +73,7 @@ async function createConnectAccount(userId, email, country = 'US') {
         card_payments: { requested: true },
         transfers: { requested: true },
       },
-      business_type: 'individual',
+      business_type: businessType,
       metadata: {
         user_id: userId,
         source: 'mypartsrunner',
@@ -68,6 +88,42 @@ async function createConnectAccount(userId, email, country = 'US') {
       return_url: `${process.env.URL || 'https://mypartsrunner.com'}/dashboard`,
       type: 'account_onboarding',
     });
+
+    // Update or create merchant profile with Stripe account ID
+    if (existingProfile) {
+      const { error: updateError } = await supabase
+        .from('merchant_profiles')
+        .update({ 
+          stripe_account_id: account.id,
+          stripe_charges_enabled: false,
+          stripe_payouts_enabled: false,
+          stripe_details_submitted: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
+
+      if (updateError) {
+        console.error('Error updating merchant profile:', updateError);
+      }
+    } else {
+      // Create a basic merchant profile if it doesn't exist
+      const { error: insertError } = await supabase
+        .from('merchant_profiles')
+        .insert({
+          user_id: userId,
+          stripe_account_id: account.id,
+          stripe_charges_enabled: false,
+          stripe_payouts_enabled: false,
+          stripe_details_submitted: false,
+          business_name: 'New Business',
+          business_type: businessType,
+          country: country
+        });
+
+      if (insertError) {
+        console.error('Error creating merchant profile:', insertError);
+      }
+    }
 
     console.log('Connect account created:', account.id);
 
@@ -94,6 +150,21 @@ async function checkAccountStatus(accountId) {
   try {
     const account = await stripe.accounts.retrieve(accountId);
     
+    // Update merchant profile with latest status
+    const { error: updateError } = await supabase
+      .from('merchant_profiles')
+      .update({
+        stripe_charges_enabled: account.charges_enabled,
+        stripe_payouts_enabled: account.payouts_enabled,
+        stripe_details_submitted: account.details_submitted,
+        updated_at: new Date().toISOString()
+      })
+      .eq('stripe_account_id', accountId);
+
+    if (updateError) {
+      console.error('Error updating merchant profile status:', updateError);
+    }
+    
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -117,8 +188,33 @@ async function checkAccountStatus(accountId) {
 // Check if user already has a Connect account
 async function checkExistingAccount(userId) {
   try {
-    // In a real app, you'd store this in your database
-    // For now, we'll return a placeholder
+    // Check merchant profile for existing Stripe account
+    const { data: profile, error: profileError } = await supabase
+      .from('merchant_profiles')
+      .select('stripe_account_id, stripe_charges_enabled, stripe_payouts_enabled, stripe_details_submitted')
+      .eq('user_id', userId)
+      .single();
+
+    if (profileError && profileError.code !== 'PGRST116') {
+      throw new Error(`Database error: ${profileError.message}`);
+    }
+
+    if (profile && profile.stripe_account_id) {
+      // Check if account is active
+      const status = profile.stripe_charges_enabled && profile.stripe_payouts_enabled ? 'active' : 'pending';
+      
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          account_id: profile.stripe_account_id,
+          charges_enabled: profile.stripe_charges_enabled,
+          payouts_enabled: profile.stripe_payouts_enabled,
+          details_submitted: profile.stripe_details_submitted,
+          status: status
+        })
+      };
+    }
+
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -132,6 +228,32 @@ async function checkExistingAccount(userId) {
     return {
       statusCode: 500,
       body: JSON.stringify({ error: `Failed to check existing account: ${error.message}` })
+    };
+  }
+}
+
+// Get onboarding link for existing account
+async function getOnboardingLink(accountId) {
+  try {
+    const accountLink = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: `${process.env.URL || 'https://mypartsrunner.com'}/dashboard`,
+      return_url: `${process.env.URL || 'https://mypartsrunner.com'}/dashboard`,
+      type: 'account_onboarding',
+    });
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        onboarding_url: accountLink.url
+      })
+    };
+
+  } catch (error) {
+    console.error('Error creating onboarding link:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: `Failed to create onboarding link: ${error.message}` })
     };
   }
 } 

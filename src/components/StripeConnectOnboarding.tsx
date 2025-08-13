@@ -3,7 +3,8 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Alert, AlertDescription } from './ui/alert';
-import { Loader2, CheckCircle, XCircle, ExternalLink, CreditCard, Banknote } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, ExternalLink, CreditCard, Banknote, User, Building } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface StripeConnectOnboardingProps {
   userId: string;
@@ -16,15 +17,34 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
   const [accountId, setAccountId] = useState<string | null>(null);
   const [onboardingUrl, setOnboardingUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [businessType, setBusinessType] = useState<'individual' | 'company'>('individual');
 
   useEffect(() => {
     checkExistingAccount();
+    getUserEmail();
   }, [userId]);
+
+  const getUserEmail = async () => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', userId)
+        .single();
+      
+      if (profile && profile.email) {
+        setUserEmail(profile.email);
+      }
+    } catch (error) {
+      console.error('Error getting user email:', error);
+    }
+  };
 
   const checkExistingAccount = async () => {
     try {
       // Check if user already has a Stripe Connect account
-      const response = await fetch('/.netlify/functions/webhooks/stripe', {
+      const response = await fetch('/.netlify/functions/stripe-connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'check_account', userId })
@@ -33,7 +53,7 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
       if (response.ok) {
         const data = await response.json();
         if (data.account_id) {
-          setAccountId(data.account_id);
+          setAccountId(data.accountId);
           setAccountStatus(data.status || 'pending');
         }
       }
@@ -48,14 +68,15 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
 
     try {
       // Call your Netlify function to create Connect account
-      const response = await fetch('/.netlify/functions/webhooks/stripe', {
+      const response = await fetch('/.netlify/functions/stripe-connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           action: 'create_connect_account',
           userId,
-          email: 'merchant@example.com', // You'll get this from user profile
-          country: 'US'
+          email: userEmail || 'merchant@example.com',
+          country: 'US',
+          businessType
         })
       });
 
@@ -77,11 +98,33 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
     }
   };
 
+  const getNewOnboardingLink = async () => {
+    if (!accountId) return;
+
+    try {
+      const response = await fetch('/.netlify/functions/stripe-connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'get_onboarding_link',
+          accountId 
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setOnboardingUrl(data.onboarding_url);
+      }
+    } catch (error) {
+      console.error('Error getting onboarding link:', error);
+    }
+  };
+
   const refreshAccountStatus = async () => {
     if (!accountId) return;
 
     try {
-      const response = await fetch('/.netlify/functions/webhooks/stripe', {
+      const response = await fetch('/.netlify/functions/stripe-connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -180,23 +223,56 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
               </ul>
             </div>
             
-            <Button 
-              onClick={createAccount} 
-              disabled={isLoading}
-              className="w-full"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Account...
-                </>
-              ) : (
-                <>
-                  <Banknote className="mr-2 h-4 w-4" />
-                  Set Up Stripe Connect
-                </>
-              )}
-            </Button>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    name="businessType"
+                    value="individual"
+                    checked={businessType === 'individual'}
+                    onChange={(e) => setBusinessType(e.target.value as 'individual' | 'company')}
+                    className="h-4 w-4 text-blue-600"
+                  />
+                  <span className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    Individual
+                  </span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    name="businessType"
+                    value="company"
+                    checked={businessType === 'company'}
+                    onChange={(e) => setBusinessType(e.target.value as 'individual' | 'company')}
+                    className="h-4 w-4 text-blue-600"
+                  />
+                  <span className="flex items-center">
+                    <Building className="h-4 w-4 mr-2" />
+                    Company
+                  </span>
+                </label>
+              </div>
+              
+              <Button 
+                onClick={createAccount} 
+                disabled={isLoading}
+                className="w-full"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating Account...
+                  </>
+                ) : (
+                  <>
+                    <Banknote className="mr-2 h-4 w-4" />
+                    Set Up Stripe Connect
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         )}
 
@@ -229,6 +305,15 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
               >
                 <Loader2 className="mr-2 h-4 w-4" />
                 Check Setup Status
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                onClick={getNewOnboardingLink}
+                className="w-full"
+              >
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Get New Onboarding Link
               </Button>
             </div>
           </div>
