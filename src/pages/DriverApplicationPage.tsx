@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Car, User, Shield, FileText, MapPin, DollarSign } from 'lucide-react';
 import { useAppContext } from '@/contexts/AppContext';
+import { supabase } from '@/lib/supabase';
 
 const DriverApplicationPage: React.FC = () => {
   const { toast } = useToast();
@@ -74,6 +75,8 @@ const DriverApplicationPage: React.FC = () => {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [existingApplication, setExistingApplication] = useState<any>(null);
+  const [isLoadingApplication, setIsLoadingApplication] = useState(true);
 
   const steps = [
     { number: 1, title: "Personal Information", icon: <User className="h-4 w-4" /> },
@@ -112,21 +115,114 @@ const DriverApplicationPage: React.FC = () => {
     }
   };
 
+  // Check for existing application when component loads
+  useEffect(() => {
+    const checkExistingApplication = async () => {
+      if (!user?.email) {
+        setIsLoadingApplication(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('driver_applications')
+          .select('*')
+          .eq('email', user.email)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error checking existing application:', error);
+        } else if (data) {
+          setExistingApplication(data);
+        }
+      } catch (error) {
+        console.error('Error checking existing application:', error);
+      } finally {
+        setIsLoadingApplication(false);
+      }
+    };
+
+    checkExistingApplication();
+  }, [user?.email]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      // Here you would submit the application to your backend
-      // For now, we'll simulate a successful submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // Validate required agreements
+      if (!formData.agreeToTerms || !formData.agreeToBackgroundCheck || 
+          !formData.agreeToDrugTest || !formData.agreeToVehicleInspection) {
+        toast({
+          title: "Agreements Required",
+          description: "Please agree to all required terms and conditions.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Prepare data for database (convert camelCase to snake_case)
+      const applicationData = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        date_of_birth: formData.dateOfBirth,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zip_code: formData.zipCode,
+        license_number: formData.licenseNumber,
+        license_state: formData.licenseState,
+        license_expiry: formData.licenseExpiry,
+        has_commercial_license: formData.hasCommercialLicense,
+        vehicle_type: formData.vehicleType,
+        vehicle_make: formData.vehicleMake,
+        vehicle_model: formData.vehicleModel,
+        vehicle_year: formData.vehicleYear,
+        license_plate: formData.licensePlate,
+        vehicle_color: formData.vehicleColor,
+        insurance_company: formData.insuranceCompany,
+        policy_number: formData.policyNumber,
+        policy_expiry: formData.policyExpiry,
+        has_commercial_insurance: formData.hasCommercialInsurance,
+        driving_experience: formData.drivingExperience,
+        preferred_areas: formData.preferredAreas,
+        availability: formData.availability,
+        max_distance: formData.maxDistance,
+        payment_method: formData.paymentMethod,
+        cash_app_username: formData.cashAppUsername,
+        venmo_username: formData.venmoUsername,
+        has_criminal_record: formData.hasCriminalRecord,
+        criminal_record_details: formData.criminalRecordDetails,
+        emergency_contact: formData.emergencyContact,
+        emergency_phone: formData.emergencyPhone,
+        agree_to_terms: formData.agreeToTerms,
+        agree_to_background_check: formData.agreeToBackgroundCheck,
+        agree_to_drug_test: formData.agreeToDrugTest,
+        agree_to_vehicle_inspection: formData.agreeToVehicleInspection
+      };
+
+      // Insert application into database
+      const { data, error } = await supabase
+        .from('driver_applications')
+        .insert([applicationData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Database error:', error);
+        throw new Error(`Failed to save application: ${error.message}`);
+      }
+
       toast({
-        title: "Application Submitted!",
-        description: "Thank you for applying to be a MyPartsRunner driver. We'll review your application and contact you within 2-3 business days.",
+        title: "Application Submitted Successfully!",
+        description: `Thank you for applying to be a MyPartsRunner driver. Your application ID is: ${data.id}. We'll review your application and contact you within 2-3 business days.`,
       });
       
-      // Reset form or redirect
+      // Reset form
       setFormData({
         firstName: '', lastName: '', email: '', phone: '', dateOfBirth: '',
         address: '', city: '', state: '', zipCode: '', licenseNumber: '',
@@ -141,10 +237,12 @@ const DriverApplicationPage: React.FC = () => {
         agreeToVehicleInspection: false
       });
       setCurrentStep(1);
+      
     } catch (error) {
+      console.error('Submission error:', error);
       toast({
         title: "Error",
-        description: "There was an error submitting your application. Please try again.",
+        description: error instanceof Error ? error.message : "There was an error submitting your application. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -595,6 +693,67 @@ const DriverApplicationPage: React.FC = () => {
         </p>
       </div>
 
+      {/* Application Status */}
+      {!isLoadingApplication && existingApplication && (
+        <Card className="mb-6 border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-800">
+              <Shield className="h-5 w-5" />
+              Application Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Status:</span>
+                <Badge 
+                  variant={
+                    existingApplication.status === 'approved' ? 'default' :
+                    existingApplication.status === 'rejected' ? 'destructive' :
+                    existingApplication.status === 'under_review' ? 'secondary' :
+                    'outline'
+                  }
+                >
+                  {existingApplication.status.replace('_', ' ').toUpperCase()}
+                </Badge>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Application ID:</span>
+                <span className="font-mono text-sm">{existingApplication.id}</span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Submitted:</span>
+                <span>{new Date(existingApplication.created_at).toLocaleDateString()}</span>
+              </div>
+              
+              {existingApplication.admin_notes && (
+                <div className="mt-3 p-3 bg-white rounded border">
+                  <span className="font-medium text-sm">Admin Notes:</span>
+                  <p className="text-sm mt-1">{existingApplication.admin_notes}</p>
+                </div>
+              )}
+              
+              {existingApplication.status === 'pending' && (
+                <p className="text-sm text-blue-700 mt-2">
+                  Your application is being reviewed. We'll contact you within 2-3 business days.
+                </p>
+              )}
+              
+              {existingApplication.status === 'approved' && (
+                <div className="mt-3 p-3 bg-green-100 rounded border border-green-200">
+                  <p className="text-green-800 font-medium">🎉 Congratulations! Your application has been approved!</p>
+                  <p className="text-green-700 text-sm mt-1">
+                    Please check your email for next steps to complete your driver onboarding.
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Progress Steps */}
       <Card className="mb-8">
         <CardContent className="pt-6">
@@ -628,47 +787,49 @@ const DriverApplicationPage: React.FC = () => {
       </Card>
 
       {/* Application Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Step {currentStep}: {steps[currentStep - 1].title}</CardTitle>
-          <CardDescription>
-            Please provide accurate information. All fields marked with * are required.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {renderStepContent()}
-            
-            <div className="flex justify-between pt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={prevStep}
-                disabled={currentStep === 1}
-              >
-                Previous
-              </Button>
+      {!existingApplication && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Step {currentStep}: {steps[currentStep - 1].title}</CardTitle>
+            <CardDescription>
+              Please provide accurate information. All fields marked with * are required.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {renderStepContent()}
               
-              {currentStep < steps.length ? (
+              <div className="flex justify-between pt-6">
                 <Button
                   type="button"
-                  onClick={nextStep}
-                  disabled={isSubmitting}
+                  variant="outline"
+                  onClick={prevStep}
+                  disabled={currentStep === 1}
                 >
-                  Next
+                  Previous
                 </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Submitting..." : "Submit Application"}
-                </Button>
-              )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+                
+                {currentStep < steps.length ? (
+                  <Button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={isSubmitting}
+                  >
+                    Next
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit Application"}
+                  </Button>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Benefits Reminder */}
       <Card className="mt-8">
