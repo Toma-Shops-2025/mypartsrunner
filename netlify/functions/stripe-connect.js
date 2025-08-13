@@ -57,7 +57,7 @@ async function createConnectAccount(userId, email, country = 'US', businessType 
     const { data: existingProfile, error: profileError } = await supabase
       .from('merchant_profiles')
       .select('*')
-      .eq('user_id', userId)
+      .eq('id', userId) // Use the same ID as profiles table
       .single();
 
     if (profileError && profileError.code !== 'PGRST116') {
@@ -98,9 +98,9 @@ async function createConnectAccount(userId, email, country = 'US', businessType 
           stripe_charges_enabled: false,
           stripe_payouts_enabled: false,
           stripe_details_submitted: false,
-          updated_at: new Date().toISOString()
+          updatedat: new Date().toISOString()
         })
-        .eq('user_id', userId);
+        .eq('id', userId);
 
       if (updateError) {
         console.error('Error updating merchant profile:', updateError);
@@ -110,14 +110,13 @@ async function createConnectAccount(userId, email, country = 'US', businessType 
       const { error: insertError } = await supabase
         .from('merchant_profiles')
         .insert({
-          user_id: userId,
+          id: userId, // Use the same ID as profiles table
           stripe_account_id: account.id,
           stripe_charges_enabled: false,
           stripe_payouts_enabled: false,
           stripe_details_submitted: false,
-          business_name: 'New Business',
-          business_type: businessType,
-          country: country
+          createdat: new Date().toISOString(),
+          updatedat: new Date().toISOString()
         });
 
       if (insertError) {
@@ -157,7 +156,7 @@ async function checkAccountStatus(accountId) {
         stripe_charges_enabled: account.charges_enabled,
         stripe_payouts_enabled: account.payouts_enabled,
         stripe_details_submitted: account.details_submitted,
-        updated_at: new Date().toISOString()
+        updatedat: new Date().toISOString()
       })
       .eq('stripe_account_id', accountId);
 
@@ -192,7 +191,7 @@ async function checkExistingAccount(userId) {
     const { data: profile, error: profileError } = await supabase
       .from('merchant_profiles')
       .select('stripe_account_id, stripe_charges_enabled, stripe_payouts_enabled, stripe_details_submitted')
-      .eq('user_id', userId)
+      .eq('id', userId) // Use the same ID as profiles table
       .single();
 
     if (profileError && profileError.code !== 'PGRST116') {
