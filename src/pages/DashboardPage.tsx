@@ -175,6 +175,9 @@ const DashboardPage: React.FC = () => {
                       <Button className="w-full" variant="outline" onClick={() => navigate('/store-settings')}>
                         Store Settings
                       </Button>
+                      <Button className="w-full" variant="outline" onClick={() => navigate('/stripe-connect-test')}>
+                        🏦 Test Stripe Connect
+                      </Button>
                     </CardContent>
                   </Card>
                 )}

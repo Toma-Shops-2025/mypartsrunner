@@ -33,6 +33,7 @@ import AdminGuidePage from "@/pages/AdminGuidePage";
 import DriverApplicationPage from "@/pages/DriverApplicationPage";
 import MerchantApplicationPage from "@/pages/MerchantApplicationPage";
 import HelpPage from "@/pages/HelpPage";
+import StripeConnectTestPage from "@/pages/StripeConnectTestPage";
 import { useState, useEffect } from "react";
 import Logo from "@/components/Logo";
 
@@ -98,6 +99,7 @@ const App = () => {
                   <Route path="/driver-application" element={<DriverApplicationPage />} />
                   <Route path="/merchant-application" element={<MerchantApplicationPage />} />
                   <Route path="/help" element={<HelpPage />} />
+                  <Route path="/stripe-connect-test" element={<StripeConnectTestPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </AppLayout>
