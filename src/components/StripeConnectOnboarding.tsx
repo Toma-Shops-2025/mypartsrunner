@@ -3,9 +3,7 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Alert, AlertDescription } from './ui/alert';
-import { Loader2, CheckCircle, XCircle, ExternalLink } from 'lucide-react';
-import { createConnectAccount, createAccountLink, getConnectAccount } from '../lib/stripe';
-import { supabase } from '../lib/supabase';
+import { Loader2, CheckCircle, XCircle, ExternalLink, CreditCard, Banknote } from 'lucide-react';
 
 interface StripeConnectOnboardingProps {
   userId: string;
@@ -25,30 +23,22 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
 
   const checkExistingAccount = async () => {
     try {
-      const { data: merchantProfile, error } = await supabase
-        .from('merchant_profiles')
-        .select('stripe_account_id, stripe_charges_enabled, stripe_payouts_enabled, stripe_details_submitted')
-        .eq('user_id', userId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error checking merchant profile:', error);
-        return;
-      }
-
-      if (merchantProfile?.stripe_account_id) {
-        setAccountId(merchantProfile.stripe_account_id);
-        
-        if (merchantProfile.stripe_charges_enabled && merchantProfile.stripe_payouts_enabled) {
-          setAccountStatus('active');
-        } else if (merchantProfile.stripe_details_submitted) {
-          setAccountStatus('pending');
-        } else {
-          setAccountStatus('pending');
+      // Check if user already has a Stripe Connect account
+      const response = await fetch('/.netlify/functions/webhooks/stripe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'check_account', userId })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.account_id) {
+          setAccountId(data.account_id);
+          setAccountStatus(data.status || 'pending');
         }
       }
     } catch (error) {
-      console.error('Error checking existing account:', error);
+      console.error('Error checking account:', error);
     }
   };
 
@@ -57,43 +47,26 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
     setError(null);
 
     try {
-      // Get user email from profiles
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('id', userId)
-        .single();
+      // Call your Netlify function to create Connect account
+      const response = await fetch('/.netlify/functions/webhooks/stripe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'create_connect_account',
+          userId,
+          email: 'merchant@example.com', // You'll get this from user profile
+          country: 'US'
+        })
+      });
 
-      if (profileError || !profile?.email) {
-        throw new Error('User email not found');
+      if (response.ok) {
+        const data = await response.json();
+        setAccountId(data.account_id);
+        setOnboardingUrl(data.onboarding_url);
+        setAccountStatus('pending');
+      } else {
+        throw new Error('Failed to create account');
       }
-
-      // Create Stripe Connect account
-      const account = await createConnectAccount(profile.email, 'US', 'individual');
-      setAccountId(account.id);
-
-      // Create or update merchant profile
-      const { error: upsertError } = await supabase
-        .from('merchant_profiles')
-        .upsert({
-          user_id: userId,
-          stripe_account_id: account.id,
-          stripe_charges_enabled: account.charges_enabled,
-          stripe_payouts_enabled: account.payouts_enabled,
-          stripe_details_submitted: account.details_submitted,
-          updated_at: new Date().toISOString()
-        });
-
-      if (upsertError) {
-        throw new Error(`Failed to update merchant profile: ${upsertError.message}`);
-      }
-
-      // Create onboarding link
-      const returnUrl = `${window.location.origin}/dashboard`;
-      const refreshUrl = `${window.location.origin}/dashboard`;
-      const link = await createAccountLink(account.id, refreshUrl, returnUrl);
-      setOnboardingUrl(link);
-      setAccountStatus('pending');
 
     } catch (error) {
       console.error('Error creating account:', error);
@@ -108,28 +81,21 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
     if (!accountId) return;
 
     try {
-      const account = await getConnectAccount(accountId);
-      
-      // Update merchant profile
-      const { error: updateError } = await supabase
-        .from('merchant_profiles')
-        .update({
-          stripe_charges_enabled: account.charges_enabled,
-          stripe_payouts_enabled: account.payouts_enabled,
-          stripe_details_submitted: account.details_submitted,
-          updated_at: new Date().toISOString()
+      const response = await fetch('/.netlify/functions/webhooks/stripe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'check_account_status',
+          accountId 
         })
-        .eq('stripe_account_id', accountId);
+      });
 
-      if (updateError) {
-        console.error('Error updating merchant profile:', updateError);
-      }
-
-      if (account.charges_enabled && account.payouts_enabled) {
-        setAccountStatus('active');
-        if (onComplete) onComplete();
-      } else if (account.details_submitted) {
-        setAccountStatus('pending');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.charges_enabled && data.payouts_enabled) {
+          setAccountStatus('active');
+          if (onComplete) onComplete();
+        }
       }
     } catch (error) {
       console.error('Error refreshing account status:', error);
@@ -165,13 +131,13 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
   const getStatusDescription = () => {
     switch (accountStatus) {
       case 'active':
-        return 'Your Stripe account is fully activated and ready to receive payments!';
+        return 'Your Stripe Connect account is fully activated! You can now receive automatic payouts to your bank account.';
       case 'pending':
-        return 'Please complete your Stripe account setup to start receiving payments.';
+        return 'Please complete your Stripe Connect setup to start receiving automatic payouts.';
       case 'error':
-        return 'There was an error setting up your Stripe account. Please try again.';
+        return 'There was an error setting up your Stripe Connect account. Please try again.';
       default:
-        return 'Set up your Stripe account to start receiving payments from customers.';
+        return 'Set up your Stripe Connect account to receive automatic payouts from MyPartsRunner.';
     }
   };
 
@@ -181,6 +147,7 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
         <div className="flex items-center gap-3">
           <div className="flex-1">
             <CardTitle className="flex items-center gap-2">
+              <Banknote className="h-5 w-5" />
               Stripe Connect Setup
               {getStatusIcon()}
             </CardTitle>
@@ -203,13 +170,13 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
         {accountStatus === 'none' && (
           <div className="space-y-4">
             <div className="text-sm text-muted-foreground">
-              <p>To receive payments from customers, you need to set up a Stripe Connect account.</p>
-              <p className="mt-2">This will allow you to:</p>
+              <p>Stripe Connect allows you to receive automatic payouts directly to your bank account.</p>
+              <p className="mt-2">Benefits:</p>
               <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>Accept credit card payments from customers</li>
-                <li>Receive automatic payouts to your bank account</li>
-                <li>Track all your transactions and earnings</li>
-                <li>Comply with payment industry standards</li>
+                <li>Automatic payouts when orders are completed</li>
+                <li>Direct deposits to your bank account</li>
+                <li>Professional payment infrastructure</li>
+                <li>Simplified tax reporting</li>
               </ul>
             </div>
             
@@ -224,7 +191,10 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
                   Creating Account...
                 </>
               ) : (
-                'Set Up Stripe Account'
+                <>
+                  <Banknote className="mr-2 h-4 w-4" />
+                  Set Up Stripe Connect
+                </>
               )}
             </Button>
           </div>
@@ -233,13 +203,13 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
         {accountStatus === 'pending' && onboardingUrl && (
           <div className="space-y-4">
             <div className="text-sm text-muted-foreground">
-              <p>Your Stripe account has been created! Now you need to complete the onboarding process.</p>
-              <p className="mt-2">Click the button below to:</p>
+              <p>Your Stripe Connect account has been created! Now complete the onboarding process.</p>
+              <p className="mt-2">You'll need to provide:</p>
               <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>Verify your business information</li>
-                <li>Connect your bank account</li>
-                <li>Complete identity verification</li>
-                <li>Set up your payout schedule</li>
+                <li>Business information and verification</li>
+                <li>Bank account details for payouts</li>
+                <li>Identity verification documents</li>
+                <li>Tax information</li>
               </ul>
             </div>
             
@@ -249,7 +219,7 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
                 className="w-full"
               >
                 <ExternalLink className="mr-2 h-4 w-4" />
-                Complete Stripe Onboarding
+                Complete Stripe Connect Onboarding
               </Button>
               
               <Button 
@@ -258,7 +228,7 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
                 className="w-full"
               >
                 <Loader2 className="mr-2 h-4 w-4" />
-                Check Status
+                Check Setup Status
               </Button>
             </div>
           </div>
@@ -267,13 +237,13 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
         {accountStatus === 'active' && (
           <div className="space-y-4">
             <div className="text-sm text-muted-foreground">
-              <p>🎉 Congratulations! Your Stripe account is fully activated.</p>
+              <p>🎉 Congratulations! Your Stripe Connect account is fully activated.</p>
               <p className="mt-2">You can now:</p>
               <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>Accept payments from customers immediately</li>
                 <li>Receive automatic payouts to your bank account</li>
-                <li>View detailed transaction reports</li>
-                <li>Manage your payout schedule</li>
+                <li>Get paid immediately when orders are completed</li>
+                <li>Track all your earnings in Stripe Dashboard</li>
+                <li>Access professional payment infrastructure</li>
               </ul>
             </div>
             
@@ -291,7 +261,8 @@ export default function StripeConnectOnboarding({ userId, onComplete }: StripeCo
         {accountStatus === 'error' && (
           <div className="space-y-4">
             <div className="text-sm text-muted-foreground">
-              <p>There was an error setting up your Stripe account. This could be due to:</p>
+              <p>There was an error setting up your Stripe Connect account.</p>
+              <p className="mt-2">This could be due to:</p>
               <ul className="list-disc list-inside mt-2 space-y-1">
                 <li>Network connectivity issues</li>
                 <li>Stripe service temporarily unavailable</li>
