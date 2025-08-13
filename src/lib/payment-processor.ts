@@ -294,6 +294,75 @@ export async function processPayout(orderId: string): Promise<PayoutResult> {
 }
 
 /**
+ * Process instant payouts via Stripe Connect
+ */
+async function processInstantPayouts(
+  orderId: string,
+  calculations: PayoutCalculation
+): Promise<void> {
+  try {
+    // Import Stripe functions dynamically to avoid circular dependencies
+    const { processInstantPayout } = await import('./stripe');
+    
+    // Get order details to find merchant and driver
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .select('*, stores(merchantid)')
+      .eq('id', orderId)
+      .single();
+
+    if (orderError || !order) {
+      throw new Error('Order not found');
+    }
+
+    // Get merchant profile for Stripe account
+    const { data: merchantProfile, error: merchantError } = await supabase
+      .from('merchant_profiles')
+      .select('stripe_account_id')
+      .eq('user_id', order.stores.merchantid)
+      .single();
+
+    if (merchantProfile?.stripe_account_id) {
+      // Process merchant payout (already handled by process_customer_payment)
+      console.log('Merchant payout already processed via customer payment');
+    }
+
+    // Get driver profile for Stripe account
+    if (order.driverid) {
+      const { data: driverProfile, error: driverError } = await supabase
+        .from('driver_profiles')
+        .select('stripe_account_id')
+        .eq('user_id', order.driverid)
+        .single();
+
+      if (driverProfile?.stripe_account_id && calculations.driver_amount > 0) {
+        await processInstantPayout(
+          driverProfile.stripe_account_id,
+          calculations.driver_amount,
+          'usd',
+          {
+            order_id: orderId,
+            role: 'driver',
+            type: 'delivery_payout'
+          }
+        );
+        console.log(`Driver payout processed: $${calculations.driver_amount}`);
+      }
+    }
+
+    // House payout (to platform wallet)
+    if (calculations.house_amount > 0) {
+      // Update house wallet balance (already handled by database trigger)
+      console.log(`House payout processed: $${calculations.house_amount}`);
+    }
+
+  } catch (error) {
+    console.error('Error processing instant payouts:', error);
+    // Don't throw - this is a background process
+  }
+}
+
+/**
  * Fire payout completed event for external integrations
  */
 async function firePayoutCompletedEvent(
@@ -310,7 +379,7 @@ async function firePayoutCompletedEvent(
   });
 
   // Example: Call Stripe Connect API for instant payouts
-  // await processInstantPayouts(orderId, calculations);
+  await processInstantPayouts(orderId, calculations);
   
   // Example: Send webhook to merchant's system
   // await sendWebhookToMerchant(orderId, calculations);
