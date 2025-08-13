@@ -1,6 +1,7 @@
 [build]
   command = "npm run build"
   publish = "dist"
+  functions = "netlify/functions"
 
 # Note: Next.js plugin is disabled by not including it in the plugins section
 
