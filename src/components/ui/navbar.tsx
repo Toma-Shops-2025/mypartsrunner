@@ -30,6 +30,7 @@ const Navbar: React.FC = () => {
             <Link to="/how-it-works" className="text-sm font-medium hover:underline">How It Works</Link>
             <Link to="/help" className="text-sm font-medium hover:underline">Help</Link>
             <Link to="/contact" className="text-sm font-medium hover:underline">Contact</Link>
+            <Link to="/driver-application" className="text-sm font-medium hover:underline text-blue-600 font-semibold">🚗 Become a Driver</Link>
             {isAuthenticated && (
               <Link to="/browse" className="text-sm font-medium hover:underline">Browse</Link>
             )}
@@ -86,6 +87,7 @@ const Navbar: React.FC = () => {
               <Link to="/how-it-works" className="text-sm font-medium hover:underline">How It Works</Link>
               <Link to="/help" className="text-sm font-medium hover:underline">Help</Link>
               <Link to="/contact" className="text-sm font-medium hover:underline">Contact</Link>
+              <Link to="/driver-application" className="text-sm font-medium hover:underline text-blue-600 font-semibold">🚗 Become a Driver</Link>
               
               {isAuthenticated ? (
                 <>
