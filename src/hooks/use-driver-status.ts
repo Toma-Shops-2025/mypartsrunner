@@ -94,11 +94,26 @@ export const useDriverStatus = () => {
 
     try {
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 60000
-        });
+        // Add timeout to prevent infinite waiting
+        const timeoutId = setTimeout(() => {
+          reject(new Error('Location request timed out'));
+        }, 15000); // 15 second timeout
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            clearTimeout(timeoutId);
+            resolve(pos);
+          },
+          (error) => {
+            clearTimeout(timeoutId);
+            reject(error);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
+          }
+        );
       });
 
       const location: Location = {
@@ -114,56 +129,29 @@ export const useDriverStatus = () => {
         isTrackingLocation: true
       }));
 
-      // Start periodic location updates
-      const locationInterval = setInterval(async () => {
-        try {
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              const newLocation: Location = {
-                latitude: pos.coords.latitude,
-                longitude: pos.coords.longitude,
-                accuracy: pos.coords.accuracy || 0,
-                timestamp: Date.now()
-              };
+      return true;
+    } catch (error: any) {
+      console.error('Location access error:', error);
+      
+      // Handle specific error types
+      let errorMessage = "Please enable location access to go online";
+      if (error.code === 1) {
+        errorMessage = "Location access denied. Please enable in browser settings.";
+      } else if (error.code === 2) {
+        errorMessage = "Location unavailable. Please try again.";
+      } else if (error.code === 3) {
+        errorMessage = "Location request timed out. Please try again.";
+      }
 
-              setStatus(prev => ({
-                ...prev,
-                currentLocation: newLocation,
-                lastActive: new Date()
-              }));
-
-              // Update location in database if online
-              if (status.isOnline && user?.role === 'driver') {
-                updateDriverProfile({
-                  currentLocationLatitude: newLocation.latitude,
-                  currentLocationLongitude: newLocation.longitude
-                });
-              }
-            },
-            (error) => {
-              console.error('Location update failed:', error);
-            },
-            {
-              enableHighAccuracy: true,
-              timeout: 5000,
-              maximumAge: 30000
-            }
-          );
-        } catch (error) {
-          console.error('Location tracking error:', error);
-        }
-      }, LOCATION_UPDATE_INTERVAL);
-
-      return () => clearInterval(locationInterval);
-    } catch (error) {
       toast({
-        title: "Location access denied",
-        description: "Please enable location access to go online",
+        title: "Location access failed",
+        description: errorMessage,
         variant: "destructive"
       });
+      
       return false;
     }
-  }, [status.isOnline, user?.role, updateUserProfile, updateDriverProfile]);
+  }, []);
 
   // Go online with location tracking
   const goOnline = useCallback(async () => {

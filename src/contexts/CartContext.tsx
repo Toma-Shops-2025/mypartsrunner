@@ -49,11 +49,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setItems(cartItems);
     } catch (error) {
       console.error('Error loading cart items:', error);
-      toast({
-        title: "Error loading cart",
-        description: "Failed to load your cart items.",
-        variant: "destructive"
-      });
+      // Don't show error toast for cart loading failures - just log and continue
+      // This prevents the app from getting stuck
+      setItems([]); // Set empty cart on error
     } finally {
       setLoading(false);
     }
