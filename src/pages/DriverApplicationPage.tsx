@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Car, User, Shield, FileText, MapPin, DollarSign } from 'lucide-react';
 import { useAppContext } from '@/contexts/AppContext';
 import { supabase } from '@/lib/supabase';
+import { DocumentUpload } from '@/components/DocumentUpload';
 
 const DriverApplicationPage: React.FC = () => {
   const { toast } = useToast();
@@ -70,7 +71,13 @@ const DriverApplicationPage: React.FC = () => {
     agreeToTerms: false,
     agreeToBackgroundCheck: false,
     agreeToDrugTest: false,
-    agreeToVehicleInspection: false
+    agreeToVehicleInspection: false,
+    
+    // Document Uploads
+    driverLicenseUrl: '',
+    insuranceCardUrl: '',
+    vehicleRegistrationUrl: '',
+    backgroundCheckConsentUrl: ''
   });
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -202,7 +209,11 @@ const DriverApplicationPage: React.FC = () => {
         agree_to_terms: formData.agreeToTerms,
         agree_to_background_check: formData.agreeToBackgroundCheck,
         agree_to_drug_test: formData.agreeToDrugTest,
-        agree_to_vehicle_inspection: formData.agreeToVehicleInspection
+        agree_to_vehicle_inspection: formData.agreeToVehicleInspection,
+        driver_license_url: formData.driverLicenseUrl,
+        insurance_card_url: formData.insuranceCardUrl,
+        vehicle_registration_url: formData.vehicleRegistrationUrl,
+        background_check_consent_url: formData.backgroundCheckConsentUrl
       };
 
       // Insert application into database
@@ -225,16 +236,17 @@ const DriverApplicationPage: React.FC = () => {
       // Reset form
       setFormData({
         firstName: '', lastName: '', email: '', phone: '', dateOfBirth: '',
-        address: '', city: '', state: '', zipCode: '', licenseNumber: '',
-        licenseState: '', licenseExpiry: '', hasCommercialLicense: false,
-        vehicleType: '', vehicleMake: '', vehicleModel: '', vehicleYear: '',
-        licensePlate: '', vehicleColor: '', insuranceCompany: '', policyNumber: '',
-        policyExpiry: '', hasCommercialInsurance: false, drivingExperience: '',
-        preferredAreas: '', availability: [], maxDistance: '', paymentMethod: '',
-        cashAppUsername: '', venmoUsername: '', hasCriminalRecord: false,
-        criminalRecordDetails: '', emergencyContact: '', emergencyPhone: '',
-        agreeToTerms: false, agreeToBackgroundCheck: false, agreeToDrugTest: false,
-        agreeToVehicleInspection: false
+            address: '', city: '', state: '', zipCode: '', licenseNumber: '',
+    licenseState: '', licenseExpiry: '', hasCommercialLicense: false,
+    vehicleType: '', vehicleMake: '', vehicleModel: '', vehicleYear: '',
+    licensePlate: '', vehicleColor: '', insuranceCompany: '', policyNumber: '',
+    policyExpiry: '', hasCommercialInsurance: false, drivingExperience: '',
+    preferredAreas: '', availability: [], maxDistance: '', paymentMethod: '',
+    cashAppUsername: '', venmoUsername: '', hasCriminalRecord: false,
+    criminalRecordDetails: '', emergencyContact: '', emergencyPhone: '',
+    agreeToTerms: false, agreeToBackgroundCheck: false, agreeToDrugTest: false,
+    agreeToVehicleInspection: false, driverLicenseUrl: '', insuranceCardUrl: '',
+    vehicleRegistrationUrl: '', backgroundCheckConsentUrl: ''
       });
       setCurrentStep(1);
       
@@ -389,6 +401,19 @@ const DriverApplicationPage: React.FC = () => {
               />
               <Label htmlFor="hasCommercialLicense">I have a commercial driver's license</Label>
             </div>
+            
+            <DocumentUpload
+              label="Driver's License Photo"
+              description="Upload a clear photo of your driver's license (front and back)"
+              required
+              acceptedTypes={['image/jpeg', 'image/png', 'image/webp']}
+              maxSizeMB={5}
+              value={formData.driverLicenseUrl}
+              onChange={(url) => handleInputChange('driverLicenseUrl', url)}
+              onRemove={() => handleInputChange('driverLicenseUrl', '')}
+              placeholder="Upload your driver's license photo"
+              folder="drivers-license"
+            />
           </div>
         );
 
@@ -461,6 +486,19 @@ const DriverApplicationPage: React.FC = () => {
                 />
               </div>
             </div>
+            
+            <DocumentUpload
+              label="Vehicle Registration"
+              description="Upload a photo of your vehicle registration document"
+              required
+              acceptedTypes={['image/jpeg', 'image/png', 'image/webp', 'application/pdf']}
+              maxSizeMB={5}
+              value={formData.vehicleRegistrationUrl}
+              onChange={(url) => handleInputChange('vehicleRegistrationUrl', url)}
+              onRemove={() => handleInputChange('vehicleRegistrationUrl', '')}
+              placeholder="Upload your vehicle registration"
+              folder="vehicle-registration"
+            />
           </div>
         );
 
@@ -505,6 +543,19 @@ const DriverApplicationPage: React.FC = () => {
               />
               <Label htmlFor="hasCommercialInsurance">I have commercial insurance coverage</Label>
             </div>
+            
+            <DocumentUpload
+              label="Insurance Card"
+              description="Upload a photo of your insurance card or policy document"
+              required
+              acceptedTypes={['image/jpeg', 'image/png', 'image/webp', 'application/pdf']}
+              maxSizeMB={5}
+              value={formData.insuranceCardUrl}
+              onChange={(url) => handleInputChange('insuranceCardUrl', url)}
+              onRemove={() => handleInputChange('insuranceCardUrl', '')}
+              placeholder="Upload your insurance card"
+              folder="insurance"
+            />
           </div>
         );
 
@@ -676,6 +727,18 @@ const DriverApplicationPage: React.FC = () => {
                 <Label htmlFor="agreeToVehicleInspection">I consent to vehicle inspection *</Label>
               </div>
             </div>
+            
+            <DocumentUpload
+              label="Background Check Consent Form"
+              description="Upload a signed background check consent form (PDF or image)"
+              required
+              acceptedTypes={['image/jpeg', 'image/png', 'image/webp', 'application/pdf']}
+              value={formData.backgroundCheckConsentUrl}
+              onChange={(url) => handleInputChange('backgroundCheckConsentUrl', url)}
+              onRemove={() => handleInputChange('backgroundCheckConsentUrl', '')}
+              placeholder="Upload your signed consent form"
+              folder="background-check"
+            />
           </div>
         );
 
