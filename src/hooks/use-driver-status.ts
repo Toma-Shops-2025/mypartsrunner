@@ -93,6 +93,24 @@ export const useDriverStatus = () => {
     }
 
     try {
+      // First check if we have permission
+      let hasPermission = false;
+      
+      if ('permissions' in navigator) {
+        try {
+          const permission = await navigator.permissions.query({ name: 'geolocation' });
+          hasPermission = permission.state === 'granted';
+          console.log('Geolocation permission state:', permission.state);
+        } catch (permError) {
+          console.log('Permission query failed, will try direct access:', permError);
+        }
+      }
+
+      // If we don't have explicit permission, try to get location anyway
+      if (!hasPermission) {
+        console.log('No explicit permission, attempting to get location...');
+      }
+
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         // Add timeout to prevent infinite waiting
         const timeoutId = setTimeout(() => {
@@ -102,14 +120,16 @@ export const useDriverStatus = () => {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             clearTimeout(timeoutId);
+            console.log('Location obtained successfully:', pos.coords);
             resolve(pos);
           },
           (error) => {
             clearTimeout(timeoutId);
+            console.error('Geolocation error:', error);
             reject(error);
           },
           {
-            enableHighAccuracy: true,
+            enableHighAccuracy: false, // Try with lower accuracy first
             timeout: 10000,
             maximumAge: 60000
           }
@@ -122,6 +142,8 @@ export const useDriverStatus = () => {
         accuracy: position.coords.accuracy || 0,
         timestamp: Date.now()
       };
+
+      console.log('Location set successfully:', location);
 
       setStatus(prev => ({
         ...prev,
@@ -338,11 +360,55 @@ export const useDriverStatus = () => {
     };
   }, [status.autoOfflineTimer]);
 
+  // Test location access (for debugging)
+  const testLocationAccess = useCallback(async () => {
+    console.log('Testing location access...');
+    
+    if (!navigator.geolocation) {
+      console.log('Geolocation not supported');
+      return false;
+    }
+
+    try {
+      // Check permission status
+      if ('permissions' in navigator) {
+        const permission = await navigator.permissions.query({ name: 'geolocation' });
+        console.log('Permission status:', permission.state);
+      }
+
+      // Try to get current position
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: false,
+          timeout: 5000,
+          maximumAge: 30000
+        });
+      });
+
+      console.log('Location test successful:', position.coords);
+      toast({
+        title: "Location Test Successful",
+        description: `Lat: ${position.coords.latitude}, Lng: ${position.coords.longitude}`,
+        variant: "default"
+      });
+      return true;
+    } catch (error: any) {
+      console.error('Location test failed:', error);
+      toast({
+        title: "Location Test Failed",
+        description: `Error ${error.code}: ${error.message}`,
+        variant: "destructive"
+      });
+      return false;
+    }
+  }, []);
+
   return {
     ...status,
     goOnline,
     goOffline,
     resetAutoOfflineTimer,
-    startLocationTracking
+    startLocationTracking,
+    testLocationAccess
   };
 }; 
