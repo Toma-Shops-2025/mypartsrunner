@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAppContext } from '@/contexts/AppContext';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 
 interface Location {
   latitude: number;
@@ -30,6 +31,55 @@ export const useDriverStatus = () => {
     isTrackingLocation: false,
     autoOfflineTimer: null,
   });
+
+  // Update driver profile in database
+  const updateDriverProfile = useCallback(async (updates: any) => {
+    if (!user?.id) return;
+
+    try {
+      // First, check if driver profile exists
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('driver_profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('Error checking driver profile:', checkError);
+        throw checkError;
+      }
+
+      if (!existingProfile) {
+        // Create driver profile if it doesn't exist
+        const { error: insertError } = await supabase
+          .from('driver_profiles')
+          .insert([{
+            id: user.id,
+            vehicleType: 'car', // Default value, can be updated later
+            isAvailable: false
+          }]);
+
+        if (insertError) {
+          console.error('Error creating driver profile:', insertError);
+          throw insertError;
+        }
+      }
+
+      // Now update the profile
+      const { error } = await supabase
+        .from('driver_profiles')
+        .update(updates)
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error updating driver profile:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Failed to update driver profile:', error);
+      throw error;
+    }
+  }, [user?.id]);
 
   // Start location tracking
   const startLocationTracking = useCallback(async () => {
@@ -84,8 +134,9 @@ export const useDriverStatus = () => {
 
               // Update location in database if online
               if (status.isOnline && user?.role === 'driver') {
-                updateUserProfile({
-                  currentLocation: newLocation
+                updateDriverProfile({
+                  currentLocationLatitude: newLocation.latitude,
+                  currentLocationLongitude: newLocation.longitude
                 });
               }
             },
@@ -112,7 +163,7 @@ export const useDriverStatus = () => {
       });
       return false;
     }
-  }, [status.isOnline, user?.role, updateUserProfile]);
+  }, [status.isOnline, user?.role, updateUserProfile, updateDriverProfile]);
 
   // Go online with location tracking
   const goOnline = useCallback(async () => {
@@ -122,9 +173,11 @@ export const useDriverStatus = () => {
     if (!locationStarted) return false;
 
     try {
-      await updateUserProfile({ 
+      // Update driver profile with availability and location
+      await updateDriverProfile({ 
         isAvailable: true,
-        lastActive: new Date().toISOString()
+        currentLocationLatitude: status.currentLocation?.latitude || null,
+        currentLocationLongitude: status.currentLocation?.longitude || null
       });
 
       setStatus(prev => ({
@@ -163,16 +216,16 @@ export const useDriverStatus = () => {
       });
       return false;
     }
-  }, [user?.role, startLocationTracking, updateUserProfile]);
+  }, [user?.role, startLocationTracking, updateDriverProfile, status.currentLocation]);
 
   // Go offline
   const goOffline = useCallback(async () => {
     if (user?.role !== 'driver') return;
 
     try {
-      await updateUserProfile({ 
-        isAvailable: false,
-        lastActive: new Date().toISOString()
+      // Update driver profile to offline
+      await updateDriverProfile({ 
+        isAvailable: false
       });
 
       // Clear auto-offline timer
@@ -190,7 +243,7 @@ export const useDriverStatus = () => {
       toast({
         title: "You're now Offline",
         description: "Location tracking stopped. You're not available for deliveries.",
-        variant: "secondary"
+        variant: "default"
       });
     } catch (error) {
       toast({
@@ -199,7 +252,7 @@ export const useDriverStatus = () => {
         variant: "destructive"
       });
     }
-  }, [user?.role, status.autoOfflineTimer, updateUserProfile]);
+  }, [user?.role, status.autoOfflineTimer, updateDriverProfile]);
 
   // Reset auto-offline timer when driver is active
   const resetAutoOfflineTimer = useCallback(() => {
