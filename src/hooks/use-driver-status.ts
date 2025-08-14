@@ -157,10 +157,49 @@ export const useDriverStatus = () => {
   const goOnline = useCallback(async () => {
     if (user?.role !== 'driver') return false;
 
-    const locationStarted = await startLocationTracking();
-    if (!locationStarted) return false;
-
     try {
+      // First try to get location permission
+      if ('permissions' in navigator) {
+        const permission = await navigator.permissions.query({ name: 'geolocation' });
+        if (permission.state === 'denied') {
+          toast({
+            title: "Location Access Required",
+            description: "Please enable location access in your browser settings to go online.",
+            variant: "destructive"
+          });
+          return false;
+        }
+      }
+
+      const locationStarted = await startLocationTracking();
+      if (!locationStarted) {
+        // If location fails, still allow going online but with a warning
+        toast({
+          title: "Location Access Failed",
+          description: "You can go online without location tracking, but won't receive nearby deliveries.",
+          variant: "destructive"
+        });
+        
+        // Still update driver profile to online
+        await updateDriverProfile({ 
+          isAvailable: true
+        });
+
+        setStatus(prev => ({
+          ...prev,
+          isOnline: true,
+          lastActive: new Date()
+        }));
+
+        toast({
+          title: "You're now Online! 🚗",
+          description: "Location tracking disabled. You're available for deliveries.",
+          variant: "default"
+        });
+
+        return true;
+      }
+
       // Update driver profile with availability and location
       await updateDriverProfile({ 
         isAvailable: true,
@@ -197,9 +236,10 @@ export const useDriverStatus = () => {
 
       return true;
     } catch (error) {
+      console.error('Failed to go online:', error);
       toast({
         title: "Failed to go online",
-        description: "Please try again",
+        description: "Please try again or check your connection.",
         variant: "destructive"
       });
       return false;
