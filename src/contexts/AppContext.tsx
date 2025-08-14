@@ -15,6 +15,7 @@ interface AppContextType {
   updateUserProfile: (updates: Partial<User>) => Promise<void>;
   isAuthenticated: boolean;
   userRole: UserRole | null;
+  resetLoadingState: () => void;
 }
 
 const defaultAppContext: AppContextType = {
@@ -28,6 +29,7 @@ const defaultAppContext: AppContextType = {
   updateUserProfile: async () => {},
   isAuthenticated: false,
   userRole: null,
+  resetLoadingState: () => {},
 };
 
 const AppContext = createContext<AppContextType>(defaultAppContext);
@@ -45,10 +47,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Add a timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Login timeout - please try again')), 10000);
+      });
+
+      const loginPromise = supabase.auth.signInWithPassword({
         email,
         password,
       });
+
+      const { data, error } = await Promise.race([loginPromise, timeoutPromise]) as any;
 
       if (error) throw error;
 
@@ -63,12 +72,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (profileError) throw profileError;
 
         setUser(profile);
+        setLoading(false); // Ensure loading is set to false
         toast({
           title: "Login successful!",
           description: "Welcome back to MyPartsRunner™."
         });
       }
     } catch (error: any) {
+      setLoading(false); // Ensure loading is set to false on error
       toast({
         title: "Login failed",
         description: error.message,
@@ -173,6 +184,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const resetLoadingState = () => {
+    setLoading(false);
+  };
+
   useEffect(() => {
     // Get initial session
     const getSession = async () => {
@@ -204,15 +219,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
+        
         if (session?.user) {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
+          try {
+            const { data: profile, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
 
-          if (!error && profile) {
-            setUser(profile);
+            if (!error && profile) {
+              setUser(profile);
+            } else {
+              console.error('Profile fetch error:', error);
+              setUser(null);
+            }
+          } catch (error) {
+            console.error('Profile fetch error:', error);
+            setUser(null);
           }
         } else {
           setUser(null);
@@ -237,6 +262,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateUserProfile,
         isAuthenticated: !!user,
         userRole: user?.role || null,
+        resetLoadingState,
       }}
     >
       {children}

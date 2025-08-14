@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from './button';
 import { Sheet, SheetContent, SheetTrigger } from './sheet';
@@ -8,11 +8,21 @@ import { useAppContext } from '@/contexts/AppContext';
 import { useCart } from '@/contexts/CartContext';
 
 const Navbar: React.FC = () => {
-  const { user, isAuthenticated, userRole, signOut } = useAppContext();
+  const { user, isAuthenticated, userRole, signOut, loading, resetLoadingState } = useAppContext();
   const { getCartItemCount } = useCart();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
+    setMobileMenuOpen(false); // Close menu after sign out
+  };
+
+  const handleResetLoading = () => {
+    resetLoadingState();
+  };
+
+  const handleMobileLinkClick = () => {
+    setMobileMenuOpen(false); // Close mobile menu when any link is clicked
   };
 
   return (
@@ -64,6 +74,18 @@ const Navbar: React.FC = () => {
             </div>
           ) : (
             <div className="flex items-center gap-4">
+              {/* Show loading reset button if loading is stuck */}
+              {loading && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleResetLoading}
+                  className="text-xs text-amber-600 hover:text-amber-700"
+                  title="Reset loading state"
+                >
+                  🔄 Reset
+                </Button>
+              )}
               <Link to="/login">
                 <Button variant="ghost">Log In</Button>
               </Link>
@@ -74,7 +96,7 @@ const Navbar: React.FC = () => {
           )}
         </div>
         
-        <Sheet>
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild className="md:hidden ml-auto">
             <Button variant="ghost" size="icon">
               <Menu className="h-5 w-5" />
@@ -83,21 +105,21 @@ const Navbar: React.FC = () => {
           </SheetTrigger>
           <SheetContent side="right">
             <div className="grid gap-4 py-4">
-              <Link to="/about" className="text-sm font-medium hover:underline">About</Link>
-              <Link to="/how-it-works" className="text-sm font-medium hover:underline">How It Works</Link>
-              <Link to="/help" className="text-sm font-medium hover:underline">Help</Link>
-              <Link to="/contact" className="text-sm font-medium hover:underline">Contact</Link>
-              <Link to="/driver-application" className="text-sm font-medium hover:underline text-blue-600 font-semibold">🚗 Become a Driver</Link>
+              <Link to="/about" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>About</Link>
+              <Link to="/how-it-works" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>How It Works</Link>
+              <Link to="/help" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>Help</Link>
+              <Link to="/contact" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>Contact</Link>
+              <Link to="/driver-application" className="text-sm font-medium hover:underline text-blue-600 font-semibold" onClick={handleMobileLinkClick}>🚗 Become a Driver</Link>
               
               {isAuthenticated ? (
                 <>
                   {userRole === 'customer' && (
-                    <Link to="/cart" className="text-sm font-medium hover:underline">
+                    <Link to="/cart" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>
                       Cart ({getCartItemCount()})
                     </Link>
                   )}
-                  <Link to="/browse" className="text-sm font-medium hover:underline">Browse</Link>
-                  <Link to="/dashboard" className="text-sm font-medium hover:underline">Dashboard</Link>
+                  <Link to="/browse" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>Browse</Link>
+                  <Link to="/dashboard" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>Dashboard</Link>
                   <button 
                     onClick={handleSignOut}
                     className="text-sm font-medium hover:underline text-left"
@@ -107,8 +129,17 @@ const Navbar: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <Link to="/login" className="text-sm font-medium hover:underline">Log In</Link>
-                  <Link to="/register" className="text-sm font-medium hover:underline">Sign Up</Link>
+                  {/* Show loading reset button if loading is stuck */}
+                  {loading && (
+                    <button 
+                      onClick={handleResetLoading}
+                      className="text-sm font-medium hover:underline text-left text-amber-600"
+                    >
+                      🔄 Reset Loading State
+                    </button>
+                  )}
+                  <Link to="/login" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>Log In</Link>
+                  <Link to="/register" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>Sign Up</Link>
                 </>
               )}
             </div>

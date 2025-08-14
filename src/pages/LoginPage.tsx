@@ -18,6 +18,7 @@ const LoginPage: React.FC = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [hasBiometricCredential, setHasBiometricCredential] = useState(false);
+  const [stuckLoading, setStuckLoading] = useState(false);
 
   useEffect(() => {
     // Check if user has registered biometric authentication
@@ -25,8 +26,30 @@ const LoginPage: React.FC = () => {
     setHasBiometricCredential(!!storedCredential);
   }, []);
 
+  // Add a timeout to detect stuck loading states
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    if (formData.loading) {
+      timeoutId = setTimeout(() => {
+        setStuckLoading(true);
+      }, 8000); // Show retry option after 8 seconds
+    } else {
+      setStuckLoading(false);
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [formData.loading]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleRetry = () => {
+    setFormData({ ...formData, loading: false });
+    setStuckLoading(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,10 +57,19 @@ const LoginPage: React.FC = () => {
     
     try {
       setFormData({ ...formData, loading: true });
-      await signIn(formData.email, formData.password);
+      
+      // Add a timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Login timeout - please try again')), 10000);
+      });
+
+      const loginPromise = signIn(formData.email, formData.password);
+      
+      await Promise.race([loginPromise, timeoutPromise]);
       navigate('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       // Error is already handled in the context
+      console.error('Login error:', error);
     } finally {
       setFormData({ ...formData, loading: false });
     }
@@ -119,6 +151,24 @@ const LoginPage: React.FC = () => {
               <Button type="submit" className="w-full" disabled={formData.loading}>
                 {formData.loading ? 'Logging in...' : 'Log in'}
               </Button>
+              
+              {/* Show retry option if loading gets stuck */}
+              {stuckLoading && (
+                <div className="text-center space-y-2">
+                  <p className="text-sm text-amber-600">
+                    Login seems to be taking longer than usual...
+                  </p>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleRetry}
+                    className="text-xs"
+                  >
+                    Try Again
+                  </Button>
+                </div>
+              )}
             </form>
           </CardContent>
           <CardFooter className="flex justify-center">
