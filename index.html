@@ -66,35 +66,7 @@
         location.replace(`https:${location.href.substring(location.protocol.length)}`);
       }
       
-      // Handle geolocation permissions
-      if ('geolocation' in navigator) {
-        // Request permission on page load
-        navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-          if (result.state === 'denied') {
-            console.log('Geolocation permission denied');
-            // Show a more helpful message
-            const banner = document.createElement('div');
-            banner.style.cssText = `
-              position: fixed;
-              top: 0;
-              left: 0;
-              right: 0;
-              background: #dc2626;
-              color: white;
-              padding: 12px;
-              text-align: center;
-              z-index: 10000;
-              font-size: 14px;
-            `;
-            banner.innerHTML = `
-              <strong>Location Access Required:</strong> 
-              Please enable location access in your browser settings to use MyPartsRunner™. 
-              <button onclick="this.parentElement.remove()" style="margin-left: 10px; background: white; color: #dc2626; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">×</button>
-            `;
-            document.body.appendChild(banner);
-          }
-        });
-      }
+      // Geolocation banner removed - driver functionality now works without requiring location access
     </script>
   </head>
   <body>
