@@ -27,7 +27,7 @@ import {
   Eye,
   EyeOff,
   Trash2,
-  MarkAsRead,
+  CheckCheck,
   Smartphone,
   Mail,
   Calendar,
@@ -436,8 +436,8 @@ export const DriverNotifications: React.FC<DriverNotificationsProps> = ({
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleMarkAllAsRead} disabled={unreadCount === 0}>
-            <MarkAsRead className="mr-2 h-4 w-4" />
-            Mark All Read
+                            <CheckCheck className="mr-2 h-4 w-4" />
+                Mark All Read
           </Button>
           <Button variant="outline" onClick={requestNotificationPermission}>
             <BellRing className="mr-2 h-4 w-4" />
