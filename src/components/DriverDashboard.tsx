@@ -32,8 +32,7 @@ export const DriverDashboard: React.FC = () => {
     lastActive,
     goOnline,
     goOffline,
-    resetAutoOfflineTimer,
-    testLocationAccess
+    resetAutoOfflineTimer
   } = useDriverStatus();
 
   const {
@@ -113,15 +112,7 @@ export const DriverDashboard: React.FC = () => {
             {isOnline ? "Go Offline" : "Go Online"}
           </Button>
 
-          {/* Test Location Button for Debugging */}
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={testLocationAccess}
-            className="w-full"
-          >
-            🧪 Test Location Access
-          </Button>
+          {/* Debug button removed - location functionality simplified */}
 
           {isOnline && (
             <div className="bg-green-50 p-3 rounded-lg">

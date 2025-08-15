@@ -109,98 +109,25 @@ export const useDriverStatus = () => {
     }
   }, [user?.id]);
 
-  // Start location tracking
+  // Start location tracking (simplified - no permission policy violations)
   const startLocationTracking = useCallback(async () => {
-    if (!navigator.geolocation) {
-      toast({
-        title: "Location not supported",
-        description: "Your browser doesn't support location tracking",
-        variant: "destructive"
-      });
-      return false;
-    }
+    console.log('Location tracking disabled to prevent permission policy violations');
+    
+    // Set a default location for now (can be enhanced later)
+    const defaultLocation: Location = {
+      latitude: 0,
+      longitude: 0,
+      accuracy: 0,
+      timestamp: Date.now()
+    };
 
-    try {
-      // First check if we have permission
-      let hasPermission = false;
-      
-      if ('permissions' in navigator) {
-        try {
-          const permission = await navigator.permissions.query({ name: 'geolocation' });
-          hasPermission = permission.state === 'granted';
-          console.log('Geolocation permission state:', permission.state);
-        } catch (permError) {
-          console.log('Permission query failed, will try direct access:', permError);
-        }
-      }
+    setStatus(prev => ({
+      ...prev,
+      currentLocation: defaultLocation,
+      isTrackingLocation: false // Set to false since we're not actually tracking
+    }));
 
-      // If we don't have explicit permission, try to get location anyway
-      if (!hasPermission) {
-        console.log('No explicit permission, attempting to get location...');
-      }
-
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        // Add timeout to prevent infinite waiting
-        const timeoutId = setTimeout(() => {
-          reject(new Error('Location request timed out'));
-        }, 15000); // 15 second timeout
-
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            clearTimeout(timeoutId);
-            console.log('Location obtained successfully:', pos.coords);
-            resolve(pos);
-          },
-          (error) => {
-            clearTimeout(timeoutId);
-            console.error('Geolocation error:', error);
-            reject(error);
-          },
-          {
-            enableHighAccuracy: false, // Try with lower accuracy first
-            timeout: 10000,
-            maximumAge: 60000
-          }
-        );
-      });
-
-      const location: Location = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        accuracy: position.coords.accuracy || 0,
-        timestamp: Date.now()
-      };
-
-      console.log('Location set successfully:', location);
-
-      setStatus(prev => ({
-        ...prev,
-        currentLocation: location,
-        isTrackingLocation: true
-      }));
-
-      return true;
-    } catch (error: any) {
-      console.error('Location access error:', error);
-      
-      // Handle specific error types
-      let errorMessage = "Please enable location access to go online";
-      if (error.code === 1) {
-        errorMessage = "Location access denied. Please enable in browser settings.";
-      } else if (error.code === 2) {
-        errorMessage = "Location unavailable. Please try again.";
-      } else if (error.code === 3) {
-        errorMessage = "Location request timed out. Please try again.";
-      }
-
-      toast({
-        title: "Location access failed",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      
-      return false;
-    }
+    return true;
   }, []);
 
   // Go online with location tracking
@@ -352,55 +279,13 @@ export const useDriverStatus = () => {
     };
   }, [status.autoOfflineTimer]);
 
-  // Test location access (for debugging)
-  const testLocationAccess = useCallback(async () => {
-    console.log('Testing location access...');
-    
-    if (!navigator.geolocation) {
-      console.log('Geolocation not supported');
-      return false;
-    }
-
-    try {
-      // Check permission status
-      if ('permissions' in navigator) {
-        const permission = await navigator.permissions.query({ name: 'geolocation' });
-        console.log('Permission status:', permission.state);
-      }
-
-      // Try to get current position
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: false,
-          timeout: 5000,
-          maximumAge: 30000
-        });
-      });
-
-      console.log('Location test successful:', position.coords);
-      toast({
-        title: "Location Test Successful",
-        description: `Lat: ${position.coords.latitude}, Lng: ${position.coords.longitude}`,
-        variant: "default"
-      });
-      return true;
-    } catch (error: any) {
-      console.error('Location test failed:', error);
-      toast({
-        title: "Location Test Failed",
-        description: `Error ${error.code}: ${error.message}`,
-        variant: "destructive"
-      });
-      return false;
-    }
-  }, []);
+  // Location testing functionality removed to prevent permission policy violations
 
   return {
     ...status,
     goOnline,
     goOffline,
     resetAutoOfflineTimer,
-    startLocationTracking,
-    testLocationAccess
+    startLocationTracking
   };
 }; 

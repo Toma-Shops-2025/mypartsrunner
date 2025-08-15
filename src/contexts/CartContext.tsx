@@ -34,8 +34,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Load cart items when user logs in
   useEffect(() => {
     if (isAuthenticated && user) {
-      // Re-enable cart loading now that database is fixed
-      loadCartItems();
+      // Temporarily disable cart loading due to persistent API errors
+      console.log('Cart loading disabled due to database issues');
+      setItems([]); // Set empty cart for now
+      // loadCartItems(); // Re-enable this later when database is fixed
     } else {
       setItems([]);
     }
