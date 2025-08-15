@@ -180,24 +180,12 @@ export const useDriverStatus = () => {
     if (user?.role !== 'driver') return false;
 
     try {
-      // Try to get location but don't require it for going online
       console.log('Attempting to go online...');
       
-      let locationObtained = false;
-      try {
-        const locationStarted = await startLocationTracking();
-        locationObtained = locationStarted;
-      } catch (locationError) {
-        console.log('Location tracking failed, but continuing without it:', locationError);
-      }
-
-      // Update driver profile to online regardless of location
+      // Skip location entirely if there are permission issues
+      // Just update driver profile to online
       await updateDriverProfile({ 
-        isAvailable: true,
-        ...(status.currentLocation ? {
-          currentLocationLatitude: status.currentLocation.latitude,
-          currentLocationLongitude: status.currentLocation.longitude
-        } : {})
+        isAvailable: true
       });
 
       setStatus(prev => ({
@@ -223,9 +211,7 @@ export const useDriverStatus = () => {
 
       toast({
         title: "You're now Online! 🚗",
-        description: locationObtained 
-          ? "Location tracking active. You're available for deliveries."
-          : "You're online but location tracking is disabled. You may receive fewer delivery requests.",
+        description: "You're available for deliveries. Location tracking is disabled but you can still receive delivery requests.",
         variant: "default"
       });
 
@@ -234,12 +220,12 @@ export const useDriverStatus = () => {
       console.error('Failed to go online:', error);
       toast({
         title: "Failed to go online",
-        description: "Please try again or check your connection.",
+        description: "Database connection issue. Please check if the database tables exist.",
         variant: "destructive"
       });
       return false;
     }
-  }, [user?.role, startLocationTracking, updateDriverProfile, status.currentLocation]);
+  }, [user?.role, updateDriverProfile]);
 
   // Go offline
   const goOffline = useCallback(async () => {
