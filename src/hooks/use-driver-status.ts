@@ -180,53 +180,24 @@ export const useDriverStatus = () => {
     if (user?.role !== 'driver') return false;
 
     try {
-      // First try to get location permission
-      if ('permissions' in navigator) {
-        const permission = await navigator.permissions.query({ name: 'geolocation' });
-        if (permission.state === 'denied') {
-          toast({
-            title: "Location Access Required",
-            description: "Please enable location access in your browser settings to go online.",
-            variant: "destructive"
-          });
-          return false;
-        }
+      // Try to get location but don't require it for going online
+      console.log('Attempting to go online...');
+      
+      let locationObtained = false;
+      try {
+        const locationStarted = await startLocationTracking();
+        locationObtained = locationStarted;
+      } catch (locationError) {
+        console.log('Location tracking failed, but continuing without it:', locationError);
       }
 
-      const locationStarted = await startLocationTracking();
-      if (!locationStarted) {
-        // If location fails, still allow going online but with a warning
-        toast({
-          title: "Location Access Failed",
-          description: "You can go online without location tracking, but won't receive nearby deliveries.",
-          variant: "destructive"
-        });
-        
-        // Still update driver profile to online
-        await updateDriverProfile({ 
-          isAvailable: true
-        });
-
-        setStatus(prev => ({
-          ...prev,
-          isOnline: true,
-          lastActive: new Date()
-        }));
-
-        toast({
-          title: "You're now Online! 🚗",
-          description: "Location tracking disabled. You're available for deliveries.",
-          variant: "default"
-        });
-
-        return true;
-      }
-
-      // Update driver profile with availability and location
+      // Update driver profile to online regardless of location
       await updateDriverProfile({ 
         isAvailable: true,
-        currentLocationLatitude: status.currentLocation?.latitude || null,
-        currentLocationLongitude: status.currentLocation?.longitude || null
+        ...(status.currentLocation ? {
+          currentLocationLatitude: status.currentLocation.latitude,
+          currentLocationLongitude: status.currentLocation.longitude
+        } : {})
       });
 
       setStatus(prev => ({
@@ -252,7 +223,9 @@ export const useDriverStatus = () => {
 
       toast({
         title: "You're now Online! 🚗",
-        description: "Location tracking active. You're available for deliveries.",
+        description: locationObtained 
+          ? "Location tracking active. You're available for deliveries."
+          : "You're online but location tracking is disabled. You may receive fewer delivery requests.",
         variant: "default"
       });
 
