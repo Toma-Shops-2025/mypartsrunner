@@ -1,157 +1,120 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "@/components/theme-provider";
 import { AppProvider } from "@/contexts/AppContext";
 import { CartProvider } from "@/contexts/CartContext";
-import AppLayout from "@/components/AppLayout";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import HomePage from "@/pages/HomePage";
 import AboutPage from "@/pages/AboutPage";
 import ContactPage from "@/pages/ContactPage";
+import LoginPage from "@/pages/LoginPage";
+import RegisterPage from "@/pages/RegisterPage";
+import DashboardPage from "@/pages/DashboardPage";
+import BrowsePage from "@/pages/BrowsePage";
+import CartPage from "@/pages/CartPage";
+import WishlistPage from "@/pages/WishlistPage";
+import CheckoutPage from "@/pages/CheckoutPage";
+import OrderConfirmationPage from "@/pages/OrderConfirmationPage";
+import MapPage from "@/pages/MapPage";
+import NotFound from "@/pages/NotFound";
 import HowItWorksPage from "@/pages/HowItWorksPage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import TermsOfServicePage from "@/pages/TermsOfServicePage";
-import SafetyGuidePage from "@/pages/SafetyGuidePage";
-import ShippingHandlingPage from "@/pages/ShippingHandlingPage";
-import NotFound from "@/pages/NotFound";
-import RegisterPage from "@/pages/RegisterPage";
-import LoginPage from "@/pages/LoginPage";
-import DashboardPage from "@/pages/DashboardPage";
-import MapPage from "@/pages/MapPage";
 import AddProductPage from "@/pages/AddProductPage";
 import StoreSettingsPage from "@/pages/StoreSettingsPage";
-import WishlistPage from "@/pages/WishlistPage";
-import BrowsePage from "@/pages/BrowsePage";
-import CartPage from "@/pages/CartPage";
-import CheckoutPage from "@/pages/CheckoutPage";
-import OrderConfirmationPage from "@/pages/OrderConfirmationPage";
+import SafetyGuidePage from "@/pages/SafetyGuidePage";
 import CustomerGuidePage from "@/pages/CustomerGuidePage";
 import DriverGuidePage from "@/pages/DriverGuidePage";
 import MerchantGuidePage from "@/pages/MerchantGuidePage";
 import AdminGuidePage from "@/pages/AdminGuidePage";
+import ShippingHandlingPage from "@/pages/ShippingHandlingPage";
+import MerchantIntegrationPage from "@/pages/MerchantIntegrationPage";
 import DriverApplicationPage from "@/pages/DriverApplicationPage";
-import DriverStatusPage from "@/pages/DriverStatusPage";
-import AdminDriverReviewPage from "@/pages/AdminDriverReviewPage";
 import MerchantApplicationPage from "@/pages/MerchantApplicationPage";
+import AdminDriverReviewPage from "@/pages/AdminDriverReviewPage";
 import HelpPage from "@/pages/HelpPage";
-import StripeConnectTestPage from "@/pages/StripeConnectTestPage";
 import { useState, useEffect } from "react";
 import Logo from "@/components/Logo";
+import AppLayout from "@/components/AppLayout";
 
-const App = () => {
-  const [isLoading, setIsLoading] = useState(true);
+export default function App() {
   const [globalError, setGlobalError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate loading time and ensure everything is ready
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
-    // Add global error handler
     const handleGlobalError = (event: ErrorEvent) => {
       console.error('Global error:', event.error);
-      setGlobalError('Something went wrong. Please refresh the page.');
+      setGlobalError('An unexpected error occurred. Please refresh the page.');
     };
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       console.error('Unhandled promise rejection:', event.reason);
-      setGlobalError('Something went wrong. Please refresh the page.');
+      setGlobalError('An unexpected error occurred. Please refresh the page.');
     };
 
     window.addEventListener('error', handleGlobalError);
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
     return () => {
-      clearTimeout(timer);
       window.removeEventListener('error', handleGlobalError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
 
-  const handleRefresh = () => {
-    window.location.reload();
-  };
-
   if (globalError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="mb-6 flex justify-center">
-            <Logo size="large" withText={true} />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+          <div className="mb-4">
+            <Logo />
           </div>
-          <div className="text-red-600 mb-4">
-            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold mb-2">Oops! Something went wrong</h2>
-          <p className="text-muted-foreground mb-6">{globalError}</p>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Oops! Something went wrong</h2>
+          <p className="text-gray-600 mb-4">{globalError}</p>
           <button
-            onClick={handleRefresh}
-            className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
           >
-            Refresh Page
+            🔄 Refresh Page
           </button>
         </div>
       </div>
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="mb-6 flex justify-center">
-            <Logo size="large" withText={true} />
-          </div>
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading MyPartsRunner...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <ThemeProvider defaultTheme="light">
+    <div className="App">
       <AppProvider>
         <CartProvider>
           <TooltipProvider>
-            <Toaster />
-            <Sonner />
             <BrowserRouter>
               <AppLayout>
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/browse" element={<BrowsePage />} />
+                  <Route path="/cart" element={<CartPage />} />
+                  <Route path="/wishlist" element={<WishlistPage />} />
+                  <Route path="/checkout" element={<CheckoutPage />} />
+                  <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
+                  <Route path="/map" element={<MapPage />} />
                   <Route path="/how-it-works" element={<HowItWorksPage />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
                   <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-                  <Route path="/safety-guide" element={<SafetyGuidePage />} />
-                  <Route path="/shipping-handling" element={<ShippingHandlingPage />} />
-                  <Route path="/register" element={<RegisterPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/map" element={<MapPage />} />
                   <Route path="/add-product" element={<AddProductPage />} />
                   <Route path="/store-settings" element={<StoreSettingsPage />} />
-                  <Route path="/wishlist" element={<WishlistPage />} />
-                  <Route path="/browse" element={<BrowsePage />} />
-                  <Route path="/cart" element={<CartPage />} />
-                  <Route path="/checkout" element={<CheckoutPage />} />
-                  <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+                  <Route path="/safety-guide" element={<SafetyGuidePage />} />
                   <Route path="/customer-guide" element={<CustomerGuidePage />} />
                   <Route path="/driver-guide" element={<DriverGuidePage />} />
                   <Route path="/merchant-guide" element={<MerchantGuidePage />} />
                   <Route path="/admin-guide" element={<AdminGuidePage />} />
+                  <Route path="/shipping-handling" element={<ShippingHandlingPage />} />
+                  <Route path="/merchant-integration" element={<MerchantIntegrationPage />} />
                   <Route path="/driver-application" element={<DriverApplicationPage />} />
-                  <Route path="/driver-status" element={<DriverStatusPage />} />
                   <Route path="/admin/driver-review" element={<AdminDriverReviewPage />} />
                   <Route path="/merchant-application" element={<MerchantApplicationPage />} />
                   <Route path="/help" element={<HelpPage />} />
-                  <Route path="/stripe-connect-test" element={<StripeConnectTestPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </AppLayout>
@@ -159,8 +122,6 @@ const App = () => {
           </TooltipProvider>
         </CartProvider>
       </AppProvider>
-    </ThemeProvider>
+    </div>
   );
-};
-
-export default App;
+}
