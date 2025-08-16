@@ -32,6 +32,8 @@ import DriverApplicationPage from "@/pages/DriverApplicationPage";
 import MerchantApplicationPage from "@/pages/MerchantApplicationPage";
 import AdminDriverReviewPage from "@/pages/AdminDriverReviewPage";
 import HelpPage from "@/pages/HelpPage";
+import MerchantStripeOnboardingPage from "@/pages/MerchantStripeOnboardingPage";
+import DriverStripeOnboardingPage from "@/pages/DriverStripeOnboardingPage";
 import { useState, useEffect } from "react";
 import Logo from "@/components/Logo";
 import AppLayout from "@/components/AppLayout";
@@ -114,6 +116,8 @@ export default function App() {
                   <Route path="/driver-application" element={<DriverApplicationPage />} />
                   <Route path="/admin/driver-review" element={<AdminDriverReviewPage />} />
                   <Route path="/merchant-application" element={<MerchantApplicationPage />} />
+                  <Route path="/merchant-stripe-onboarding" element={<MerchantStripeOnboardingPage />} />
+                  <Route path="/driver-stripe-onboarding" element={<DriverStripeOnboardingPage />} />
                   <Route path="/help" element={<HelpPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
