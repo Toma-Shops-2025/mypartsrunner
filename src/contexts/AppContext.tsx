@@ -127,8 +127,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const demoUser = {
           id: 'demo-user-123',
           email: 'demo@mypartsrunner.com',
-          name: 'Demo User',
-          role: 'customer',
+          name: 'Demo Driver',
+          firstName: 'Demo',
+          lastName: 'Driver',
+          role: 'driver',
+          isAvailable: false,
           createdAt: new Date().toISOString()
         };
         setUser(demoUser as any);
@@ -204,6 +207,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const signOut = async () => {
     try {
+      // Check if this is a demo user
+      if (user?.id === 'demo-user-123') {
+        console.log('Demo user signing out');
+        setUser(null);
+        toast({
+          title: "Demo session ended",
+          description: "Thanks for trying MyPartsRunner™!"
+        });
+        return;
+      }
+      
+      // Regular Supabase signout
       await supabase.auth.signOut();
       setUser(null);
       toast({
@@ -211,10 +226,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         description: "Come back soon!"
       });
     } catch (error: any) {
+      console.warn('Signout error, forcing local logout:', error);
+      // Force local logout even if Supabase fails
+      setUser(null);
       toast({
-        title: "Error signing out",
-        description: error.message,
-        variant: "destructive"
+        title: "Signed out",
+        description: "You have been logged out."
       });
     }
   };
