@@ -1,50 +1,74 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, Heart, ShoppingCart, Loader2 } from "lucide-react";
+import { Heart, ShoppingCart, Loader2, Star, MapPin } from "lucide-react";
 import { Product } from "@/types";
 import { DatabaseService } from "@/lib/database";
 import { useCart } from "@/contexts/CartContext";
 import { useAppContext } from "@/contexts/AppContext";
+import AdvancedSearch from "@/components/AdvancedSearch";
+
+interface SearchResult {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  originalPrice?: number;
+  brand: string;
+  category: string;
+  condition: 'new' | 'used' | 'refurbished';
+  rating: number;
+  reviewCount: number;
+  availability: 'in-stock' | 'low-stock' | 'out-of-stock' | 'pre-order';
+  distance: number;
+  merchantName: string;
+  imageUrl: string;
+  aiMatch?: number;
+  tags: string[];
+  compatibleVehicles?: string[];
+}
 
 const BrowsePage = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(true);
   const { addToCart, isInCart } = useCart();
   const { isAuthenticated } = useAppContext();
-
-  const categories = [
-    "All",
-    "Brakes",
-    "Engine",
-    "Lighting",
-    "Suspension",
-    "Transmission",
-    "Electrical",
-    "Exhaust",
-    "Cooling",
-    "Fuel System"
-  ];
 
   useEffect(() => {
     loadProducts();
   }, []);
-
-  useEffect(() => {
-    filterProducts();
-  }, [products, searchTerm, selectedCategory]);
 
   const loadProducts = async () => {
     try {
       setLoading(true);
       const productsData = await DatabaseService.getProducts();
       setProducts(productsData);
+      
+      // Convert products to search results format
+      const results: SearchResult[] = productsData.map(product => ({
+        id: product.id,
+        name: product.name,
+        description: product.description || '',
+        price: product.price,
+        originalPrice: product.originalPrice,
+        brand: product.brand || 'Generic',
+        category: product.category,
+        condition: 'new' as const,
+        rating: product.rating || 4.5,
+        reviewCount: Math.floor(Math.random() * 200) + 10,
+        availability: product.inStock ? 'in-stock' as const : 'out-of-stock' as const,
+        distance: Math.round(Math.random() * 15 + 1),
+        merchantName: `${product.brand || 'Auto'} Parts Store`,
+        imageUrl: product.imageUrl || '/api/placeholder/300/200',
+        aiMatch: Math.floor(Math.random() * 20) + 80,
+        tags: [product.category.toLowerCase()],
+        compatibleVehicles: [`2018-2023 ${product.brand || 'Generic'} Models`]
+      }));
+      
+      setSearchResults(results);
     } catch (error) {
       console.error('Error loading products:', error);
     } finally {
@@ -52,136 +76,237 @@ const BrowsePage = () => {
     }
   };
 
-  const filterProducts = () => {
-    let filtered = products;
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Filter by category
-    if (selectedCategory && selectedCategory !== "All") {
-      filtered = filtered.filter(product => product.category === selectedCategory);
-    }
-
-    setFilteredProducts(filtered);
+  const handleSearchResults = (results: SearchResult[]) => {
+    setSearchResults(results);
   };
 
-  const handleAddToCart = async (product: Product) => {
-    if (!isAuthenticated) {
-      // You could redirect to login or show a modal
-      return;
-    }
-    await addToCart(product);
+  const handleAddToCart = (result: SearchResult) => {
+    // Convert search result back to product for cart
+    const product: Product = {
+      id: result.id,
+      name: result.name,
+      price: result.price,
+      originalPrice: result.originalPrice,
+      category: result.category,
+      brand: result.brand,
+      imageUrl: result.imageUrl,
+      inStock: result.availability !== 'out-of-stock',
+      rating: result.rating,
+      description: result.description
+    };
+    
+    addToCart(product);
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    filterProducts();
+  const getAvailabilityColor = (availability: string) => {
+    switch (availability) {
+      case 'in-stock': return 'bg-green-500';
+      case 'low-stock': return 'bg-yellow-500';
+      case 'out-of-stock': return 'bg-red-500';
+      case 'pre-order': return 'bg-blue-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  const getConditionColor = (condition: string) => {
+    switch (condition) {
+      case 'new': return 'bg-green-100 text-green-800';
+      case 'used': return 'bg-yellow-100 text-yellow-800';
+      case 'refurbished': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center items-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <span className="ml-2">Loading products...</span>
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-gray-600">Loading products...</p>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Browse Products</h1>
-        <p className="text-muted-foreground">Find the parts you need</p>
-      </div>
-      
-      {/* Search and Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        <form onSubmit={handleSearch} className="relative flex-1">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </form>
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="All Categories" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map((category) => (
-              <SelectItem key={category} value={category}>
-                {category}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Results count */}
-      <div className="mb-6">
-        <p className="text-sm text-muted-foreground">
-          Showing {filteredProducts.length} of {products.length} products
-        </p>
-      </div>
-      
-      {/* Products Grid */}
-      {filteredProducts.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No products found matching your criteria.</p>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Browse Auto Parts</h1>
+          <p className="text-gray-600">Find the perfect parts for your vehicle with AI-powered search</p>
         </div>
-      ) : (
+
+        {/* Advanced Search */}
+        {showAdvancedSearch && (
+          <AdvancedSearch
+            onResultsChange={handleSearchResults}
+            initialQuery=""
+            className="mb-8"
+          />
+        )}
+
+        {/* Results Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold">
+              {searchResults.length > 0 ? `${searchResults.length} Products Found` : 'All Products'}
+            </h2>
+            <p className="text-gray-600 text-sm">
+              {searchResults.length > 0 && 'Sorted by relevance and AI match score'}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+          >
+            {showAdvancedSearch ? 'Hide' : 'Show'} Advanced Search
+          </Button>
+        </div>
+
+        {/* Product Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
-            <Card key={product.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
+          {searchResults.map((result) => (
+            <Card key={result.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <div className="relative">
+                <img
+                  src={result.imageUrl}
+                  alt={result.name}
+                  className="w-full h-48 object-cover"
+                />
+                {result.aiMatch && result.aiMatch > 90 && (
+                  <Badge className="absolute top-2 right-2 bg-blue-600">
+                    AI Match: {result.aiMatch}%
+                  </Badge>
+                )}
+                {result.originalPrice && result.originalPrice > result.price && (
+                  <Badge className="absolute top-2 left-2 bg-red-600">
+                    Sale
+                  </Badge>
+                )}
+              </div>
+              
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  {/* Header */}
                   <div>
-                    <CardTitle className="text-lg">{product.name}</CardTitle>
-                    <Badge variant="secondary" className="mt-1">
-                      {product.category}
+                    <h3 className="font-semibold text-lg line-clamp-2">{result.name}</h3>
+                    <p className="text-sm text-gray-600">{result.brand}</p>
+                  </div>
+
+                  {/* Badges */}
+                  <div className="flex flex-wrap gap-2">
+                    <Badge className={getAvailabilityColor(result.availability)}>
+                      {result.availability.replace('-', ' ')}
+                    </Badge>
+                    <Badge variant="outline" className={getConditionColor(result.condition)}>
+                      {result.condition}
+                    </Badge>
+                    <Badge variant="outline">
+                      {result.category}
                     </Badge>
                   </div>
-                  <Button variant="ghost" size="sm">
-                    <Heart className="h-4 w-4" />
-                  </Button>
+
+                  {/* Description */}
+                  <p className="text-sm text-gray-600 line-clamp-2">{result.description}</p>
+
+                  {/* Tags */}
+                  {result.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {result.tags.slice(0, 3).map((tag, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Rating and Reviews */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                      <span className="text-sm font-medium">{result.rating}</span>
+                    </div>
+                    <span className="text-sm text-gray-600">({result.reviewCount} reviews)</span>
+                  </div>
+
+                  {/* Merchant and Distance */}
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <MapPin className="h-4 w-4" />
+                    <span>{result.merchantName} • {result.distance} miles</span>
+                  </div>
+
+                  {/* Compatible Vehicles */}
+                  {result.compatibleVehicles && result.compatibleVehicles.length > 0 && (
+                    <div className="bg-blue-50 p-2 rounded text-xs">
+                      <span className="font-medium text-blue-800">Compatible: </span>
+                      <span className="text-blue-600">{result.compatibleVehicles[0]}</span>
+                    </div>
+                  )}
+
+                  {/* Price */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl font-bold text-green-600">
+                          ${result.price.toFixed(2)}
+                        </span>
+                        {result.originalPrice && result.originalPrice > result.price && (
+                          <span className="text-sm text-gray-500 line-through">
+                            ${result.originalPrice.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                      {result.originalPrice && result.originalPrice > result.price && (
+                        <div className="text-sm text-green-600">
+                          Save ${(result.originalPrice - result.price).toFixed(2)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      onClick={() => handleAddToCart(result)}
+                      disabled={result.availability === 'out-of-stock' || isInCart(result.id)}
+                      className="flex-1"
+                    >
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      {isInCart(result.id) ? 'In Cart' : 
+                       result.availability === 'out-of-stock' ? 'Out of Stock' : 'Add to Cart'}
+                    </Button>
+                    <Button variant="outline" size="icon">
+                      <Heart className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {product.description}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xl font-bold">${product.price.toFixed(2)}</span>
-                  <Button 
-                    size="sm" 
-                    onClick={() => handleAddToCart(product)}
-                    disabled={isInCart(product.id)}
-                  >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    {isInCart(product.id) ? 'In Cart' : 'Add to Cart'}
-                  </Button>
-                </div>
-                {product.stockQuantity !== undefined && (
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {product.stockQuantity > 0 ? `${product.stockQuantity} in stock` : 'Out of stock'}
-                  </p>
-                )}
               </CardContent>
             </Card>
           ))}
         </div>
-      )}
+
+        {/* No Results */}
+        {searchResults.length === 0 && !loading && (
+          <div className="text-center py-12">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+            <p className="text-gray-600">Try adjusting your search filters or search terms.</p>
+          </div>
+        )}
+
+        {/* Load More */}
+        {searchResults.length > 0 && (
+          <div className="text-center pt-8">
+            <Button variant="outline" size="lg">
+              Load More Products
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

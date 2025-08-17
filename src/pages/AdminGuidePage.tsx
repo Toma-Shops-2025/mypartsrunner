@@ -1,412 +1,524 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { CheckCircle, Settings, Users, BarChart3, Shield, AlertTriangle, TrendingUp, Globe, Database } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { 
+  Users, 
+  Store, 
+  Car, 
+  BarChart3, 
+  Settings,
+  Shield,
+  Bell,
+  AlertTriangle,
+  CheckCircle,
+  TrendingUp,
+  DollarSign,
+  Package,
+  MapPin,
+  Clock,
+  Search,
+  Filter,
+  Download,
+  RefreshCw,
+  Eye,
+  Edit,
+  Trash2,
+  Plus
+} from 'lucide-react';
+import { useAppContext } from '@/contexts/AppContext';
+import AnalyticsDashboard from '@/components/AnalyticsDashboard';
+import NotificationSystem from '@/components/NotificationSystem';
+import RouteOptimizer from '@/components/RouteOptimizer';
 
-const AdminGuidePage: React.FC = () => {
-  const dashboardSections = [
+const AdminDashboardPage: React.FC = () => {
+  const { user } = useAppContext();
+  const [activeTab, setActiveTab] = useState('overview');
+
+  // Mock admin data
+  const platformStats = {
+    totalUsers: 15420,
+    activeDrivers: 234,
+    activeMerchants: 89,
+    totalOrders: 45678,
+    totalRevenue: 2456789,
+    systemHealth: 98.5,
+    averageDeliveryTime: 38,
+    customerSatisfaction: 4.7
+  };
+
+  const systemAlerts = [
     {
-      title: "User Management",
-      description: "Manage customers, drivers, and merchants",
-      features: [
-        "View all registered users",
-        "Approve/reject driver applications",
-        "Verify merchant businesses",
-        "Handle user disputes and issues",
-        "Monitor user activity and ratings"
-      ],
-      icon: <Users className="h-6 w-6" />
+      id: '1',
+      type: 'critical',
+      title: 'High Server Load',
+      message: 'Database server experiencing high load (85%)',
+      time: '5 minutes ago',
+      resolved: false
     },
     {
-      title: "Order Management",
-      description: "Monitor and manage all platform orders",
-      features: [
-        "View real-time order status",
-        "Handle order disputes and refunds",
-        "Monitor delivery performance",
-        "Track revenue and analytics",
-        "Manage payment processing"
-      ],
-      icon: <BarChart3 className="h-6 w-6" />
+      id: '2',
+      type: 'warning',
+      title: 'Low Driver Availability',
+      message: 'Manhattan area has only 3 available drivers',
+      time: '15 minutes ago',
+      resolved: false
     },
     {
-      title: "Store Management",
-      description: "Oversee merchant stores and products",
-      features: [
-        "Approve new store registrations",
-        "Monitor store performance",
-        "Review product listings",
-        "Handle store disputes",
-        "Manage store categories"
-      ],
-      icon: <Globe className="h-6 w-6" />
-    },
-    {
-      title: "System Settings",
-      description: "Configure platform settings and policies",
-      features: [
-        "Set delivery fees and pricing",
-        "Configure payment methods",
-        "Manage platform policies",
-        "Set up automated notifications",
-        "Configure security settings"
-      ],
-      icon: <Settings className="h-6 w-6" />
+      id: '3',
+      type: 'info',
+      title: 'Scheduled Maintenance',
+      message: 'Payment system maintenance tonight 2-4 AM',
+      time: '1 hour ago',
+      resolved: true
     }
   ];
 
-  const dailyTasks = [
+  const recentUsers = [
     {
-      task: "Review Driver Applications",
-      priority: "High",
-      description: "Approve or reject new driver applications within 24 hours",
-      frequency: "Daily"
+      id: '1',
+      name: 'Sarah Johnson',
+      email: 'sarah@example.com',
+      role: 'customer',
+      status: 'active',
+      joinDate: '2024-01-15',
+      orders: 12
     },
     {
-      task: "Monitor Order Disputes",
-      priority: "High",
-      description: "Resolve customer and merchant disputes promptly",
-      frequency: "As needed"
+      id: '2',
+      name: 'Mike Rodriguez',
+      email: 'mike@example.com',
+      role: 'driver',
+      status: 'active',
+      joinDate: '2024-01-10',
+      deliveries: 156
     },
     {
-      task: "Review Store Applications",
-      priority: "Medium",
-      description: "Verify and approve new merchant store registrations",
-      frequency: "Daily"
-    },
-    {
-      task: "Check System Health",
-      priority: "Medium",
-      description: "Monitor platform performance and server status",
-      frequency: "Daily"
-    },
-    {
-      task: "Review Analytics",
-      priority: "Low",
-      description: "Analyze platform metrics and user behavior",
-      frequency: "Weekly"
+      id: '3',
+      name: 'AutoZone Downtown',
+      email: 'manager@autozone.com',
+      role: 'merchant',
+      status: 'active',
+      joinDate: '2024-01-05',
+      orders: 234
     }
   ];
 
-  const securityMeasures = [
-    {
-      title: "User Verification",
-      description: "Verify all driver and merchant identities",
-      steps: [
-        "Review submitted documents",
-        "Conduct background checks",
-        "Verify business licenses",
-        "Check insurance coverage"
-      ]
-    },
-    {
-      title: "Payment Security",
-      description: "Ensure secure payment processing",
-      steps: [
-        "Monitor payment transactions",
-        "Review fraud detection alerts",
-        "Handle chargeback disputes",
-        "Verify payment method validity"
-      ]
-    },
-    {
-      title: "Data Protection",
-      description: "Protect user data and privacy",
-      steps: [
-        "Monitor data access logs",
-        "Review privacy compliance",
-        "Handle data breach incidents",
-        "Update security policies"
-      ]
+  const getAlertColor = (type: string) => {
+    switch (type) {
+      case 'critical': return 'border-red-200 bg-red-50';
+      case 'warning': return 'border-yellow-200 bg-yellow-50';
+      case 'info': return 'border-blue-200 bg-blue-50';
+      default: return 'border-gray-200 bg-gray-50';
     }
-  ];
+  };
 
-  const analytics = [
-    {
-      metric: "Total Users",
-      description: "Track user growth across all categories",
-      tools: ["User registration trends", "Active user counts", "User retention rates"]
-    },
-    {
-      metric: "Order Volume",
-      description: "Monitor order processing and delivery",
-      tools: ["Daily order counts", "Revenue tracking", "Delivery success rates"]
-    },
-    {
-      metric: "Store Performance",
-      description: "Analyze merchant store success",
-      tools: ["Store revenue", "Product performance", "Customer satisfaction"]
-    },
-    {
-      metric: "Driver Performance",
-      description: "Track driver efficiency and ratings",
-      tools: ["Delivery times", "Driver ratings", "Earnings analysis"]
+  const getAlertIcon = (type: string) => {
+    switch (type) {
+      case 'critical': return AlertTriangle;
+      case 'warning': return AlertTriangle;
+      case 'info': return Bell;
+      default: return Bell;
     }
-  ];
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'admin': return 'bg-purple-100 text-purple-800';
+      case 'merchant': return 'bg-blue-100 text-blue-800';
+      case 'driver': return 'bg-green-100 text-green-800';
+      case 'customer': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-500';
+      case 'inactive': return 'bg-gray-500';
+      case 'suspended': return 'bg-red-500';
+      default: return 'bg-gray-500';
+    }
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Admin Guide</h1>
-        <p className="text-xl text-muted-foreground mb-6">
-          Complete guide to managing the MyPartsRunner platform
-        </p>
-        <Badge variant="secondary" className="text-lg px-4 py-2">
-          Platform Administrator
-        </Badge>
-      </div>
-
-      {/* Dashboard Overview */}
-      <Card className="mb-12">
-        <CardHeader>
-          <CardTitle className="text-2xl">Admin Dashboard Overview</CardTitle>
-          <CardDescription>
-            Key areas to monitor and manage on the platform
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {dashboardSections.map((section, index) => (
-              <Card key={index} className="border">
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    {section.icon}
-                    <CardTitle className="text-lg">{section.title}</CardTitle>
-                  </div>
-                  <CardDescription>{section.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {section.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start space-x-2">
-                        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            ))}
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p className="text-gray-600">
+              Welcome, {user?.firstName || 'Admin'}! Monitor and manage the MyPartsRunner platform.
+            </p>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex items-center gap-4">
+            <Badge className={`${platformStats.systemHealth > 95 ? 'bg-green-600' : 'bg-yellow-600'} text-white`}>
+              <CheckCircle className="h-3 w-3 mr-1" />
+              System Health: {platformStats.systemHealth}%
+            </Badge>
+            <Button>
+              <Settings className="h-4 w-4 mr-2" />
+              Platform Settings
+            </Button>
+          </div>
+        </div>
 
-      {/* Daily Tasks */}
-      <Card className="mb-12">
-        <CardHeader>
-          <CardTitle className="text-2xl">Daily Administrative Tasks</CardTitle>
-          <CardDescription>
-            Essential tasks to keep the platform running smoothly
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {dailyTasks.map((task, index) => (
-              <div key={index} className="flex items-start space-x-4 p-4 border rounded-lg">
-                <div className="flex-shrink-0">
-                  <Badge 
-                    variant={task.priority === "High" ? "destructive" : task.priority === "Medium" ? "default" : "secondary"}
-                    className="mb-2"
-                  >
-                    {task.priority}
-                  </Badge>
-                  <div className="text-xs text-muted-foreground">{task.frequency}</div>
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 font-medium">Total Users</p>
+                  <p className="text-3xl font-bold">{platformStats.totalUsers.toLocaleString()}</p>
+                  <p className="text-sm text-green-600 flex items-center gap-1 mt-1">
+                    <TrendingUp className="h-3 w-3" />
+                    +12.5% this month
+                  </p>
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold mb-1">{task.task}</h4>
-                  <p className="text-sm text-muted-foreground">{task.description}</p>
+                <div className="p-3 rounded-full bg-blue-100">
+                  <Users className="h-6 w-6 text-blue-600" />
                 </div>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
 
-      {/* Security Measures */}
-      <Card className="mb-12">
-        <CardHeader>
-          <CardTitle className="text-2xl">Security & Compliance</CardTitle>
-          <CardDescription>
-            Essential security measures to protect the platform and users
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            {securityMeasures.map((measure, index) => (
-              <div key={index} className="border rounded-lg p-4">
-                <div className="flex items-center space-x-3 mb-3">
-                  <Shield className="h-5 w-5 text-blue-500" />
-                  <h4 className="font-semibold">{measure.title}</h4>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 font-medium">Platform Revenue</p>
+                  <p className="text-3xl font-bold">${(platformStats.totalRevenue / 1000000).toFixed(1)}M</p>
+                  <p className="text-sm text-green-600 flex items-center gap-1 mt-1">
+                    <TrendingUp className="h-3 w-3" />
+                    +18.2% growth
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground mb-3">{measure.description}</p>
-                <ul className="space-y-1">
-                  {measure.steps.map((step, stepIndex) => (
-                    <li key={stepIndex} className="flex items-start space-x-2">
-                      <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">{step}</span>
-                    </li>
+                <div className="p-3 rounded-full bg-green-100">
+                  <DollarSign className="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 font-medium">Active Drivers</p>
+                  <p className="text-3xl font-bold">{platformStats.activeDrivers}</p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {platformStats.activeMerchants} merchants
+                  </p>
+                </div>
+                <div className="p-3 rounded-full bg-orange-100">
+                  <Car className="h-6 w-6 text-orange-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 font-medium">Avg Delivery Time</p>
+                  <p className="text-3xl font-bold">{platformStats.averageDeliveryTime}m</p>
+                  <p className="text-sm text-green-600 flex items-center gap-1 mt-1">
+                    <TrendingUp className="h-3 w-3" />
+                    5% faster
+                  </p>
+                </div>
+                <div className="p-3 rounded-full bg-purple-100">
+                  <Clock className="h-6 w-6 text-purple-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* System Alerts */}
+        {systemAlerts.filter(alert => !alert.resolved).length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                System Alerts ({systemAlerts.filter(alert => !alert.resolved).length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {systemAlerts.filter(alert => !alert.resolved).map((alert) => {
+                  const Icon = getAlertIcon(alert.type);
+                  return (
+                    <div key={alert.id} className={`p-4 border rounded-lg ${getAlertColor(alert.type)}`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Icon className="h-5 w-5" />
+                          <div>
+                            <h4 className="font-medium">{alert.title}</h4>
+                            <p className="text-sm text-gray-600">{alert.message}</p>
+                            <p className="text-xs text-gray-500 mt-1">{alert.time}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm">
+                            View Details
+                          </Button>
+                          <Button size="sm">
+                            Resolve
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Main Admin Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="operations">Operations</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Recent User Activity */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent User Registrations</CardTitle>
+                  <CardDescription>Latest users who joined the platform</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {recentUsers.map((user) => (
+                      <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                            <Users className="h-5 w-5 text-gray-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium">{user.name}</h4>
+                            <p className="text-sm text-gray-600">{user.email}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge className={getRoleColor(user.role)}>
+                                {user.role}
+                              </Badge>
+                              <div className={`w-2 h-2 rounded-full ${getStatusColor(user.status)}`}></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium">
+                            {user.role === 'driver' ? `${user.deliveries} deliveries` :
+                             user.role === 'merchant' ? `${user.orders} orders` :
+                             `${user.orders} orders`}
+                          </p>
+                          <p className="text-xs text-gray-500">{user.joinDate}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Platform Health */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Platform Health</CardTitle>
+                  <CardDescription>Real-time system status</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">API Response Time</span>
+                    <span className="text-sm">125ms</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }}></div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Database Performance</span>
+                    <span className="text-sm">92%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-green-500 h-2 rounded-full" style={{ width: '92%' }}></div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Payment Processing</span>
+                    <span className="text-sm">98%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-green-500 h-2 rounded-full" style={{ width: '98%' }}></div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Notification Delivery</span>
+                    <span className="text-sm">96%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-green-500 h-2 rounded-full" style={{ width: '96%' }}></div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+                <CardDescription>Common administrative tasks</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                  <Button variant="outline" className="h-20 flex flex-col gap-2">
+                    <Users className="h-5 w-5" />
+                    <span className="text-xs">User Management</span>
+                  </Button>
+                  <Button variant="outline" className="h-20 flex flex-col gap-2">
+                    <Store className="h-5 w-5" />
+                    <span className="text-xs">Merchant Approval</span>
+                  </Button>
+                  <Button variant="outline" className="h-20 flex flex-col gap-2">
+                    <Car className="h-5 w-5" />
+                    <span className="text-xs">Driver Verification</span>
+                  </Button>
+                  <Button variant="outline" className="h-20 flex flex-col gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    <span className="text-xs">Generate Report</span>
+                  </Button>
+                  <Button variant="outline" className="h-20 flex flex-col gap-2">
+                    <Bell className="h-5 w-5" />
+                    <span className="text-xs">Send Announcement</span>
+                  </Button>
+                  <Button variant="outline" className="h-20 flex flex-col gap-2">
+                    <Settings className="h-5 w-5" />
+                    <span className="text-xs">System Config</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <AnalyticsDashboard userRole="admin" />
+          </TabsContent>
+
+          <TabsContent value="users" className="space-y-6">
+            {/* User Management Header */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">User Management</h3>
+                    <p className="text-gray-600">Manage all platform users</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input placeholder="Search users..." className="pl-10 w-64" />
+                    </div>
+                    <Button variant="outline">
+                      <Filter className="h-4 w-4 mr-2" />
+                      Filter
+                    </Button>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add User
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* User List */}
+            <Card>
+              <CardHeader>
+                <CardTitle>All Users ({recentUsers.length + 15417})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {recentUsers.map((user) => (
+                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                          <Users className="h-6 w-6 text-gray-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{user.name}</h4>
+                          <p className="text-sm text-gray-600">{user.email}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge className={getRoleColor(user.role)}>
+                              {user.role}
+                            </Badge>
+                            <div className={`w-2 h-2 rounded-full ${getStatusColor(user.status)}`}></div>
+                            <span className="text-xs text-gray-500">{user.status}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-red-600">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-      {/* Analytics & Reporting */}
-      <Card className="mb-12">
-        <CardHeader>
-          <CardTitle className="text-2xl">Analytics & Reporting</CardTitle>
-          <CardDescription>
-            Key metrics to monitor for platform success
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {analytics.map((metric, index) => (
-              <Card key={index} className="border">
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    <TrendingUp className="h-5 w-5 text-green-500" />
-                    <CardTitle className="text-lg">{metric.metric}</CardTitle>
-                  </div>
-                  <CardDescription>{metric.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-1">
-                    {metric.tools.map((tool, toolIndex) => (
-                      <li key={toolIndex} className="text-sm text-muted-foreground">
-                        • {tool}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+          <TabsContent value="operations">
+            <RouteOptimizer />
+          </TabsContent>
 
-      {/* Emergency Procedures */}
-      <Card className="mb-12">
-        <CardHeader>
-          <CardTitle className="text-2xl">Emergency Procedures</CardTitle>
-          <CardDescription>
-            How to handle critical situations and platform issues
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="border-l-4 border-red-500 pl-4">
-              <h4 className="font-semibold text-red-600 mb-2">System Outage</h4>
-              <ol className="text-sm space-y-1">
-                <li>1. Check server status and error logs</li>
-                <li>2. Notify technical team immediately</li>
-                <li>3. Update status page and social media</li>
-                <li>4. Communicate with affected users</li>
-                <li>5. Monitor recovery progress</li>
-              </ol>
-            </div>
-            <div className="border-l-4 border-orange-500 pl-4">
-              <h4 className="font-semibold text-orange-600 mb-2">Security Breach</h4>
-              <ol className="text-sm space-y-1">
-                <li>1. Assess the scope of the breach</li>
-                <li>2. Secure affected systems immediately</li>
-                <li>3. Notify security team and legal counsel</li>
-                <li>4. Contact affected users if necessary</li>
-                <li>5. Document incident and response</li>
-              </ol>
-            </div>
-            <div className="border-l-4 border-yellow-500 pl-4">
-              <h4 className="font-semibold text-yellow-600 mb-2">Payment Issues</h4>
-              <ol className="text-sm space-y-1">
-                <li>1. Verify payment processor status</li>
-                <li>2. Check for system-wide payment failures</li>
-                <li>3. Contact payment provider support</li>
-                <li>4. Update users on payment status</li>
-                <li>5. Process manual refunds if needed</li>
-              </ol>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          <TabsContent value="notifications">
+            <NotificationSystem userRole="admin" />
+          </TabsContent>
 
-      {/* Best Practices */}
-      <Card className="mb-12">
-        <CardHeader>
-          <CardTitle className="text-2xl">Admin Best Practices</CardTitle>
-          <CardDescription>
-            Guidelines for effective platform management
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="font-semibold mb-3">Daily Operations:</h4>
-              <ul className="space-y-2 text-sm">
-                <li>• Check system status first thing each morning</li>
-                <li>• Review pending applications within 24 hours</li>
-                <li>• Monitor user support tickets</li>
-                <li>• Check for any system alerts or warnings</li>
-                <li>• Review daily analytics and reports</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-3">Communication:</h4>
-              <ul className="space-y-2 text-sm">
-                <li>• Respond to urgent issues within 1 hour</li>
-                <li>• Keep users informed of system updates</li>
-                <li>• Maintain clear communication with team</li>
-                <li>• Document all major decisions and actions</li>
-                <li>• Regular status updates to stakeholders</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Quick Actions</CardTitle>
-          <CardDescription>
-            Common administrative tasks and shortcuts
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button variant="outline" className="h-20 flex flex-col">
-              <Users className="h-5 w-5 mb-2" />
-              <span>Manage Users</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col">
-              <BarChart3 className="h-5 w-5 mb-2" />
-              <span>View Analytics</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col">
-              <Settings className="h-5 w-5 mb-2" />
-              <span>System Settings</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col">
-              <AlertTriangle className="h-5 w-5 mb-2" />
-              <span>Handle Disputes</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col">
-              <Database className="h-5 w-5 mb-2" />
-              <span>Data Management</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col">
-              <Shield className="h-5 w-5 mb-2" />
-              <span>Security</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          <TabsContent value="settings" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Platform Settings</CardTitle>
+                <CardDescription>Configure platform-wide settings and preferences</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <Settings className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Platform Configuration</h3>
+                  <p className="text-gray-600 mb-4">
+                    Advanced settings for platform management, security, and integrations.
+                  </p>
+                  <Button>
+                    <Shield className="h-4 w-4 mr-2" />
+                    Open Settings
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };
 
-export default AdminGuidePage; 
+export default AdminDashboardPage; 
