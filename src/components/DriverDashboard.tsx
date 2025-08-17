@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import DriverAppOptions from './DriverAppOptions';
+import DriverStatusWidget from './DriverStatusWidget';
 import { 
   Car, 
   MapPin, 
@@ -132,6 +133,9 @@ export default function DriverDashboard() {
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Driver Dashboard</h1>
         <p className="text-gray-600">Manage your deliveries and track your earnings</p>
       </div>
+
+      {/* Enhanced Driver Status Widget */}
+      <DriverStatusWidget />
 
       {/* Application Status Card */}
       {loadingApplication ? (
