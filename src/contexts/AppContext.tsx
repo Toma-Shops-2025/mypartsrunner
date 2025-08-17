@@ -47,7 +47,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       console.log('Starting sign in process for:', email);
       
-      // Check for demo account first
+      // Check for demo account first (still support demo for testing)
       if (email === 'demo@mypartsrunner.com' && password === 'demo123') {
         console.log('Using demo account bypass');
         const demoUser = {
@@ -62,20 +62,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         };
         setUser(demoUser as any);
         toast({
-          title: "Demo login successful!",
+          title: "🚀 Demo login successful!",
           description: "Welcome to MyPartsRunner™ Demo"
         });
         return;
-      }
-
-      // For non-demo accounts, provide helpful guidance
-      if (email !== 'demo@mypartsrunner.com') {
-        toast({
-          title: "Registration Required",
-          description: "Please use demo@mypartsrunner.com / demo123 for testing, or contact support for account creation.",
-          variant: "destructive"
-        });
-        throw new Error('Account registration required. Please use demo credentials for testing.');
       }
       
       // Add timeout to the auth request
@@ -85,7 +75,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
       
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Connection timeout - please check your internet connection and try again')), 8000);
+        setTimeout(() => reject(new Error('Connection timeout - please check your internet connection and try again')), 10000);
       });
       
       const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
@@ -122,7 +112,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               id: data.user.id,
               email: data.user.email,
               name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
-              role: 'customer',
+              firstName: data.user.user_metadata?.firstName || data.user.email?.split('@')[0] || 'User',
+              lastName: data.user.user_metadata?.lastName || '',
+              role: data.user.user_metadata?.role || 'customer',
               createdAt: new Date().toISOString()
             };
             setUser(basicUser as any);
@@ -133,12 +125,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
         } catch (profileError) {
           console.warn('Profile operation failed:', profileError);
-          // Still proceed with basic user data
+          // Still proceed with basic user data from user_metadata
           const basicUser = {
             id: data.user.id,
             email: data.user.email,
             name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
-            role: 'customer',
+            firstName: data.user.user_metadata?.firstName || data.user.email?.split('@')[0] || 'User',
+            lastName: data.user.user_metadata?.lastName || '',
+            role: data.user.user_metadata?.role || 'customer',
             createdAt: new Date().toISOString()
           };
           setUser(basicUser as any);
@@ -170,47 +164,63 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         email,
         password,
         options: {
-          data: userData
+          data: {
+            ...userData,
+            name: userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+          }
         }
       });
 
       if (error) throw error;
 
       if (data.user) {
-        // Create user profile in database
-        const profile = {
-          id: data.user.id,
-          email: data.user.email!,
-          name: userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          businessName: userData.businessName || '',
-          role: userData.role || 'customer',
-          // createdAt will be handled by database default or trigger
-        };
+        // Try to create user profile in database, but don't fail if table doesn't exist
+        try {
+          const profile = {
+            id: data.user.id,
+            email: data.user.email!,
+            name: userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            businessName: userData.businessName || '',
+            role: userData.role || 'customer',
+          };
 
-        // Use the service role key for profile creation during signup
-        // This bypasses RLS since the user isn't fully authenticated yet
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([profile]);
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert([profile]);
 
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          throw profileError;
+          if (profileError) {
+            console.warn('Profile creation error (table may not exist):', profileError);
+            // Don't throw - user data is stored in user_metadata
+          }
+        } catch (profileError) {
+          console.warn('Profile creation failed (database not set up):', profileError);
+          // Continue anyway - user data is in user_metadata
         }
 
-        // Don't set user yet since they need to verify email
         toast({
           title: "Registration successful!",
-          description: "Please check your email to verify your account before signing in."
+          description: "You can now sign in with your credentials."
         });
       }
     } catch (error: any) {
       console.error('Signup error:', error);
+      
+      let errorMessage = error.message;
+      
+      // Provide helpful error messages
+      if (error.message?.includes('already registered')) {
+        errorMessage = 'This email is already registered. Try logging in instead.';
+      } else if (error.message?.includes('weak password')) {
+        errorMessage = 'Password must be at least 6 characters long.';
+      } else if (error.message?.includes('invalid email')) {
+        errorMessage = 'Please enter a valid email address.';
+      }
+      
       toast({
         title: "Registration failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
       throw error;
