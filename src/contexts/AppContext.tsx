@@ -110,7 +110,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (error: any) {
       console.error('Sign in error:', error);
       
-      const errorMessage = error.message || 'Invalid email or password. Please try again.';
+      let errorMessage = error.message || 'Invalid email or password. Please try again.';
+      
+      // Handle specific error cases
+      if (error.status === 429) {
+        errorMessage = 'Too many login attempts. Please wait a few minutes and try again.';
+      } else if (error.message?.includes('rate limit')) {
+        errorMessage = 'Rate limit exceeded. Please wait a few minutes before trying again.';
+      } else if (error.message?.includes('network')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+      }
+      
       toast({
         title: "Login failed",
         description: errorMessage,
@@ -181,6 +193,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         errorMessage = 'Password must be at least 6 characters long.';
       } else if (error.message?.includes('invalid email')) {
         errorMessage = 'Please enter a valid email address.';
+      } else if (error.status === 429) {
+        errorMessage = 'Too many signup attempts. Please wait a few minutes and try again.';
+      } else if (error.message?.includes('rate limit')) {
+        errorMessage = 'Rate limit exceeded. Please wait a few minutes before trying again.';
+      } else if (error.message?.includes('network')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
       }
       
       toast({
