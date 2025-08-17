@@ -18,6 +18,14 @@ interface DriverStatus {
   autoOfflineTimer: NodeJS.Timeout | null;
 }
 
+interface DriverApplication {
+  id: string;
+  status: 'pending' | 'approved' | 'rejected' | 'under_review';
+  created_at: string;
+  updated_at: string;
+  admin_notes?: string;
+}
+
 const AUTO_OFFLINE_DELAY = 30 * 60 * 1000; // 30 minutes
 const LOCATION_UPDATE_INTERVAL = 30000; // 30 seconds
 const LOCATION_ACCURACY_THRESHOLD = 100; // 100 meters
@@ -32,110 +40,226 @@ export const useDriverStatus = () => {
     autoOfflineTimer: null,
   });
 
-  // Update driver profile in database
+  const [locationWatchId, setLocationWatchId] = useState<number | null>(null);
+
+  // Check driver application status
+  const checkDriverApplicationStatus = useCallback(async (): Promise<DriverApplication | null> => {
+    if (!user?.id) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('driver_applications')
+        .select('id, status, created_at, updated_at, admin_notes')
+        .eq('applicant_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.log('No driver application found:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error checking driver application:', error);
+      return null;
+    }
+  }, [user?.id]);
+
+  // Update driver profile (existing function)
   const updateDriverProfile = useCallback(async (updates: any) => {
     if (!user?.id) return;
 
     try {
-      console.log('Attempting to update driver profile:', updates);
-      
-      // Try to update, but don't fail if it doesn't work
-      try {
-        // First, check if driver profile exists
-        const { data: existingProfile, error: checkError } = await supabase
+      const { data: existingProfile, error: fetchError } = await supabase
+        .from('driver_profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (fetchError && fetchError.code === 'PGRST116') {
+        // Profile doesn't exist, create it
+        const { error: insertError } = await supabase
           .from('driver_profiles')
-          .select('id')
-          .eq('id', user.id)
-          .single();
+          .insert([{
+            id: user.id,
+            vehicleType: 'car',
+            isAvailable: false,
+            ...updates
+          }]);
 
-        if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
-          console.log('Profile check failed, trying to create:', checkError);
-          
-          // Try to create the profile
-          const { error: insertError } = await supabase
-            .from('driver_profiles')
-            .insert([{
-              id: user.id,
-              vehicleType: 'car', // Default value
-              isAvailable: updates.isAvailable || false,
-              ...updates
-            }]);
-
-          if (insertError) {
-            console.log('Profile creation failed:', insertError);
-            // Don't throw error, just log it
-            return;
-          }
-          console.log('Profile created successfully');
-          return;
+        if (insertError) {
+          throw insertError;
         }
+      } else if (fetchError) {
+        throw fetchError;
+      } else {
+        // Profile exists, update it
+        const { error: updateError } = await supabase
+          .from('driver_profiles')
+          .update({
+            ...updates,
+            updatedAt: new Date().toISOString()
+          })
+          .eq('id', user.id);
 
-        if (!existingProfile) {
-          // Profile doesn't exist, create it
-          const { error: insertError } = await supabase
-            .from('driver_profiles')
-            .insert([{
-              id: user.id,
-              vehicleType: 'car',
-              isAvailable: updates.isAvailable || false,
-              ...updates
-            }]);
-
-          if (insertError) {
-            console.log('Profile insert failed:', insertError);
-            return;
-          }
-          console.log('Profile inserted successfully');
-        } else {
-          // Profile exists, update it
-          const { error } = await supabase
-            .from('driver_profiles')
-            .update(updates)
-            .eq('id', user.id);
-
-          if (error) {
-            console.log('Profile update failed:', error);
-            return;
-          }
-          console.log('Profile updated successfully');
+        if (updateError) {
+          throw updateError;
         }
-      } catch (dbError) {
-        console.log('Database operation failed, but continuing:', dbError);
-        // Don't fail the whole operation
       }
     } catch (error) {
-      console.log('Driver profile update failed, but continuing:', error);
-      // Don't throw error - let the driver go online anyway
+      console.error('Error updating driver profile:', error);
+      throw error;
     }
   }, [user?.id]);
 
-  // Start location tracking (simplified - no permission policy violations)
-  const startLocationTracking = useCallback(async () => {
-    console.log('Location tracking disabled to prevent permission policy violations');
-    
-    // Set a default location for now (can be enhanced later)
-    const defaultLocation: Location = {
-      latitude: 0,
-      longitude: 0,
-      accuracy: 0,
-      timestamp: Date.now()
+  // Start location tracking
+  const startLocationTracking = useCallback(() => {
+    if (!navigator.geolocation) {
+      console.log('Geolocation is not supported');
+      return false;
+    }
+
+    if (locationWatchId !== null) {
+      console.log('Location tracking already active');
+      return true;
+    }
+
+    const options: PositionOptions = {
+      enableHighAccuracy: false, // Start with less accurate but faster
+      timeout: 10000,
+      maximumAge: 60000
     };
 
-    setStatus(prev => ({
-      ...prev,
-      currentLocation: defaultLocation,
-      isTrackingLocation: false // Set to false since we're not actually tracking
-    }));
+    console.log('Starting location tracking with options:', options);
 
+    const watchId = navigator.geolocation.watchPosition(
+      async (position) => {
+        const newLocation: Location = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          timestamp: Date.now()
+        };
+
+        console.log('Location update:', newLocation);
+
+        setStatus(prev => ({
+          ...prev,
+          currentLocation: newLocation,
+          isTrackingLocation: true,
+          lastActive: new Date()
+        }));
+
+        // Update database location
+        try {
+          await updateDriverProfile({
+            currentLocationLatitude: newLocation.latitude,
+            currentLocationLongitude: newLocation.longitude,
+            lastLocationUpdate: new Date().toISOString()
+          });
+        } catch (error) {
+          console.log('Failed to update location in database:', error);
+        }
+      },
+      (error) => {
+        console.error('Location error:', error);
+        console.error('Location error code:', error.code);
+        console.error('Location error message:', error.message);
+        
+        setStatus(prev => ({
+          ...prev,
+          isTrackingLocation: false
+        }));
+      },
+      options
+    );
+
+    setLocationWatchId(watchId);
+    console.log('Location tracking started with watch ID:', watchId);
     return true;
-  }, []);
+  }, [locationWatchId, updateDriverProfile]);
 
-  // Go online with location tracking
+  // Go online with enhanced application status checking
   const goOnline = useCallback(async () => {
-    if (user?.role !== 'driver') return false;
+    if (user?.role !== 'driver') {
+      toast({
+        title: "Access Denied",
+        description: "Only drivers can go online for deliveries.",
+        variant: "destructive"
+      });
+      return false;
+    }
 
     try {
-      console.log('Going online - simplified version');
+      console.log('Checking driver application status...');
+      
+      // First, check if driver has an application and its status
+      const application = await checkDriverApplicationStatus();
+      
+      if (!application) {
+        // No application found - redirect to application page
+        toast({
+          title: "Application Required 📝",
+          description: "You need to submit a driver application first. Redirecting you now...",
+          variant: "default"
+        });
+        
+        // Redirect to driver application page after a short delay
+        setTimeout(() => {
+          window.location.href = '/driver-application';
+        }, 2000);
+        
+        return false;
+      }
+
+      // Check application status
+      switch (application.status) {
+        case 'pending':
+        case 'under_review':
+          toast({
+            title: "Application Under Review 🔍",
+            description: `Your driver application submitted on ${new Date(application.created_at).toLocaleDateString()} is currently being reviewed. You'll be notified once approved!`,
+            variant: "default"
+          });
+          return false;
+
+        case 'rejected':
+          const rejectedMessage = application.admin_notes 
+            ? `Reason: ${application.admin_notes}` 
+            : 'Please contact support for more information.';
+          
+          toast({
+            title: "Application Not Approved ❌",
+            description: `Your driver application was not approved. ${rejectedMessage}`,
+            variant: "destructive"
+          });
+          return false;
+
+        case 'approved':
+          // Application approved - proceed with going online
+          console.log('Driver application approved - proceeding to go online');
+          
+          toast({
+            title: "✅ Welcome, Approved Driver!",
+            description: "Your application has been approved. Going online now...",
+            variant: "default"
+          });
+          
+          break;
+
+        default:
+          toast({
+            title: "Unknown Application Status",
+            description: "Please contact support for assistance.",
+            variant: "destructive"
+          });
+          return false;
+      }
+
+      // If we get here, the driver is approved - proceed with going online
+      console.log('Going online - driver is approved');
       
       // Try to update database, but don't fail if it doesn't work
       try {
@@ -169,9 +293,10 @@ export const useDriverStatus = () => {
         autoOfflineTimer: timer
       }));
 
+      // Success message for approved drivers
       toast({
         title: "You're now Online! 🚗",
-        description: "You're available for deliveries! (Database sync in progress)",
+        description: "You're available for deliveries! Customers can now request your services.",
         variant: "default"
       });
 
@@ -180,112 +305,89 @@ export const useDriverStatus = () => {
       console.error('Failed to go online:', error);
       toast({
         title: "Failed to go online",
-        description: "Unknown error occurred. Check console for details.",
+        description: "Please try again or contact support if the problem persists.",
         variant: "destructive"
       });
       return false;
     }
-  }, [user?.role, updateDriverProfile]);
+  }, [user, checkDriverApplicationStatus, updateDriverProfile]);
 
   // Go offline
   const goOffline = useCallback(async () => {
-    if (user?.role !== 'driver') return;
-
     try {
-      // Update driver profile to offline
-      await updateDriverProfile({ 
-        isAvailable: false
-      });
+      console.log('Going offline');
+      
+      // Stop location tracking
+      if (locationWatchId !== null) {
+        navigator.geolocation.clearWatch(locationWatchId);
+        setLocationWatchId(null);
+        console.log('Location tracking stopped');
+      }
 
       // Clear auto-offline timer
       if (status.autoOfflineTimer) {
         clearTimeout(status.autoOfflineTimer);
       }
 
+      // Try to update database
+      try {
+        await updateDriverProfile({ 
+          isAvailable: false 
+        });
+      } catch (dbError) {
+        console.log('Database update failed during offline:', dbError);
+      }
+
+      // Update local state
       setStatus(prev => ({
         ...prev,
         isOnline: false,
         isTrackingLocation: false,
-        autoOfflineTimer: null
+        autoOfflineTimer: null,
+        lastActive: new Date()
       }));
 
       toast({
         title: "You're now Offline",
-        description: "Location tracking stopped. You're not available for deliveries.",
+        description: "You won't receive new delivery requests.",
         variant: "default"
       });
+
+      return true;
     } catch (error) {
+      console.error('Failed to go offline:', error);
       toast({
         title: "Failed to go offline",
-        description: "Please try again",
+        description: "Please try again.",
         variant: "destructive"
       });
+      return false;
     }
-  }, [user?.role, status.autoOfflineTimer, updateDriverProfile]);
+  }, [locationWatchId, status.autoOfflineTimer, updateDriverProfile]);
 
-  // Reset auto-offline timer when driver is active
-  const resetAutoOfflineTimer = useCallback(() => {
-    if (!status.isOnline || user?.role !== 'driver') return;
-
-    // Clear existing timer
-    if (status.autoOfflineTimer) {
-      clearTimeout(status.autoOfflineTimer);
-    }
-
-    // Start new timer
-    const timer = setTimeout(() => {
-      toast({
-        title: "Auto-offline reminder",
-        description: "You've been inactive for 30 minutes. Going offline automatically.",
-        variant: "default"
-      });
-      goOffline();
-    }, AUTO_OFFLINE_DELAY);
-
+  // Update activity timestamp
+  const updateActivity = useCallback(() => {
     setStatus(prev => ({
       ...prev,
-      autoOfflineTimer: timer,
       lastActive: new Date()
     }));
-  }, [status.isOnline, status.autoOfflineTimer, user?.role, goOffline]);
+  }, []);
 
-  // Activity detection
-  useEffect(() => {
-    const handleActivity = () => {
-      resetAutoOfflineTimer();
-    };
-
-    if (status.isOnline) {
-      window.addEventListener('mousedown', handleActivity);
-      window.addEventListener('keydown', handleActivity);
-      window.addEventListener('touchstart', handleActivity);
-      window.addEventListener('scroll', handleActivity);
-
-      return () => {
-        window.removeEventListener('mousedown', handleActivity);
-        window.removeEventListener('keydown', handleActivity);
-        window.removeEventListener('touchstart', handleActivity);
-        window.removeEventListener('scroll', handleActivity);
-      };
-    }
-  }, [status.isOnline, resetAutoOfflineTimer]);
-
-  // Cleanup on unmount
+  // Stop location tracking on component unmount
   useEffect(() => {
     return () => {
-      if (status.autoOfflineTimer) {
-        clearTimeout(status.autoOfflineTimer);
+      if (locationWatchId !== null) {
+        navigator.geolocation.clearWatch(locationWatchId);
       }
     };
-  }, [status.autoOfflineTimer]);
-
-  // Location testing functionality removed to prevent permission policy violations
+  }, [locationWatchId]);
 
   return {
-    ...status,
+    status,
     goOnline,
     goOffline,
-    resetAutoOfflineTimer,
-    startLocationTracking
+    startLocationTracking,
+    updateActivity,
+    checkDriverApplicationStatus
   };
 }; 
