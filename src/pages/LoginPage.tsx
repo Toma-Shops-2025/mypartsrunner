@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { useAppContext } from '@/contexts/AppContext';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import SupabaseTest from '@/components/SupabaseTest';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -22,8 +21,6 @@ const LoginPage: React.FC = () => {
   
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [stuckLoading, setStuckLoading] = useState(false);
-  const [showDebug, setShowDebug] = useState(false);
 
   // Auto-redirect if already authenticated
   useEffect(() => {
@@ -32,19 +29,6 @@ const LoginPage: React.FC = () => {
       navigate('/dashboard');
     }
   }, [isAuthenticated, user, navigate]);
-
-  // Handle stuck loading state
-  useEffect(() => {
-    if (contextLoading) {
-      const timeout = setTimeout(() => {
-        setStuckLoading(true);
-      }, isMobile ? 6000 : 8000); // Longer timeout for mobile
-
-      return () => clearTimeout(timeout);
-    } else {
-      setStuckLoading(false);
-    }
-  }, [contextLoading, isMobile]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -59,16 +43,9 @@ const LoginPage: React.FC = () => {
       return;
     }
     
-    // Force reset timeout to avoid stuck state
-    const forceResetTimeout = setTimeout(() => {
-      setFormData(prev => ({ ...prev, loading: false }));
-      setStuckLoading(false);
-    }, 12000);
-    
     try {
       setFormData({ ...formData, loading: true });
       setLoginError(null);
-      setStuckLoading(false);
       
       await signIn(formData.email, formData.password);
       // Navigation will be handled by the useEffect above when user state changes
@@ -76,23 +53,8 @@ const LoginPage: React.FC = () => {
       console.error('Login error:', error);
       setLoginError(error.message || 'Login failed. Please try again.');
     } finally {
-      // Always reset loading state regardless of success or failure
       setFormData(prev => ({ ...prev, loading: false }));
-      setStuckLoading(false);
-      clearTimeout(forceResetTimeout);
     }
-  };
-
-  const handleRefreshPage = () => {
-    window.location.reload();
-  };
-
-  const handleDemoLogin = () => {
-    setFormData({
-      email: 'demo@mypartsrunner.com',
-      password: 'demo123',
-      loading: false
-    });
   };
 
   return (
@@ -113,18 +75,6 @@ const LoginPage: React.FC = () => {
                   Checking authentication status...
                 </span>
               </div>
-              {stuckLoading && (
-                <div className="mt-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleRefreshPage}
-                    className="text-xs"
-                  >
-                    Refresh Page
-                  </Button>
-                </div>
-              )}
             </div>
           )}
 
@@ -206,27 +156,8 @@ const LoginPage: React.FC = () => {
               Sign up
             </Button>
           </div>
-          
-          <Button 
-            variant="outline" 
-            onClick={handleDemoLogin}
-            className="w-full text-sm"
-          >
-            🚀 Use Demo Account (demo@mypartsrunner.com)
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            onClick={() => setShowDebug(!showDebug)}
-            className="w-full text-xs"
-          >
-            {showDebug ? 'Hide' : 'Show'} Debug Info
-          </Button>
         </CardFooter>
       </Card>
-
-      {/* Debug Panel */}
-      {showDebug && <SupabaseTest />}
     </div>
   );
 };

@@ -47,28 +47,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       console.log('Starting sign in process for:', email);
       
-      // Check for demo account first (still support demo for testing)
-      if (email === 'demo@mypartsrunner.com' && password === 'demo123') {
-        console.log('Using demo account bypass');
-        const demoUser = {
-          id: 'demo-user-123',
-          email: 'demo@mypartsrunner.com',
-          name: 'Demo Driver',
-          firstName: 'Demo',
-          lastName: 'Driver',
-          role: 'driver',
-          isAvailable: false,
-          createdAt: new Date().toISOString()
-        };
-        setUser(demoUser as any);
-        toast({
-          title: "🚀 Demo login successful!",
-          description: "Welcome to MyPartsRunner™ Demo"
-        });
-        return;
-      }
-      
-      // Sign in with Supabase (no timeouts)
+      // Sign in with Supabase - NO DEMO ACCOUNTS
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -82,7 +61,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (data.user) {
         console.log('Authentication successful, fetching profile...');
         
-        // Try to fetch user profile (no timeouts)
+        // Try to fetch user profile
         try {
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
@@ -97,10 +76,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               id: data.user.id,
               email: data.user.email,
               name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
-              firstName: data.user.user_metadata?.firstName || data.user.email?.split('@')[0] || 'User',
-              lastName: data.user.user_metadata?.lastName || '',
+              firstname: data.user.user_metadata?.firstname || data.user.email?.split('@')[0] || 'User',
+              lastname: data.user.user_metadata?.lastname || '',
               role: data.user.user_metadata?.role || 'customer',
-              createdAt: new Date().toISOString()
+              createdat: new Date().toISOString()
             };
             setUser(basicUser as any);
             console.log('Using basic user data due to profile fetch error');
@@ -115,10 +94,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             id: data.user.id,
             email: data.user.email,
             name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
-            firstName: data.user.user_metadata?.firstName || data.user.email?.split('@')[0] || 'User',
-            lastName: data.user.user_metadata?.lastName || '',
+            firstname: data.user.user_metadata?.firstname || data.user.email?.split('@')[0] || 'User',
+            lastname: data.user.user_metadata?.lastname || '',
             role: data.user.user_metadata?.role || 'customer',
-            createdAt: new Date().toISOString()
+            createdat: new Date().toISOString()
           };
           setUser(basicUser as any);
         }
@@ -131,7 +110,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (error: any) {
       console.error('Sign in error:', error);
       
-      const errorMessage = error.message || 'An error occurred during login. Please try again.';
+      const errorMessage = error.message || 'Invalid email or password. Please try again.';
       toast({
         title: "Login failed",
         description: errorMessage,
@@ -214,18 +193,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const signOut = async () => {
     try {
-      // Check if this is a demo user
-      if (user?.id === 'demo-user-123') {
-        console.log('Demo user signing out');
-        setUser(null);
-        toast({
-          title: "Demo session ended",
-          description: "Thanks for trying MyPartsRunner™!"
-        });
-        return;
-      }
-      
-      // Regular Supabase signout
+      // Regular Supabase signout - NO DEMO LOGIC
       await supabase.auth.signOut();
       setUser(null);
       toast({
