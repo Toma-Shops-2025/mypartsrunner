@@ -6,8 +6,8 @@ import {
   MapPin, 
   Phone, 
   MessageCircle,
-  Gas,
-  Tool,
+  Fuel,
+  Wrench,
   Camera,
   FileText,
   HelpCircle,
@@ -55,7 +55,7 @@ const DriverQuickActions: React.FC = () => {
       color: 'text-orange-600 bg-orange-50 hover:bg-orange-100'
     },
     {
-      icon: Gas,
+      icon: Fuel,
       label: 'Find Gas Stations',
       description: 'Locate nearby fuel stops',
       action: () => {
@@ -75,7 +75,7 @@ const DriverQuickActions: React.FC = () => {
       color: 'text-amber-600 bg-amber-50 hover:bg-amber-100'
     },
     {
-      icon: Tool,
+      icon: Wrench,
       label: 'Emergency Kit',
       description: 'Roadside assistance info',
       action: () => alert('🚗 Emergency Numbers:\n\nRoadside: (502) 555-0199\nMyPartsRunner Support: (502) 812-2456\n\nStay safe out there!'),
