@@ -15,7 +15,6 @@ interface AppContextType {
   updateUserProfile: (updates: Partial<User>) => Promise<void>;
   isAuthenticated: boolean;
   userRole: UserRole | null;
-  resetLoadingState: () => void;
 }
 
 const defaultAppContext: AppContextType = {
@@ -29,7 +28,6 @@ const defaultAppContext: AppContextType = {
   updateUserProfile: async () => {},
   isAuthenticated: false,
   userRole: null,
-  resetLoadingState: () => {},
 };
 
 const AppContext = createContext<AppContextType>(defaultAppContext);
@@ -47,17 +45,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const signIn = async (email: string, password: string) => {
     try {
-      // Add a timeout to prevent infinite loading
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Login timeout - please try again')), 10000);
-      });
-
-      const loginPromise = supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-
-      const { data, error } = await Promise.race([loginPromise, timeoutPromise]) as any;
 
       if (error) throw error;
 
@@ -72,17 +63,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (profileError) throw profileError;
 
         setUser(profile);
-        setLoading(false); // Ensure loading is set to false
         toast({
           title: "Login successful!",
           description: "Welcome back to MyPartsRunner™."
         });
       }
     } catch (error: any) {
-      setLoading(false); // Ensure loading is set to false on error
+      console.error('Sign in error:', error);
       toast({
         title: "Login failed",
-        description: error.message,
+        description: error.message || 'An error occurred during login. Please try again.',
         variant: "destructive"
       });
       throw error;
@@ -184,9 +174,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const resetLoadingState = () => {
-    setLoading(false);
-  };
+
 
   useEffect(() => {
     // Get initial session
@@ -214,6 +202,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     };
 
+    // Check if we're in a PWA context
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                  (window.navigator as any).standalone === true;
+    
+    if (isPWA) {
+      console.log('Running in PWA mode - enhanced authentication persistence');
+    }
+
     getSession();
 
     // Listen for auth changes
@@ -221,7 +217,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       async (event, session) => {
         console.log('Auth state change:', event, session?.user?.id);
         
-        if (session?.user) {
+        // Enhanced handling for PWA and mobile devices
+        if (session?.user && event !== 'SIGNED_OUT') {
           try {
             const { data: profile, error } = await supabase
               .from('profiles')
@@ -231,9 +228,49 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
             if (!error && profile) {
               setUser(profile);
+              
+              // PWA-specific: Store auth state for offline access
+              if (isPWA) {
+                localStorage.setItem('pwa_auth_state', JSON.stringify({
+                  userId: profile.id,
+                  email: profile.email,
+                  role: profile.role,
+                  timestamp: Date.now()
+                }));
+              }
             } else {
               console.error('Profile fetch error:', error);
-              setUser(null);
+              // If profile doesn't exist, create a basic one for existing users
+              if (event === 'SIGNED_IN') {
+                const basicProfile = {
+                  id: session.user.id,
+                  email: session.user.email!,
+                  name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+                  role: 'customer'
+                };
+                
+                const { error: insertError } = await supabase
+                  .from('profiles')
+                  .insert([basicProfile]);
+                  
+                if (!insertError) {
+                  setUser(basicProfile as User);
+                  
+                  // PWA-specific: Store new profile for offline access
+                  if (isPWA) {
+                    localStorage.setItem('pwa_auth_state', JSON.stringify({
+                      userId: basicProfile.id,
+                      email: basicProfile.email,
+                      role: basicProfile.role,
+                      timestamp: Date.now()
+                    }));
+                  }
+                } else {
+                  setUser(null);
+                }
+              } else {
+                setUser(null);
+              }
             }
           } catch (error) {
             console.error('Profile fetch error:', error);
@@ -241,12 +278,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
         } else {
           setUser(null);
+          
+          // PWA-specific: Clear offline auth state
+          if (isPWA) {
+            localStorage.removeItem('pwa_auth_state');
+          }
         }
         setLoading(false);
       }
     );
 
-    return () => subscription.unsubscribe();
+    // Mobile-specific: Handle app visibility changes for auth state sync
+    const handleVisibilityChange = () => {
+      if (!document.hidden && isPWA) {
+        // Re-sync auth state when PWA becomes visible
+        getSession();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      subscription.unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   return (
@@ -262,7 +317,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateUserProfile,
         isAuthenticated: !!user,
         userRole: user?.role || null,
-        resetLoadingState,
       }}
     >
       {children}

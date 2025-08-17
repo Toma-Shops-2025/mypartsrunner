@@ -99,6 +99,103 @@
   pre, code {
     @apply font-mono;
   }
+
+  /* Mobile-specific optimizations */
+  @media (max-width: 768px) {
+    /* Better touch targets for mobile */
+    button, a, input, textarea, select {
+      min-height: 44px; /* Apple's recommended minimum touch target size */
+    }
+
+    /* Improved input handling on mobile */
+    input[type="email"], 
+    input[type="password"], 
+    input[type="text"] {
+      font-size: 16px !important; /* Prevent zoom on iOS */
+      -webkit-appearance: none;
+      border-radius: 6px;
+    }
+
+    /* Better mobile form styling */
+    form {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* PWA-specific styling */
+    @media (display-mode: standalone) {
+      /* Enhanced PWA experience */
+      body {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      /* Allow text selection in form inputs and content areas */
+      input, textarea, [contenteditable], .selectable {
+        -webkit-user-select: text;
+        user-select: text;
+      }
+
+      /* Better status bar handling in PWA mode */
+      html {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+    }
+
+    /* Mobile authentication enhancements */
+    .auth-form {
+      padding: 1rem;
+      min-height: calc(100vh - 4rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .mobile-button {
+      min-height: 48px;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .mobile-button:active {
+      transform: scale(0.98);
+      transition-duration: 0.1s;
+    }
+  }
+
+  /* High DPI displays (retina) */
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    /* Sharper rendering for high DPI displays */
+    * {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  }
+
+  /* Accessibility improvements */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Focus improvements for keyboard navigation */
+  @media (prefers-reduced-motion: no-preference) {
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    a:focus-visible {
+      outline: 2px solid hsl(var(--ring));
+      outline-offset: 2px;
+      transition: outline-color 0.2s ease;
+    }
+  }
 }
 
 .markdown-editor {

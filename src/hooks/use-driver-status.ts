@@ -127,9 +127,9 @@ export const useDriverStatus = () => {
     }
 
     const options: PositionOptions = {
-      enableHighAccuracy: false, // Start with less accurate but faster
-      timeout: 10000,
-      maximumAge: 60000
+      enableHighAccuracy: false, // Use less battery-intensive location
+      timeout: 15000, // Increased timeout
+      maximumAge: 300000 // Cache location for 5 minutes
     };
 
     console.log('Starting location tracking with options:', options);
@@ -152,21 +152,42 @@ export const useDriverStatus = () => {
           lastActive: new Date()
         }));
 
-        // Update database location
+        // Update database location less frequently (only if significant change)
         try {
-          await updateDriverProfile({
-            currentLocationLatitude: newLocation.latitude,
-            currentLocationLongitude: newLocation.longitude,
-            lastLocationUpdate: new Date().toISOString()
-          });
+          const existingLocation = status.currentLocation;
+          const shouldUpdate = !existingLocation || 
+            Math.abs(existingLocation.latitude - newLocation.latitude) > 0.001 ||
+            Math.abs(existingLocation.longitude - newLocation.longitude) > 0.001 ||
+            Date.now() - existingLocation.timestamp > 600000; // 10 minutes
+
+          if (shouldUpdate) {
+            await updateDriverProfile({
+              currentLocationLatitude: newLocation.latitude,
+              currentLocationLongitude: newLocation.longitude,
+              lastLocationUpdate: new Date().toISOString()
+            });
+          }
         } catch (error) {
           console.log('Failed to update location in database:', error);
         }
       },
       (error) => {
         console.error('Location error:', error);
-        console.error('Location error code:', error.code);
-        console.error('Location error message:', error.message);
+        
+        // Handle specific error cases
+        if (error.code === error.PERMISSION_DENIED) {
+          toast({
+            title: "Location Access Denied",
+            description: "Please enable location access to receive delivery requests.",
+            variant: "destructive"
+          });
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          toast({
+            title: "Location Unavailable",
+            description: "Unable to get your current location. Please check your GPS settings.",
+            variant: "destructive"
+          });
+        }
         
         setStatus(prev => ({
           ...prev,
@@ -179,7 +200,7 @@ export const useDriverStatus = () => {
     setLocationWatchId(watchId);
     console.log('Location tracking started with watch ID:', watchId);
     return true;
-  }, [locationWatchId, updateDriverProfile]);
+  }, [locationWatchId, updateDriverProfile, status.currentLocation]);
 
   // Go online with enhanced application status checking
   const goOnline = useCallback(async () => {
@@ -278,6 +299,21 @@ export const useDriverStatus = () => {
         lastActive: new Date()
       }));
 
+      // Ask user if they want to enable location tracking
+      const enableLocation = window.confirm('Enable location tracking to receive nearby delivery requests? You can disable this later.');
+      
+      if (enableLocation) {
+        console.log('User opted for location tracking');
+        startLocationTracking();
+      } else {
+        console.log('User declined location tracking');
+        toast({
+          title: "Location Tracking Disabled",
+          description: "You can enable location tracking later in settings to receive nearby requests.",
+          variant: "default"
+        });
+      }
+
       // Start auto-offline timer
       const timer = setTimeout(() => {
         toast({
@@ -310,7 +346,7 @@ export const useDriverStatus = () => {
       });
       return false;
     }
-  }, [user, checkDriverApplicationStatus, updateDriverProfile]);
+  }, [user, checkDriverApplicationStatus, updateDriverProfile, startLocationTracking]);
 
   // Go offline
   const goOffline = useCallback(async () => {

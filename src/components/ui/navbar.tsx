@@ -6,19 +6,17 @@ import { Menu } from 'lucide-react';
 import Logo from '../Logo';
 import { useAppContext } from '@/contexts/AppContext';
 import { useCart } from '@/contexts/CartContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Navbar: React.FC = () => {
-  const { user, isAuthenticated, userRole, signOut, loading, resetLoadingState } = useAppContext();
+  const { user, isAuthenticated, userRole, signOut } = useAppContext();
   const { getCartItemCount } = useCart();
+  const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
     setMobileMenuOpen(false); // Close menu after sign out
-  };
-
-  const handleResetLoading = () => {
-    resetLoadingState();
   };
 
   const handleMobileLinkClick = () => {
@@ -74,18 +72,6 @@ const Navbar: React.FC = () => {
             </div>
           ) : (
             <div className="flex items-center gap-4">
-              {/* Show loading reset button if loading is stuck */}
-              {loading && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleResetLoading}
-                  className="text-xs text-amber-600 hover:text-amber-700"
-                  title="Reset loading state"
-                >
-                  🔄 Reset
-                </Button>
-              )}
               <Link to="/login">
                 <Button variant="ghost">Log In</Button>
               </Link>
@@ -103,44 +89,56 @@ const Navbar: React.FC = () => {
               <span className="sr-only">Toggle menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="right">
-            <div className="grid gap-4 py-4">
-              <Link to="/about" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>About</Link>
-              <Link to="/how-it-works" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>How It Works</Link>
-              <Link to="/help" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>Help</Link>
-              <Link to="/contact" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>Contact</Link>
-              <Link to="/driver-application" className="text-sm font-medium hover:underline text-blue-600 font-semibold" onClick={handleMobileLinkClick}>🚗 Become a Driver</Link>
+          <SheetContent side="right" className="w-80">
+            <div className="grid gap-6 py-6">
+              {/* Mobile Auth Status */}
+              {isAuthenticated && user && (
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <p className="text-sm font-medium text-blue-900">Welcome back!</p>
+                  <p className="text-xs text-blue-700">{user.email}</p>
+                  <p className="text-xs text-blue-600 capitalize">{user.role}</p>
+                </div>
+              )}
+              
+              <div className="space-y-4">
+                <Link to="/about" className="block text-base font-medium hover:text-primary transition-colors" onClick={handleMobileLinkClick}>About</Link>
+                <Link to="/how-it-works" className="block text-base font-medium hover:text-primary transition-colors" onClick={handleMobileLinkClick}>How It Works</Link>
+                <Link to="/help" className="block text-base font-medium hover:text-primary transition-colors" onClick={handleMobileLinkClick}>Help</Link>
+                <Link to="/contact" className="block text-base font-medium hover:text-primary transition-colors" onClick={handleMobileLinkClick}>Contact</Link>
+                <Link to="/driver-application" className="block text-base font-semibold text-blue-600 hover:text-blue-700 transition-colors" onClick={handleMobileLinkClick}>🚗 Become a Driver</Link>
+              </div>
               
               {isAuthenticated ? (
-                <>
+                <div className="space-y-4 pt-4 border-t">
                   {userRole === 'customer' && (
-                    <Link to="/cart" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>
-                      Cart ({getCartItemCount()})
+                    <Link to="/cart" className="flex justify-between items-center text-base font-medium hover:text-primary transition-colors" onClick={handleMobileLinkClick}>
+                      <span>Shopping Cart</span>
+                      {getCartItemCount() > 0 && (
+                        <span className="bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center">
+                          {getCartItemCount()}
+                        </span>
+                      )}
                     </Link>
                   )}
-                  <Link to="/browse" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>Browse</Link>
-                  <Link to="/dashboard" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>Dashboard</Link>
-                  <button 
+                  <Link to="/browse" className="block text-base font-medium hover:text-primary transition-colors" onClick={handleMobileLinkClick}>Browse Products</Link>
+                  <Link to="/dashboard" className="block text-base font-medium hover:text-primary transition-colors" onClick={handleMobileLinkClick}>Dashboard</Link>
+                  <Button 
                     onClick={handleSignOut}
-                    className="text-sm font-medium hover:underline text-left"
+                    variant="outline"
+                    className="w-full text-base mt-4"
                   >
                     Sign Out
-                  </button>
-                </>
+                  </Button>
+                </div>
               ) : (
-                <>
-                  {/* Show loading reset button if loading is stuck */}
-                  {loading && (
-                    <button 
-                      onClick={handleResetLoading}
-                      className="text-sm font-medium hover:underline text-left text-amber-600"
-                    >
-                      🔄 Reset Loading State
-                    </button>
-                  )}
-                  <Link to="/login" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>Log In</Link>
-                  <Link to="/register" className="text-sm font-medium hover:underline" onClick={handleMobileLinkClick}>Sign Up</Link>
-                </>
+                <div className="space-y-4 pt-4 border-t">
+                  <Link to="/login" onClick={handleMobileLinkClick}>
+                    <Button variant="ghost" className="w-full text-base">Log In</Button>
+                  </Link>
+                  <Link to="/register" onClick={handleMobileLinkClick}>
+                    <Button className="w-full text-base">Sign Up</Button>
+                  </Link>
+                </div>
               )}
             </div>
           </SheetContent>
