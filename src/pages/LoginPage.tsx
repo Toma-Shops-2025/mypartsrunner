@@ -44,18 +44,28 @@ const LoginPage: React.FC = () => {
   // Add a timeout to detect stuck loading states (shorter on mobile for better UX)
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
+    let forceResetTimeout: NodeJS.Timeout;
     
     if (formData.loading) {
       const timeout = isMobile ? 6000 : 8000; // Shorter timeout on mobile
       timeoutId = setTimeout(() => {
         setStuckLoading(true);
       }, timeout);
+      
+      // Force reset loading state after 15 seconds to prevent infinite loading
+      forceResetTimeout = setTimeout(() => {
+        console.log('Force resetting stuck loading state');
+        setFormData(prev => ({ ...prev, loading: false }));
+        setStuckLoading(false);
+        setLoginError('Login timeout. Please try again.');
+      }, 15000);
     } else {
       setStuckLoading(false);
     }
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
+      if (forceResetTimeout) clearTimeout(forceResetTimeout);
     };
   }, [formData.loading, isMobile]);
 
@@ -119,7 +129,9 @@ const LoginPage: React.FC = () => {
     } catch (error: any) {
       console.error('Login error:', error);
       setLoginError(error.message || 'Login failed. Please try again.');
-      setFormData({ ...formData, loading: false });
+    } finally {
+      // Always reset loading state regardless of success or failure
+      setFormData(prev => ({ ...prev, loading: false }));
       setStuckLoading(false);
     }
   };
