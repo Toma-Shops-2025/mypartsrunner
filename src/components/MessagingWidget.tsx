@@ -4,7 +4,7 @@ import { useAppContext } from '@/contexts/AppContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarContent, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import RealTimeMessaging from './RealTimeMessaging';
 import { 
   MessageSquare, 
@@ -267,11 +267,8 @@ const MessagingWidget: React.FC<MessagingWidgetProps> = ({ className = '' }) => 
                               <div className="flex items-start gap-3">
                                 <div className="relative">
                                   <Avatar className="h-10 w-10">
-                                    <AvatarContent>
-                                      {otherParticipant.role === 'driver' ? '🚗' : '👤'}
-                                    </AvatarContent>
                                     <AvatarFallback>
-                                      {otherParticipant.name.split(' ').map(n => n[0]).join('')}
+                                      {otherParticipant.role === 'driver' ? '🚗' : '👤'}
                                     </AvatarFallback>
                                   </Avatar>
                                   {conversation.unreadCount > 0 && (

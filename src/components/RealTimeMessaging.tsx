@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarContent, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
   MessageSquare, 
   Send, 
@@ -330,9 +330,10 @@ const RealTimeMessaging: React.FC<RealTimeMessagingProps> = ({
       <div className="flex items-center justify-between p-4 border-b bg-blue-50">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
-            <AvatarContent>
-              {otherParticipant.role === 'driver' ? '🚗' : '👤'}
-            </AvatarContent>
+            <AvatarImage 
+              src={`data:image/svg+xml;base64,${btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><text x="20" y="20" font-size="20" text-anchor="middle" dominant-baseline="central">${otherParticipant.role === 'driver' ? '🚗' : '👤'}</text></svg>`)}`}
+              alt={otherParticipant.name}
+            />
             <AvatarFallback>
               {otherParticipant.name.split(' ').map(n => n[0]).join('')}
             </AvatarFallback>
