@@ -128,7 +128,21 @@ const LoginPage: React.FC = () => {
     // Navigation will be handled by the useEffect above when user state changes
   };
 
-  // Show loading spinner if context is still loading
+  // Show loading spinner if context is still loading (with timeout)
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  
+  useEffect(() => {
+    if (contextLoading) {
+      const timer = setTimeout(() => {
+        setLoadingTimeout(true);
+      }, 5000); // Show skip option after 5 seconds
+      
+      return () => clearTimeout(timer);
+    } else {
+      setLoadingTimeout(false);
+    }
+  }, [contextLoading]);
+
   if (contextLoading) {
     return (
       <div className="container mx-auto py-10 flex justify-center">
@@ -138,6 +152,19 @@ const LoginPage: React.FC = () => {
               <div className="flex flex-col items-center space-y-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 <p className="text-sm text-gray-600">Checking authentication status...</p>
+                {loadingTimeout && (
+                  <div className="text-center space-y-2">
+                    <p className="text-xs text-amber-600">Taking longer than usual...</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.location.reload()}
+                      className="text-xs"
+                    >
+                      Refresh Page
+                    </Button>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

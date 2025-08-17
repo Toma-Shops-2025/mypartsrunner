@@ -180,11 +180,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Get initial session
     const getSession = async () => {
       try {
+        console.log('Getting initial session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Session error:', error);
+          throw error;
+        }
 
         if (session?.user) {
+          console.log('Found existing session for user:', session.user.id);
           // Fetch user profile
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
@@ -192,12 +197,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             .eq('id', session.user.id)
             .single();
 
-          if (profileError) throw profileError;
-          setUser(profile);
+          if (profileError) {
+            console.error('Profile error during session check:', profileError);
+            // Don't throw here, just continue without profile
+            setUser(null);
+          } else {
+            console.log('Profile loaded successfully:', profile.email);
+            setUser(profile);
+          }
+        } else {
+          console.log('No existing session found');
+          setUser(null);
         }
       } catch (error) {
         console.error('Error getting session:', error);
+        setUser(null);
       } finally {
+        console.log('Setting loading to false after session check');
         setLoading(false);
       }
     };
@@ -217,9 +233,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       async (event, session) => {
         console.log('Auth state change:', event, session?.user?.id);
         
-        // Enhanced handling for PWA and mobile devices
-        if (session?.user && event !== 'SIGNED_OUT') {
-          try {
+        try {
+          // Enhanced handling for PWA and mobile devices
+          if (session?.user && event !== 'SIGNED_OUT') {
+            console.log('Processing auth state change for user:', session.user.id);
+            
             const { data: profile, error } = await supabase
               .from('profiles')
               .select('*')
@@ -227,6 +245,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               .single();
 
             if (!error && profile) {
+              console.log('Profile found in auth state change:', profile.email);
               setUser(profile);
               
               // PWA-specific: Store auth state for offline access
@@ -242,6 +261,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               console.error('Profile fetch error:', error);
               // If profile doesn't exist, create a basic one for existing users
               if (event === 'SIGNED_IN') {
+                console.log('Creating basic profile for new user');
                 const basicProfile = {
                   id: session.user.id,
                   email: session.user.email!,
@@ -254,6 +274,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                   .insert([basicProfile]);
                   
                 if (!insertError) {
+                  console.log('Basic profile created successfully');
                   setUser(basicProfile as User);
                   
                   // PWA-specific: Store new profile for offline access
@@ -266,31 +287,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                     }));
                   }
                 } else {
+                  console.error('Failed to create basic profile:', insertError);
                   setUser(null);
                 }
               } else {
+                console.log('No profile found and not a sign-in event');
                 setUser(null);
               }
             }
-          } catch (error) {
-            console.error('Profile fetch error:', error);
+          } else {
+            console.log('No session or signed out, clearing user');
             setUser(null);
+            
+            // PWA-specific: Clear offline auth state
+            if (isPWA) {
+              localStorage.removeItem('pwa_auth_state');
+            }
           }
-        } else {
+        } catch (error) {
+          console.error('Error in auth state change handler:', error);
           setUser(null);
-          
-          // PWA-specific: Clear offline auth state
-          if (isPWA) {
-            localStorage.removeItem('pwa_auth_state');
-          }
+        } finally {
+          console.log('Setting loading to false after auth state change');
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
     // Mobile-specific: Handle app visibility changes for auth state sync
     const handleVisibilityChange = () => {
       if (!document.hidden && isPWA) {
+        console.log('App became visible, re-syncing auth state');
         // Re-sync auth state when PWA becomes visible
         getSession();
       }
@@ -298,9 +325,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
+    // Fallback timeout to ensure loading never stays true indefinitely
+    const fallbackTimeout = setTimeout(() => {
+      console.log('Fallback timeout triggered - forcing loading to false');
+      setLoading(false);
+    }, 10000); // 10 second maximum loading time
+
     return () => {
       subscription.unsubscribe();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearTimeout(fallbackTimeout);
     };
   }, []);
 
