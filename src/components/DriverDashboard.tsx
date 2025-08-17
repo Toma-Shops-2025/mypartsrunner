@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import DriverAppOptions from './DriverAppOptions';
 import DriverStatusWidget from './DriverStatusWidget';
+import DriverEarningsWidget from './DriverEarningsWidget';
 import { 
   Car, 
   MapPin, 
@@ -136,6 +137,9 @@ export default function DriverDashboard() {
 
       {/* Enhanced Driver Status Widget */}
       <DriverStatusWidget />
+
+      {/* Driver Earnings Widget */}
+      <DriverEarningsWidget />
 
       {/* Application Status Card */}
       {loadingApplication ? (
