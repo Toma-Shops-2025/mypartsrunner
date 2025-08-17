@@ -45,24 +45,74 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      console.log('Starting sign in process for:', email);
+      
+      // Add timeout to the auth request
+      const authPromise = supabase.auth.signInWithPassword({
         email,
         password,
       });
+      
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Authentication request timed out')), 10000);
+      });
+      
+      const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Authentication error:', error);
+        throw error;
+      }
 
       if (data.user) {
-        // Fetch user profile from database
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .single();
+        console.log('Authentication successful, fetching profile...');
+        
+        // Try to fetch user profile with timeout
+        try {
+          const profilePromise = supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+            
+          const profileTimeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Profile fetch timed out')), 5000);
+          });
+          
+          const { data: profile, error: profileError } = await Promise.race([
+            profilePromise, 
+            profileTimeoutPromise
+          ]) as any;
 
-        if (profileError) throw profileError;
+          if (profileError) {
+            console.warn('Profile fetch error:', profileError);
+            // Create a basic user object from auth data if profile fetch fails
+            const basicUser = {
+              id: data.user.id,
+              email: data.user.email,
+              name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
+              role: 'customer',
+              createdAt: new Date().toISOString()
+            };
+            setUser(basicUser as any);
+            console.log('Using basic user data due to profile fetch error');
+          } else {
+            console.log('Profile loaded successfully');
+            setUser(profile);
+          }
+        } catch (profileError) {
+          console.warn('Profile operation failed:', profileError);
+          // Still proceed with basic user data
+          const basicUser = {
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
+            role: 'customer',
+            createdAt: new Date().toISOString()
+          };
+          setUser(basicUser as any);
+        }
 
-        setUser(profile);
         toast({
           title: "Login successful!",
           description: "Welcome back to MyPartsRunner™."
@@ -70,9 +120,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     } catch (error: any) {
       console.error('Sign in error:', error);
+      const errorMessage = error.message || 'An error occurred during login. Please try again.';
       toast({
         title: "Login failed",
-        description: error.message || 'An error occurred during login. Please try again.',
+        description: errorMessage,
         variant: "destructive"
       });
       throw error;

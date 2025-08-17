@@ -52,13 +52,13 @@ const LoginPage: React.FC = () => {
         setStuckLoading(true);
       }, timeout);
       
-      // Force reset loading state after 15 seconds to prevent infinite loading
+      // Force reset loading state after 12 seconds to prevent infinite loading
       forceResetTimeout = setTimeout(() => {
         console.log('Force resetting stuck loading state');
         setFormData(prev => ({ ...prev, loading: false }));
         setStuckLoading(false);
-        setLoginError('Login timeout. Please try again.');
-      }, 15000);
+        setLoginError('Login timeout. Please check your connection and try again.');
+      }, 12000);
     } else {
       setStuckLoading(false);
     }
