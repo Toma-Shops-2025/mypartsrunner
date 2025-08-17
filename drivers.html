@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <!-- Cache busting for PWA updates -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
+    <!-- Driver PWA specific CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https:; connect-src 'self' https:; img-src 'self' data: https: blob:; media-src 'self' data: blob:;" />
+    
+    <!-- Enable camera and geolocation for drivers -->
+    <meta name="permissions-policy" content="camera=*, microphone=*, geolocation=*" />
+    <meta http-equiv="Feature-Policy" content="camera *; microphone *; geolocation *" />
+    
+    <!-- Driver PWA Meta Tags -->
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="description" content="MyPartsRunner™ Driver App - Optimized mobile experience for delivery drivers. Real-time GPS tracking, delivery management, and earnings dashboard." />
+    <meta name="keywords" content="driver app, delivery, GPS tracking, MyPartsRunner, mobile app, PWA" />
+    <meta name="author" content="MyPartsRunner™" />
+    
+    <!-- Open Graph Meta Tags for Driver App -->
+    <meta property="og:title" content="MyPartsRunner™ Driver App" />
+    <meta property="og:description" content="Professional delivery driver app with GPS tracking, delivery management, and real-time earnings." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://drivers.mypartsrunner.com" />
+    <meta property="og:image" content="https://drivers.mypartsrunner.com/icons/driver-icon-512x512.png" />
+    
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MyPartsRunner™ Driver App" />
+    <meta name="twitter:description" content="Professional delivery driver app with GPS tracking and earnings dashboard." />
+    <meta name="twitter:image" content="https://drivers.mypartsrunner.com/icons/driver-icon-512x512.png" />
+    
+    <!-- Mobile Web App Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MyPartsRunner Driver" />
+    <link rel="apple-touch-icon" href="/icons/driver-icon-192x192.png" />
+    
+    <!-- Driver PWA Manifest -->
+    <link rel="manifest" href="/driver-manifest.json" />
+    
+    <!-- Favicon for Driver App -->
+    <link rel="icon" type="image/png" href="/icons/driver-favicon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/driver-favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/driver-favicon-16x16.png" />
+    
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <title>MyPartsRunner™ Driver App</title>
+    
+    <!-- Force HTTPS -->
+    <script>
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+        location.replace(`https:${location.href.substring(location.protocol.length)}`);
+      }
+    </script>
+
+    <!-- Driver App Specific Styles -->
+    <style>
+      /* Driver-specific loading screen */
+      .driver-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        z-index: 9999;
+      }
+      
+      .driver-logo {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        animation: pulse 2s infinite;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      
+      .driver-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+      
+      .driver-subtitle {
+        font-size: 16px;
+        opacity: 0.9;
+        margin-bottom: 30px;
+      }
+      
+      .driver-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(255,255,255,0.3);
+        border-top: 3px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Driver App Loading Screen -->
+    <div id="driver-loading" class="driver-loading">
+      <div class="driver-logo">
+        <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" fill="#2563eb"/>
+          <circle cx="12" cy="5" r="2" fill="#2563eb"/>
+        </svg>
+      </div>
+      <div class="driver-title">MyPartsRunner™</div>
+      <div class="driver-subtitle">Driver App</div>
+      <div class="driver-spinner"></div>
+    </div>
+
+    <div id="driver-root"></div>
+    <script type="module" src="/src/driver-main.tsx"></script>
+    
+    <!-- Driver PWA Service Worker -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/driver-sw.js')
+            .then((registration) => {
+              console.log('Driver SW registered: ', registration);
+              
+              // Check for updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // New content is available for driver app
+                    if (confirm('Driver app update available! Reload to update?')) {
+                      window.location.reload();
+                    }
+                  }
+                });
+              });
+            })
+            .catch((registrationError) => {
+              console.log('Driver SW registration failed: ', registrationError);
+            });
+        });
+      }
+      
+      // Driver app install prompt
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Show driver-specific install button
+        const installButton = document.createElement('button');
+        installButton.textContent = '📱 Install Driver App';
+        installButton.style.cssText = `
+          position: fixed;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 1000;
+          background: #2563eb;
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 25px;
+          cursor: pointer;
+          font-weight: 600;
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        `;
+        
+        installButton.addEventListener('click', () => {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('Driver accepted the install prompt');
+            }
+            deferredPrompt = null;
+            installButton.remove();
+          });
+        });
+        
+        document.body.appendChild(installButton);
+        
+        // Auto-hide after 15 seconds
+        setTimeout(() => {
+          if (installButton.parentNode) {
+            installButton.remove();
+          }
+        }, 15000);
+      });
+      
+      // Driver app installed
+      window.addEventListener('appinstalled', (evt) => {
+        console.log('MyPartsRunner Driver App was installed');
+      });
+
+      // Hide loading screen when app loads
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          const loading = document.getElementById('driver-loading');
+          if (loading) {
+            loading.style.opacity = '0';
+            loading.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => loading.remove(), 500);
+          }
+        }, 1500); // Show loading for 1.5 seconds minimum
+      });
+    </script>
+  </body>
+</html> 

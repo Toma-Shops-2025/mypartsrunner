@@ -15,13 +15,18 @@ export default defineConfig({
     sourcemap: false,
     minify: 'terser',
     rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        drivers: path.resolve(__dirname, 'drivers.html')
+      },
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
           ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
           supabase: ['@supabase/supabase-js'],
-          mapbox: ['mapbox-gl']
+          mapbox: ['mapbox-gl'],
+          stripe: ['@stripe/stripe-js']
         }
       }
     },

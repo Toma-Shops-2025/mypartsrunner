@@ -1,0 +1,167 @@
+{
+  "name": "MyPartsRunner™ Driver App",
+  "short_name": "Driver App",
+  "description": "Professional delivery driver app with GPS tracking, delivery management, and real-time earnings dashboard",
+  "start_url": "/drivers.html",
+  "display": "standalone",
+  "background_color": "#2563eb",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["productivity", "utilities", "business"],
+  "icons": [
+    {
+      "src": "/icons/driver-icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/driver-icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/driver-icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/driver-icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/driver-icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/driver-icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/driver-icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/driver-icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/driver-dashboard.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Driver Dashboard"
+    },
+    {
+      "src": "/screenshots/driver-delivery.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Delivery Management"
+    },
+    {
+      "src": "/screenshots/driver-earnings.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Earnings Tracker"
+    },
+    {
+      "src": "/screenshots/driver-navigation.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "GPS Navigation"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Go Online",
+      "short_name": "Online",
+      "description": "Start accepting delivery requests",
+      "url": "/drivers.html?action=go-online",
+      "icons": [
+        {
+          "src": "/icons/driver-online-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "View Earnings",
+      "short_name": "Earnings",
+      "description": "Check today's earnings",
+      "url": "/drivers.html?view=earnings",
+      "icons": [
+        {
+          "src": "/icons/driver-earnings-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "GPS Navigation",
+      "short_name": "GPS",
+      "description": "Open navigation",
+      "url": "/drivers.html?tool=gps",
+      "icons": [
+        {
+          "src": "/icons/driver-gps-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Customer Support",
+      "short_name": "Support",
+      "description": "Get help",
+      "url": "/drivers.html?page=support",
+      "icons": [
+        {
+          "src": "/icons/driver-support-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 320
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "handle_links": "preferred",
+  "protocol_handlers": [
+    {
+      "protocol": "web+mypartsrunner-driver",
+      "url": "/drivers.html?delivery=%s"
+    }
+  ],
+  "share_target": {
+    "action": "/drivers.html",
+    "method": "GET",
+    "params": {
+      "title": "delivery_title",
+      "text": "delivery_details",
+      "url": "delivery_url"
+    }
+  }
+} 
