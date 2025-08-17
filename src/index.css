@@ -357,11 +357,7 @@
 
     /* Mobile authentication enhancements */
     .auth-form {
-      padding: 1rem;
-      min-height: calc(100vh - 4rem);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      /* Remove problematic min-height that was causing layout issues */
     }
 
     .mobile-button {

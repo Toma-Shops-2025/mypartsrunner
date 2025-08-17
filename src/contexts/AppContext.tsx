@@ -123,6 +123,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const signUp = async (email: string, password: string, userData: Partial<User>) => {
+    setLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -188,6 +189,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         variant: "destructive"
       });
       throw error;
+    } finally {
+      // Ensure loading state is always reset, even if there's an error
+      setLoading(false);
     }
   };
 

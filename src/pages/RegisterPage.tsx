@@ -13,7 +13,7 @@ const RegisterPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const defaultRole = searchParams.get('role') || 'customer';
   const navigate = useNavigate();
-  const { signUp } = useAppContext();
+  const { signUp, loading: contextLoading } = useAppContext();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -23,8 +23,7 @@ const RegisterPage: React.FC = () => {
     lastName: '',
     companyName: '',
     businessName: '',
-    role: defaultRole as UserRole,
-    loading: false
+    role: defaultRole as UserRole
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -47,8 +46,6 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
-      setFormData({ ...formData, loading: true });
-      
       const userData: any = {
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -68,11 +65,11 @@ const RegisterPage: React.FC = () => {
       
       await signUp(formData.email, formData.password, userData);
       
+      // Only navigate if signup was successful
       navigate('/login');
     } catch (error) {
       // Error is already handled in the context
-    } finally {
-      setFormData({ ...formData, loading: false });
+      console.error('Registration error:', error);
     }
   };
 
@@ -228,8 +225,8 @@ const RegisterPage: React.FC = () => {
               </div>
             </div>
             
-            <Button type="submit" className="w-full" disabled={formData.loading}>
-              {formData.loading ? 'Creating account...' : 'Create account'}
+            <Button type="submit" className="w-full" disabled={contextLoading}>
+              {contextLoading ? 'Creating account...' : 'Create account'}
             </Button>
           </form>
         </CardContent>
