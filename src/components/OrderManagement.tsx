@@ -438,4 +438,8 @@ const OrderManagement: React.FC = () => {
   );
 };
 
-export default OrderManagement; 
+export { OrderManagement };
+export default OrderManagement;
+
+// Ensure proper default export for build system / /   B u i l d   t r i g g e r  
+ 

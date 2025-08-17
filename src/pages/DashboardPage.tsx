@@ -12,7 +12,7 @@ import { DriverSafety } from '@/components/DriverSafety';
 import { DriverTraining } from '@/components/DriverTraining';
 import { DriverNotifications } from '@/components/DriverNotifications';
 import { PayoutDashboard } from '@/components/PayoutDashboard';
-import { OrderManagement } from '@/components/OrderManagement';
+import OrderManagement from '@/components/OrderManagement';
 import { Driver } from '@/types';
 import { toast } from '@/hooks/use-toast';
 import { Loader2, Wifi, WifiOff } from 'lucide-react';
