@@ -2,6 +2,7 @@ import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppProvider } from "@/contexts/AppContext";
 import { CartProvider } from "@/contexts/CartContext";
+import { MessagingProvider } from "@/contexts/MessagingContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import HomePage from "@/pages/HomePage";
 import AboutPage from "@/pages/AboutPage";
@@ -37,6 +38,7 @@ import DriverStripeOnboardingPage from "@/pages/DriverStripeOnboardingPage";
 import { useState, useEffect } from "react";
 import Logo from "@/components/Logo";
 import AppLayout from "@/components/AppLayout";
+import MessagingWidget from "@/components/MessagingWidget";
 
 export default function App() {
   const [globalError, setGlobalError] = useState<string | null>(null);
@@ -85,10 +87,11 @@ export default function App() {
     <div className="App">
       <AppProvider>
         <CartProvider>
-          <TooltipProvider>
-            <BrowserRouter>
-              <AppLayout>
-                <Routes>
+          <MessagingProvider>
+            <TooltipProvider>
+              <BrowserRouter>
+                <AppLayout>
+                  <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/contact" element={<ContactPage />} />
@@ -122,10 +125,12 @@ export default function App() {
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </AppLayout>
+              <MessagingWidget />
             </BrowserRouter>
           </TooltipProvider>
-        </CartProvider>
-      </AppProvider>
+        </MessagingProvider>
+      </CartProvider>
+    </AppProvider>
     </div>
   );
 }
