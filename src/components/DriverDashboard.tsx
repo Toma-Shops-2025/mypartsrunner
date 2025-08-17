@@ -7,6 +7,8 @@ import { Progress } from '@/components/ui/progress';
 import DriverAppOptions from './DriverAppOptions';
 import DriverStatusWidget from './DriverStatusWidget';
 import DriverEarningsWidget from './DriverEarningsWidget';
+import DriverDeliveryHistory from './DriverDeliveryHistory';
+import DriverQuickActions from './DriverQuickActions';
 import { 
   Car, 
   MapPin, 
@@ -140,6 +142,12 @@ export default function DriverDashboard() {
 
       {/* Driver Earnings Widget */}
       <DriverEarningsWidget />
+
+      {/* Driver Delivery History */}
+      <DriverDeliveryHistory />
+
+      {/* Driver Quick Actions */}
+      <DriverQuickActions />
 
       {/* Application Status Card */}
       {loadingApplication ? (
