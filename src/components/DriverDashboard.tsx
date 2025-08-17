@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import DriverAppOptions from './DriverAppOptions';
 import { 
   Car, 
   MapPin, 
@@ -401,6 +402,9 @@ export default function DriverDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Driver App Options */}
+      <DriverAppOptions />
     </div>
   );
 } 

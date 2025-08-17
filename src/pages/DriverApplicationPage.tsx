@@ -13,6 +13,7 @@ import { Car, User, Shield, FileText, MapPin, DollarSign } from 'lucide-react';
 import { useAppContext } from '@/contexts/AppContext';
 import { supabase } from '@/lib/supabase';
 import { DocumentUpload } from '@/components/DocumentUpload';
+import DriverAppOptions from '@/components/DriverAppOptions';
 
 const DriverApplicationPage: React.FC = () => {
   const { toast } = useToast();
@@ -919,6 +920,9 @@ const DriverApplicationPage: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Driver App Options */}
+      <DriverAppOptions />
     </div>
   );
 };

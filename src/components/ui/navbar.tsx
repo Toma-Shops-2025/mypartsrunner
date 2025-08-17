@@ -97,6 +97,21 @@ const Navbar: React.FC = () => {
                   <p className="text-sm font-medium text-blue-900">Welcome back!</p>
                   <p className="text-xs text-blue-700">{user.email}</p>
                   <p className="text-xs text-blue-600 capitalize">{user.role}</p>
+                  
+                  {/* Driver App Promotion */}
+                  {user.role === 'driver' && (
+                    <div className="mt-3 pt-3 border-t border-blue-200">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-blue-800 font-medium">📱 Try our Driver PWA!</span>
+                        <button 
+                          onClick={() => alert('🚧 Driver PWA Coming Soon!\n\nWe\'re building a dedicated driver app experience. Stay tuned for launch!')}
+                          className="text-xs text-blue-600 hover:text-blue-800 underline"
+                        >
+                          Coming Soon
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               
