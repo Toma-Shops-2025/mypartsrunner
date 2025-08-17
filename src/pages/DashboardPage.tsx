@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppContext } from '@/contexts/AppContext';
 import DriverProfile from '@/components/DriverProfile';
-import { DriverDashboard } from '@/components/DriverDashboard';
+import DriverDashboard from '@/components/DriverDashboard';
 import { DriverEarnings } from '@/components/DriverEarnings';
 import { DriverAnalytics } from '@/components/DriverAnalytics';
 import { DriverSafety } from '@/components/DriverSafety';
