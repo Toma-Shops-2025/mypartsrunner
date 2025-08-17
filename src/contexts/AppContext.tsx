@@ -68,17 +68,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return;
       }
       
-      // Add timeout to the auth request
-      const authPromise = supabase.auth.signInWithPassword({
+      // Sign in with Supabase (no timeouts)
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Connection timeout - please check your internet connection and try again')), 10000);
-      });
-      
-      const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
 
       if (error) {
         console.error('Authentication error:', error);
@@ -88,22 +82,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (data.user) {
         console.log('Authentication successful, fetching profile...');
         
-        // Try to fetch user profile with timeout
+        // Try to fetch user profile (no timeouts)
         try {
-          const profilePromise = supabase
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', data.user.id)
             .single();
-            
-          const profileTimeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Profile fetch timed out')), 5000);
-          });
-          
-          const { data: profile, error: profileError } = await Promise.race([
-            profilePromise, 
-            profileTimeoutPromise
-          ]) as any;
 
           if (profileError) {
             console.warn('Profile fetch error:', profileError);

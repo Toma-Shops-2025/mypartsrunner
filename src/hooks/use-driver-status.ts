@@ -84,8 +84,8 @@ export const useDriverStatus = () => {
           .from('driver_profiles')
           .insert([{
             id: user.id,
-            vehicleType: 'car',
-            isAvailable: false,
+            vehicletype: 'car',
+            isavailable: false,
             ...updates
           }]);
 
@@ -100,7 +100,7 @@ export const useDriverStatus = () => {
           .from('driver_profiles')
           .update({
             ...updates,
-            updatedAt: new Date().toISOString()
+            updatedat: new Date().toISOString()
           })
           .eq('id', user.id);
 
