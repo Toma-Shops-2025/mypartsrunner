@@ -23,6 +23,16 @@ const LoginPage: React.FC = () => {
   const [hasBiometricCredential, setHasBiometricCredential] = useState(false);
   const [stuckLoading, setStuckLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [showDemo, setShowDemo] = useState(false);
+
+  // Demo account helper function
+  const useDemoAccount = () => {
+    setFormData({
+      email: 'demo@mypartsrunner.com',
+      password: 'demo123',
+      loading: false
+    });
+  };
 
   // Redirect if already authenticated
   useEffect(() => {

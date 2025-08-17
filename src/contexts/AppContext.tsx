@@ -47,6 +47,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       console.log('Starting sign in process for:', email);
       
+      // Check for demo account first
+      if (email === 'demo@mypartsrunner.com' && password === 'demo123') {
+        console.log('Using demo account bypass');
+        const demoUser = {
+          id: 'demo-user-123',
+          email: 'demo@mypartsrunner.com',
+          name: 'Demo Driver',
+          firstName: 'Demo',
+          lastName: 'Driver',
+          role: 'driver',
+          isAvailable: false,
+          createdAt: new Date().toISOString()
+        };
+        setUser(demoUser as any);
+        toast({
+          title: "Demo login successful!",
+          description: "Welcome to MyPartsRunner™ Demo"
+        });
+        return;
+      }
+
+      // For non-demo accounts, provide helpful guidance
+      if (email !== 'demo@mypartsrunner.com') {
+        toast({
+          title: "Registration Required",
+          description: "Please use demo@mypartsrunner.com / demo123 for testing, or contact support for account creation.",
+          variant: "destructive"
+        });
+        throw new Error('Account registration required. Please use demo credentials for testing.');
+      }
+      
       // Add timeout to the auth request
       const authPromise = supabase.auth.signInWithPassword({
         email,
@@ -121,27 +152,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (error: any) {
       console.error('Sign in error:', error);
       
-      // Temporary bypass for demo/testing purposes
-      if (email === 'demo@mypartsrunner.com' && password === 'demo123') {
-        console.log('Using demo account bypass');
-        const demoUser = {
-          id: 'demo-user-123',
-          email: 'demo@mypartsrunner.com',
-          name: 'Demo Driver',
-          firstName: 'Demo',
-          lastName: 'Driver',
-          role: 'driver',
-          isAvailable: false,
-          createdAt: new Date().toISOString()
-        };
-        setUser(demoUser as any);
-        toast({
-          title: "Demo login successful!",
-          description: "Welcome to MyPartsRunner™ Demo"
-        });
-        return;
-      }
-      
       const errorMessage = error.message || 'An error occurred during login. Please try again.';
       toast({
         title: "Login failed",
@@ -149,6 +159,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         variant: "destructive"
       });
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
