@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { useAppContext } from '@/contexts/AppContext';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import DemoLogin from '@/components/ui/demo-login';
 import SupabaseTest from '@/components/SupabaseTest';
 
 const LoginPage: React.FC = () => {
@@ -86,6 +85,14 @@ const LoginPage: React.FC = () => {
 
   const handleRefreshPage = () => {
     window.location.reload();
+  };
+
+  const handleDemoLogin = () => {
+    setFormData({
+      email: 'demo@mypartsrunner.com',
+      password: 'demo123',
+      loading: false
+    });
   };
 
   return (
@@ -202,6 +209,14 @@ const LoginPage: React.FC = () => {
           
           <Button 
             variant="outline" 
+            onClick={handleDemoLogin}
+            className="w-full text-sm"
+          >
+            🚀 Use Demo Account (demo@mypartsrunner.com)
+          </Button>
+          
+          <Button 
+            variant="outline" 
             onClick={() => setShowDebug(!showDebug)}
             className="w-full text-xs"
           >
@@ -210,9 +225,6 @@ const LoginPage: React.FC = () => {
         </CardFooter>
       </Card>
 
-      {/* Demo Login Helper */}
-      <DemoLogin />
-      
       {/* Debug Panel */}
       {showDebug && <SupabaseTest />}
     </div>

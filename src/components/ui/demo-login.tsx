@@ -7,7 +7,7 @@ interface DemoLoginProps {
   onUseDemoCredentials: (email: string, password: string) => void;
 }
 
-export const DemoLogin: React.FC<DemoLoginProps> = ({ onUseDemoCredentials }) => {
+const DemoLogin: React.FC<DemoLoginProps> = ({ onUseDemoCredentials }) => {
   const demoEmail = 'demo@mypartsrunner.com';
   const demoPassword = 'demo123';
 
@@ -68,4 +68,6 @@ export const DemoLogin: React.FC<DemoLoginProps> = ({ onUseDemoCredentials }) =>
       </CardContent>
     </Card>
   );
-}; 
+};
+
+export default DemoLogin; 
