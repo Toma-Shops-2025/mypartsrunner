@@ -6,20 +6,24 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Validate environment variables
 if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase environment variables:');
-  console.error('VITE_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing');
-  console.error('VITE_SUPABASE_ANON_KEY:', supabaseKey ? 'Set' : 'Missing');
-  throw new Error('Supabase environment variables are not configured properly');
+  console.warn('Missing Supabase environment variables - running in demo mode:');
+  console.warn('VITE_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing');
+  console.warn('VITE_SUPABASE_ANON_KEY:', supabaseKey ? 'Set' : 'Missing');
+  console.warn('Please create a .env file with proper Supabase credentials for full functionality');
 }
 
-// Create Supabase client
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
+// Create Supabase client (with fallback values for demo mode)
+const supabase = createClient(
+  supabaseUrl || 'https://demo.supabase.co', 
+  supabaseKey || 'demo-key', 
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    }
   }
-});
+);
 
 // Test connection on startup
 supabase.auth.getSession().then(({ data, error }) => {

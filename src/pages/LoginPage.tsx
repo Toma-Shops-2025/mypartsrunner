@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useAppContext } from '@/contexts/AppContext';
 import { Eye, EyeOff, Loader2, ArrowRight, User, Lock } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import DemoLogin from '@/components/ui/demo-login';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +21,11 @@ const LoginPage: React.FC = () => {
   
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+
+  const handleDemoCredentials = (email: string, password: string) => {
+    setFormData({ email, password });
+    setLoginError(null);
+  };
 
   // Auto-redirect if already authenticated
   useEffect(() => {
@@ -171,6 +177,9 @@ const LoginPage: React.FC = () => {
                 )}
               </Button>
             </form>
+
+            {/* Demo Login Component */}
+            <DemoLogin onUseDemoCredentials={handleDemoCredentials} />
           </CardContent>
 
           <CardFooter className="flex flex-col space-y-4 pt-4">
