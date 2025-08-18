@@ -359,7 +359,8 @@ const DashboardPage: React.FC = () => {
             </Card>
           </TabsContent>
         )}
-      </Tabs>
+        </Tabs>
+      </div>
     </div>
   );
 };
