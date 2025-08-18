@@ -5,6 +5,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Dark Theme */
+@import './styles/dark-theme.css';
+
 /* Modern animations for the redesign */
 @keyframes fadeInUp {
   from {

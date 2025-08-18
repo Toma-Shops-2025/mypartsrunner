@@ -153,36 +153,37 @@ const CustomerProfile: React.FC<CustomerProfileProps> = ({ user, onUpdate }) => 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 relative overflow-hidden">
+    <div className="min-h-screen animated-bg relative overflow-hidden">
       {/* Background Elements */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-blue-600 rounded-full blur-3xl"></div>
-        <div className="absolute top-40 right-20 w-24 h-24 bg-orange-500 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-green-500 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-40 right-10 w-28 h-28 bg-purple-500 rounded-full blur-2xl"></div>
+      <div className="absolute inset-0">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-cyan-400 rounded-full blur-3xl opacity-20 animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-24 h-24 bg-pink-500 rounded-full blur-2xl opacity-20 animate-pulse animation-delay-1000"></div>
+        <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-green-400 rounded-full blur-3xl opacity-20 animate-pulse animation-delay-2000"></div>
+        <div className="absolute bottom-40 right-10 w-28 h-28 bg-purple-500 rounded-full blur-2xl opacity-20 animate-pulse animation-delay-3000"></div>
       </div>
 
       {/* Auto Parts Store Pattern */}
-      <div className="absolute inset-0 opacity-3">
-        <div className="absolute top-10 left-1/4 text-8xl opacity-10 text-gray-400">🔧</div>
-        <div className="absolute top-1/3 right-1/4 text-6xl opacity-10 text-gray-400">⚙️</div>
-        <div className="absolute bottom-1/3 left-1/6 text-7xl opacity-10 text-gray-400">🔩</div>
-        <div className="absolute bottom-20 right-1/3 text-5xl opacity-10 text-gray-400">🛠️</div>
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-10 left-1/4 text-8xl text-cyan-400">🔧</div>
+        <div className="absolute top-1/3 right-1/4 text-6xl text-pink-500">⚙️</div>
+        <div className="absolute bottom-1/3 left-1/6 text-7xl text-green-400">🔩</div>
+        <div className="absolute bottom-20 right-1/3 text-5xl text-purple-500">🛠️</div>
       </div>
 
       <div className="relative z-10 p-6 max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-orange-600 bg-clip-text text-transparent">
-            My Profile
+          <h1 className="text-4xl font-bold mb-2">
+            <span className="gradient-text">My</span>{' '}
+            <span className="neon-text pulse-neon">Profile</span>
           </h1>
-          <p className="text-gray-600 mt-2">Manage your account information and preferences</p>
+          <p className="text-gray-300 mt-2">Manage your account information and preferences</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Picture & Basic Info */}
           <div className="lg:col-span-1">
-            <Card className="backdrop-blur-xl bg-white/80 border-0 shadow-2xl">
+            <Card className="glass-card border-0 shadow-2xl glow-card">
               <CardHeader className="text-center pb-4">
                 <div className="relative mx-auto">
                   <Avatar className="w-32 h-32 mx-auto border-4 border-white shadow-xl">
@@ -259,7 +260,7 @@ const CustomerProfile: React.FC<CustomerProfileProps> = ({ user, onUpdate }) => 
 
           {/* Profile Details */}
           <div className="lg:col-span-2">
-            <Card className="backdrop-blur-xl bg-white/80 border-0 shadow-2xl">
+            <Card className="glass-card border-0 shadow-2xl glow-card">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
