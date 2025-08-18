@@ -146,7 +146,12 @@ export const HelpPage: React.FC = () => {
   ];
 
   return (
-    <div className="container mx-auto py-10 space-y-8">
+    <div className="min-h-screen animated-bg">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-cyan-400 rounded-full blur-3xl opacity-10 animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-purple-500 rounded-full blur-3xl opacity-10 animate-pulse animation-delay-1000"></div>
+      </div>
+      <div className="container mx-auto py-10 space-y-8 relative z-10">
       {/* Header */}
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4">Help & Support Center</h1>
