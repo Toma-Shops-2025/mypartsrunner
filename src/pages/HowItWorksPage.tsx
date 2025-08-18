@@ -21,32 +21,55 @@ import { Link } from 'react-router-dom';
 
 const HowItWorksPage: React.FC = () => {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold mb-4">How MyPartsRunner™ Works</h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            MyPartsRunner™ connects auto parts stores, drivers, and customers to deliver auto parts and hardware supplies quickly and efficiently. Here's how it works for each user type.
-          </p>
-        </div>
+    <div className="min-h-screen animated-bg">
+      {/* Background Effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-cyan-400 rounded-full blur-3xl opacity-10 animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-purple-500 rounded-full blur-3xl opacity-10 animate-pulse animation-delay-1000"></div>
+      </div>
 
-        {/* User Type Tabs */}
-        <Tabs defaultValue="customers" className="mb-16">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
-            <TabsTrigger value="customers" className="flex items-center space-x-2">
-              <ShoppingCart className="h-4 w-4" />
-              <span>Customers</span>
-            </TabsTrigger>
-            <TabsTrigger value="drivers" className="flex items-center space-x-2">
-              <Truck className="h-4 w-4" />
-              <span>Drivers</span>
-            </TabsTrigger>
-            <TabsTrigger value="merchants" className="flex items-center space-x-2">
-              <Store className="h-4 w-4" />
-              <span>Merchants</span>
-            </TabsTrigger>
-          </TabsList>
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        <div className="max-w-6xl mx-auto">
+          {/* Hero Section */}
+          <div className="text-center mb-16">
+            <div className="w-16 h-16 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 pulse-neon">
+              <Zap className="w-8 h-8 text-black" />
+            </div>
+            <h1 className="text-5xl font-bold mb-4">
+              <span className="gradient-text">How</span>{' '}
+              <span className="neon-text">MyPartsRunner™</span>{' '}
+              <span className="gradient-text">Works</span>
+            </h1>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              MyPartsRunner™ connects auto parts stores, drivers, and customers to deliver auto parts and hardware supplies in 30 minutes or less. Here's how it works for each user type.
+            </p>
+          </div>
+
+          {/* User Type Tabs */}
+          <Tabs defaultValue="customers" className="mb-16">
+            <TabsList className="glass-card grid w-full grid-cols-3 mb-8 bg-transparent border border-cyan-400/30 p-1">
+              <TabsTrigger 
+                value="customers" 
+                className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-400 data-[state=active]:to-purple-600 data-[state=active]:text-black text-gray-300 hover:text-cyan-400 transition-colors"
+              >
+                <ShoppingCart className="h-4 w-4" />
+                <span>Customers</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="drivers" 
+                className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-400 data-[state=active]:to-cyan-600 data-[state=active]:text-black text-gray-300 hover:text-green-400 transition-colors"
+              >
+                <Truck className="h-4 w-4" />
+                <span>Drivers</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="merchants" 
+                className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-400 data-[state=active]:to-pink-600 data-[state=active]:text-black text-gray-300 hover:text-purple-400 transition-colors"
+              >
+                <Store className="h-4 w-4" />
+                <span>Merchants</span>
+              </TabsTrigger>
+            </TabsList>
 
           {/* Customers Tab */}
           <TabsContent value="customers" className="space-y-8">
@@ -412,6 +435,7 @@ const HowItWorksPage: React.FC = () => {
               </Button>
             </Link>
           </div>
+        </div>
         </div>
       </div>
     </div>
