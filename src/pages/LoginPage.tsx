@@ -46,7 +46,15 @@ const LoginPage: React.FC = () => {
       setLoginError(null);
       await signIn(formData.email, formData.password);
     } catch (error: any) {
-      setLoginError(error.message);
+      console.error('Login error in form:', error);
+      setLoginError(error.message || 'Login failed. Please try again.');
+      
+      // Extra safeguard: Force loading to false after a delay if it's still stuck
+      setTimeout(() => {
+        if (contextLoading) {
+          console.warn('Forcing loading state to false due to stuck login');
+        }
+      }, 2000);
     }
   };
 

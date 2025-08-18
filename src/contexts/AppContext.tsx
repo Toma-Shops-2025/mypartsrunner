@@ -48,11 +48,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.log('Starting sign in process for:', email);
       setLoading(true);
       
-      // Sign in with Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Login timeout - please check your connection')), 30000)
+      );
+      
+      // Sign in with Supabase with timeout
+      const authPromise = supabase.auth.signInWithPassword({
         email,
         password,
       });
+      
+      const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any;
 
       if (error) {
         console.error('Authentication error:', error);
@@ -122,6 +129,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         errorMessage = 'Network error. Please check your connection and try again.';
       } else if (error.message?.includes('Invalid login credentials')) {
         errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+      } else if (error.message?.includes('timeout')) {
+        errorMessage = 'Login request timed out. Please check your connection and try again.';
+      } else if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+        errorMessage = 'Unable to connect to authentication server. Please check your internet connection.';
+      } else if (error.message?.includes('environment variables')) {
+        errorMessage = 'Authentication service is not properly configured. Please contact support.';
       }
       
       toast({

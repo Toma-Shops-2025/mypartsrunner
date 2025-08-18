@@ -5,11 +5,13 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Validate environment variables
-if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing Supabase environment variables:');
-  console.error('VITE_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing');
+if (!supabaseUrl || !supabaseKey || 
+    supabaseUrl.includes('your_supabase_project_url') || 
+    supabaseKey.includes('your_supabase_anon_key')) {
+  console.error('Missing or placeholder Supabase environment variables:');
+  console.error('VITE_SUPABASE_URL:', supabaseUrl);
   console.error('VITE_SUPABASE_ANON_KEY:', supabaseKey ? 'Set' : 'Missing');
-  throw new Error('Supabase environment variables are not configured properly. Please check your .env file.');
+  throw new Error('Supabase environment variables contain placeholder values. Please update your .env file with real Supabase credentials.');
 }
 
 // Create Supabase client
