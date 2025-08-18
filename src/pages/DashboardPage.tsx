@@ -83,23 +83,47 @@ const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Welcome, {user.firstName || user.name}!</h1>
-          <p className="text-gray-500">Your MyPartsRunner™ Dashboard</p>
-        </div>
-        <Button variant="outline" onClick={handleSignOut}>
-          Sign Out
-        </Button>
+    <div className="min-h-screen animated-bg">
+      {/* Background Effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-cyan-400 rounded-full blur-3xl opacity-10 animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-purple-500 rounded-full blur-3xl opacity-10 animate-pulse animation-delay-1000"></div>
       </div>
 
-      <Tabs defaultValue="overview">
-        <TabsList className="mb-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          {user.role === 'customer' && (
-            <TabsTrigger value="orders">My Orders</TabsTrigger>
-          )}
+      <div className="container mx-auto py-10 relative z-10">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold">
+              <span className="neon-text">Welcome,</span>{' '}
+              <span className="gradient-text">{user.firstName || user.name}!</span>
+            </h1>
+            <p className="text-gray-300">Your MyPartsRunner™ Dashboard</p>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={handleSignOut}
+            className="border-gray-600 text-gray-300 hover:border-cyan-400 hover:text-cyan-400 transition-colors"
+          >
+            Sign Out
+          </Button>
+        </div>
+
+        <Tabs defaultValue="overview">
+          <TabsList className="glass-card mb-4 bg-transparent border border-cyan-400/30 p-1">
+            <TabsTrigger 
+              value="overview"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-400 data-[state=active]:to-purple-600 data-[state=active]:text-black text-gray-300 hover:text-cyan-400 transition-colors"
+            >
+              Overview
+            </TabsTrigger>
+            {user.role === 'customer' && (
+              <TabsTrigger 
+                value="orders"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-400 data-[state=active]:to-purple-600 data-[state=active]:text-black text-gray-300 hover:text-cyan-400 transition-colors"
+              >
+                My Orders
+              </TabsTrigger>
+            )}
           {user.role === 'driver' && (
             <>
               <TabsTrigger value="deliveries">My Deliveries</TabsTrigger>
@@ -119,8 +143,13 @@ const DashboardPage: React.FC = () => {
           {(user.role === 'driver' || user.role === 'merchant') && (
             <TabsTrigger value="payouts">Payouts</TabsTrigger>
           )}
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-        </TabsList>
+            <TabsTrigger 
+              value="profile"
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-400 data-[state=active]:to-purple-600 data-[state=active]:text-black text-gray-300 hover:text-cyan-400 transition-colors"
+            >
+              Profile
+            </TabsTrigger>
+          </TabsList>
         
         <TabsContent value="overview">
           <Card>
