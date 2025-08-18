@@ -50,9 +50,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.log('Starting sign in process for:', email);
       setLoading(true);
       
-      // Add timeout to prevent hanging
+      // Check for placeholder credentials first
+      if (import.meta.env.VITE_SUPABASE_URL?.includes('your_supabase_project_url') || 
+          import.meta.env.VITE_SUPABASE_ANON_KEY?.includes('your_supabase_anon_key')) {
+        throw new Error('Authentication service is not configured. Please contact support to set up proper credentials.');
+      }
+      
+      // Add timeout to prevent hanging (shorter timeout for better UX)
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Login timeout - please check your connection')), 30000)
+        setTimeout(() => reject(new Error('Login request timed out. Please check your internet connection and try again.')), 10000)
       );
       
       // Sign in with Supabase with timeout
@@ -126,12 +132,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         errorMessage = 'Network error. Please check your connection and try again.';
       } else if (error.message?.includes('Invalid login credentials')) {
         errorMessage = 'Invalid email or password. Please check your credentials and try again.';
-      } else if (error.message?.includes('timeout')) {
-        errorMessage = 'Login request timed out. Please check your connection and try again.';
+      } else if (error.message?.includes('timeout') || error.message?.includes('timed out')) {
+        errorMessage = 'Login request timed out. Please check your internet connection and try again.';
       } else if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
         errorMessage = 'Unable to connect to authentication server. Please check your internet connection.';
-      } else if (error.message?.includes('environment variables')) {
+      } else if (error.message?.includes('not configured') || error.message?.includes('environment variables')) {
         errorMessage = 'Authentication service is not properly configured. Please contact support.';
+      } else if (error.message?.includes('fetch')) {
+        errorMessage = 'Network connection error. Please check your internet connection and try again.';
       }
       
       toast({

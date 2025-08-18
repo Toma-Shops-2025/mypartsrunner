@@ -119,6 +119,11 @@ const LoginPage: React.FC = () => {
             {loginError && (
               <div className="p-4 bg-red-50/80 border border-red-200/50 rounded-xl backdrop-blur-sm">
                 <p className="text-red-700 font-medium text-center">{loginError}</p>
+                {(loginError.includes('timeout') || loginError.includes('connection') || loginError.includes('network')) && (
+                  <p className="text-red-600 text-sm text-center mt-2">
+                    If this problem persists, try the "Clear cache" button below.
+                  </p>
+                )}
               </div>
             )}
 
