@@ -41,10 +41,12 @@ const CartPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center items-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <span className="ml-2">Loading cart...</span>
+      <div className="min-h-screen animated-bg flex items-center justify-center">
+        <div className="glass-card p-8 border border-cyan-400/30 glow-card">
+          <div className="flex items-center gap-4">
+            <div className="neon-spinner w-8 h-8"></div>
+            <span className="text-white text-lg">Loading your cart...</span>
+          </div>
         </div>
       </div>
     );
@@ -52,14 +54,16 @@ const CartPage: React.FC = () => {
 
   if (items.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-12">
-          <ShoppingCart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Your cart is empty</h2>
-          <p className="text-muted-foreground mb-6">
-            Looks like you haven't added any items to your cart yet.
+      <div className="min-h-screen animated-bg flex items-center justify-center">
+        <div className="glass-card p-12 border border-cyan-400/30 glow-card text-center max-w-md">
+          <ShoppingCart className="h-20 w-20 mx-auto text-cyan-400 mb-6 pulse-neon" />
+          <h2 className="text-3xl font-bold text-white mb-4">
+            <span className="gradient-text">Your cart is empty</span>
+          </h2>
+          <p className="text-gray-300 mb-8 text-lg">
+            Looks like you haven't added any items to your cart yet. Start browsing our amazing auto parts!
           </p>
-          <Button onClick={handleContinueShopping}>
+          <Button onClick={handleContinueShopping} className="neon-button text-base px-8 py-3 h-auto">
             Start Shopping
           </Button>
         </div>
@@ -68,14 +72,28 @@ const CartPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center mb-6">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mr-4">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-        <h1 className="text-3xl font-bold">Shopping Cart</h1>
+    <div className="min-h-screen animated-bg">
+      {/* Background Effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-cyan-400 rounded-full blur-3xl opacity-10 animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-purple-500 rounded-full blur-3xl opacity-10 animate-pulse animation-delay-1000"></div>
       </div>
+
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        <div className="flex items-center mb-8">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)} 
+            className="mr-4 text-gray-300 hover:text-cyan-400 hover:bg-cyan-400/20 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <h1 className="text-4xl font-bold">
+            <span className="gradient-text">Shopping</span>{' '}
+            <span className="neon-text">Cart</span>
+          </h1>
+        </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
