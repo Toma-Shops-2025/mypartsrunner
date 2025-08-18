@@ -46,34 +46,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const signIn = async (email: string, password: string) => {
     try {
       console.log('Starting sign in process for:', email);
+      setLoading(true);
       
-      // Check for demo credentials first
-      if (email === 'demo@mypartsrunner.com' && password === 'demo123') {
-        console.log('Demo login detected, creating demo user');
-        const demoUser = {
-          id: 'demo-user-123',
-          email: 'demo@mypartsrunner.com',
-          name: 'Demo User',
-          firstname: 'Demo',
-          lastname: 'User',
-          role: 'customer',
-          createdat: new Date().toISOString()
-        };
-        setUser(demoUser as any);
-        toast({
-          title: "Demo login successful!",
-          description: "Welcome to MyPartsRunner™ demo mode."
-        });
-        return;
-      }
-      
-      // Check if Supabase is configured
-      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-        console.warn('Supabase not configured, demo mode only');
-        throw new Error('Database not configured. Please use demo credentials: demo@mypartsrunner.com / demo123');
-      }
-      
-      // Sign in with Supabase - NO DEMO ACCOUNTS
+      // Sign in with Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -292,21 +267,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       try {
         console.log('Getting initial session...');
         
-        // Check if Supabase is configured
-        if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-          console.log('Supabase not configured, skipping session check');
-          setLoading(false);
-          return;
-        }
+
         
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Session error:', error);
-          // Don't throw for missing configuration
-          setUser(null);
-          setLoading(false);
-          return;
+          throw error;
         }
 
         if (session?.user) {
@@ -349,13 +316,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     getSession();
 
-    // Listen for auth changes (only if Supabase is configured)
-    let subscription: any = null;
-    
-    if (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) {
-      const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          console.log('Auth state change:', event, session?.user?.id);
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
         
         try {
           // Enhanced handling for PWA and mobile devices
@@ -436,9 +400,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setLoading(false);
         }
       }
-      );
-      subscription = authSubscription;
-    }
+    );
 
     // Mobile-specific: Handle app visibility changes for auth state sync
     const handleVisibilityChange = () => {
@@ -458,9 +420,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, 10000); // 10 second maximum loading time
 
     return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
+      subscription.unsubscribe();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       clearTimeout(fallbackTimeout);
     };
