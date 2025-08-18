@@ -9,9 +9,18 @@ export interface User {
   name: string;
   firstName?: string;
   lastName?: string;
+  firstname?: string; // Alternative naming for compatibility
+  lastname?: string; // Alternative naming for compatibility
   businessName?: string;
   role: UserRole;
   isAvailable?: boolean; // Add this field for driver availability
+  // Profile information
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  bio?: string;
+  profilePicture?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

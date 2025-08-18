@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppContext } from '@/contexts/AppContext';
 import DriverProfile from '@/components/DriverProfile';
 import DriverDashboard from '@/components/DriverDashboard';
+import CustomerProfile from '@/components/CustomerProfile';
 import { DriverEarnings } from '@/components/DriverEarnings';
 import { DriverAnalytics } from '@/components/DriverAnalytics';
 import { DriverSafety } from '@/components/DriverSafety';
@@ -196,17 +197,10 @@ const DashboardPage: React.FC = () => {
               }}
             />
           ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Profile</CardTitle>
-                <CardDescription>
-                  Manage your account information
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p>Profile management features will be available soon.</p>
-              </CardContent>
-            </Card>
+            <CustomerProfile 
+              user={user}
+              onUpdate={updateUserProfile}
+            />
           )}
         </TabsContent>
         
