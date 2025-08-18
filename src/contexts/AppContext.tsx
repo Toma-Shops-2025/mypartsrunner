@@ -71,44 +71,39 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (data.user) {
         console.log('Authentication successful, fetching profile...');
         
-        // Try to fetch user profile
-        try {
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', data.user.id)
-            .single();
+        // Create user from auth data (skip database profile fetching with placeholder credentials)
+        const basicUser = {
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
+          firstname: data.user.user_metadata?.firstname || data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
+          lastname: data.user.user_metadata?.lastname || '',
+          role: data.user.user_metadata?.role || 'customer',
+          createdat: new Date().toISOString()
+        };
+        
+        // Only try to fetch from database if we have real credentials
+        if (!import.meta.env.VITE_SUPABASE_URL?.includes('your_supabase_project_url')) {
+          try {
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', data.user.id)
+              .single();
 
-          if (profileError) {
-            console.warn('Profile fetch error:', profileError);
-            // Create a basic user object from auth data if profile fetch fails
-            const basicUser = {
-              id: data.user.id,
-              email: data.user.email,
-              name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
-              firstname: data.user.user_metadata?.firstname || data.user.email?.split('@')[0] || 'User',
-              lastname: data.user.user_metadata?.lastname || '',
-              role: data.user.user_metadata?.role || 'customer',
-              createdat: new Date().toISOString()
-            };
+            if (!profileError && profile) {
+              console.log('Profile loaded successfully from database');
+              setUser(profile);
+            } else {
+              console.warn('Profile fetch error, using auth data:', profileError);
+              setUser(basicUser as any);
+            }
+          } catch (profileError) {
+            console.warn('Profile operation failed, using auth data:', profileError);
             setUser(basicUser as any);
-            console.log('Using basic user data due to profile fetch error');
-          } else {
-            console.log('Profile loaded successfully');
-            setUser(profile);
           }
-        } catch (profileError) {
-          console.warn('Profile operation failed:', profileError);
-          // Still proceed with basic user data from user_metadata
-          const basicUser = {
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
-            firstname: data.user.user_metadata?.firstname || data.user.email?.split('@')[0] || 'User',
-            lastname: data.user.user_metadata?.lastname || '',
-            role: data.user.user_metadata?.role || 'customer',
-            createdat: new Date().toISOString()
-          };
+        } else {
+          console.log('Using auth data only (placeholder credentials detected)');
           setUser(basicUser as any);
         }
 
@@ -339,20 +334,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (session?.user) {
           console.log('Found existing session for user:', session.user.id);
-          // Fetch user profile
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
+          
+          // Create basic user from session data
+          const basicUser = {
+            id: session.user.id,
+            email: session.user.email,
+            name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+            firstname: session.user.user_metadata?.firstname || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+            lastname: session.user.user_metadata?.lastname || '',
+            role: session.user.user_metadata?.role || 'customer',
+            createdat: new Date().toISOString()
+          };
+          
+          // Only try to fetch from database if we have real credentials
+          if (!import.meta.env.VITE_SUPABASE_URL?.includes('your_supabase_project_url')) {
+            try {
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
 
-          if (profileError) {
-            console.error('Profile error during session check:', profileError);
-            // Don't throw here, just continue without profile
-            setUser(null);
+              if (!profileError && profile) {
+                console.log('Profile loaded successfully from database:', profile.email);
+                setUser(profile);
+              } else {
+                console.warn('Profile fetch error, using session data:', profileError);
+                setUser(basicUser as any);
+              }
+            } catch (profileError) {
+              console.warn('Profile operation failed, using session data:', profileError);
+              setUser(basicUser as any);
+            }
           } else {
-            console.log('Profile loaded successfully:', profile.email);
-            setUser(profile);
+            console.log('Using session data only (placeholder credentials detected)');
+            setUser(basicUser as any);
           }
         } else {
           console.log('No existing session found');
@@ -387,61 +403,79 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           if (session?.user && event !== 'SIGNED_OUT') {
             console.log('Processing auth state change for user:', session.user.id);
             
-            const { data: profile, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-
-            if (!error && profile) {
-              console.log('Profile found in auth state change:', profile.email);
-              setUser(profile);
-              
-              // PWA-specific: Store auth state for offline access
-              if (isPWA) {
-                localStorage.setItem('pwa_auth_state', JSON.stringify({
-                  userId: profile.id,
-                  email: profile.email,
-                  role: profile.role,
-                  timestamp: Date.now()
-                }));
-              }
-            } else {
-              console.error('Profile fetch error:', error);
-              // If profile doesn't exist, create a basic one for existing users
-              if (event === 'SIGNED_IN') {
-                console.log('Creating basic profile for new user');
-                const basicProfile = {
-                  id: session.user.id,
-                  email: session.user.email!,
-                  name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
-                  role: 'customer'
-                };
-                
-                const { error: insertError } = await supabase
+            // Create basic user from session data
+            const basicUser = {
+              id: session.user.id,
+              email: session.user.email,
+              name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+              firstname: session.user.user_metadata?.firstname || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
+              lastname: session.user.user_metadata?.lastname || '',
+              role: session.user.user_metadata?.role || 'customer',
+              createdat: new Date().toISOString()
+            };
+            
+            // Only try to fetch from database if we have real credentials
+            if (!import.meta.env.VITE_SUPABASE_URL?.includes('your_supabase_project_url')) {
+              try {
+                const { data: profile, error } = await supabase
                   .from('profiles')
-                  .insert([basicProfile]);
-                  
-                if (!insertError) {
-                  console.log('Basic profile created successfully');
-                  setUser(basicProfile as User);
-                  
-                  // PWA-specific: Store new profile for offline access
+                  .select('*')
+                  .eq('id', session.user.id)
+                  .single();
+
+                if (!error && profile) {
+                  console.log('Profile found in auth state change:', profile.email);
+                  setUser(profile);
+              
+                  // PWA-specific: Store auth state for offline access
                   if (isPWA) {
                     localStorage.setItem('pwa_auth_state', JSON.stringify({
-                      userId: basicProfile.id,
-                      email: basicProfile.email,
-                      role: basicProfile.role,
+                      userId: profile.id,
+                      email: profile.email,
+                      role: profile.role,
                       timestamp: Date.now()
                     }));
                   }
                 } else {
-                  console.error('Failed to create basic profile:', insertError);
-                  setUser(null);
+                  console.warn('Profile fetch error in auth state change, using session data:', error);
+                  setUser(basicUser as any);
+                  
+                  // PWA-specific: Store basic user for offline access
+                  if (isPWA) {
+                    localStorage.setItem('pwa_auth_state', JSON.stringify({
+                      userId: basicUser.id,
+                      email: basicUser.email,
+                      role: basicUser.role,
+                      timestamp: Date.now()
+                    }));
+                  }
                 }
-              } else {
-                console.log('No profile found and not a sign-in event');
-                setUser(null);
+              } catch (profileError) {
+                console.warn('Profile operation failed in auth state change, using session data:', profileError);
+                setUser(basicUser as any);
+                
+                // PWA-specific: Store basic user for offline access
+                if (isPWA) {
+                  localStorage.setItem('pwa_auth_state', JSON.stringify({
+                    userId: basicUser.id,
+                    email: basicUser.email,
+                    role: basicUser.role,
+                    timestamp: Date.now()
+                  }));
+                }
+              }
+            } else {
+              console.log('Using session data only in auth state change (placeholder credentials detected)');
+              setUser(basicUser as any);
+              
+              // PWA-specific: Store basic user for offline access
+              if (isPWA) {
+                localStorage.setItem('pwa_auth_state', JSON.stringify({
+                  userId: basicUser.id,
+                  email: basicUser.email,
+                  role: basicUser.role,
+                  timestamp: Date.now()
+                }));
               }
             }
           } else {
