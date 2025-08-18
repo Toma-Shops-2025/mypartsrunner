@@ -10,7 +10,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { signIn, loading: contextLoading, isAuthenticated, user } = useAppContext();
+  const { signIn, loading: contextLoading, isAuthenticated, user, clearAuthCache } = useAppContext();
   const isMobile = useIsMobile();
   
   const [formData, setFormData] = useState({
@@ -28,6 +28,18 @@ const LoginPage: React.FC = () => {
       navigate('/dashboard');
     }
   }, [isAuthenticated, user, navigate]);
+
+  // Clear any stale auth data when login page loads
+  useEffect(() => {
+    const clearStaleAuth = async () => {
+      if (!isAuthenticated && !contextLoading) {
+        console.log('Clearing potentially stale authentication data...');
+        await clearAuthCache();
+      }
+    };
+    
+    clearStaleAuth();
+  }, [isAuthenticated, contextLoading, clearAuthCache]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -194,7 +206,7 @@ const LoginPage: React.FC = () => {
               </Button>
             </div>
             
-            <div className="text-center">
+            <div className="text-center space-y-2">
               <Button 
                 variant="link" 
                 className="p-0 h-auto text-gray-500 hover:text-gray-700 text-sm"
@@ -203,6 +215,20 @@ const LoginPage: React.FC = () => {
               >
                 Forgot your password?
               </Button>
+              
+              <div>
+                <Button 
+                  variant="link" 
+                  className="p-0 h-auto text-gray-400 hover:text-gray-600 text-xs"
+                  onClick={async () => {
+                    await clearAuthCache();
+                    window.location.reload();
+                  }}
+                  disabled={contextLoading}
+                >
+                  Having login issues? Clear cache
+                </Button>
+              </div>
             </div>
           </CardFooter>
         </Card>

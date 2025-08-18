@@ -13,6 +13,7 @@ interface AppContextType {
   signUp: (email: string, password: string, userData: Partial<User>) => Promise<void>;
   signOut: () => Promise<void>;
   updateUserProfile: (updates: Partial<User>) => Promise<void>;
+  clearAuthCache: () => Promise<void>;
   isAuthenticated: boolean;
   userRole: UserRole | null;
 }
@@ -26,6 +27,7 @@ const defaultAppContext: AppContextType = {
   signUp: async () => {},
   signOut: async () => {},
   updateUserProfile: async () => {},
+  clearAuthCache: async () => {},
   isAuthenticated: false,
   userRole: null,
 };
@@ -142,6 +144,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         description: errorMessage,
         variant: "destructive"
       });
+      
+      // Clear potentially corrupted auth cache on login failure
+      await clearAuthCache();
+      
       throw error;
     } finally {
       setLoading(false);
@@ -229,9 +235,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const signOut = async () => {
     try {
-      // Regular Supabase signout - NO DEMO LOGIC
+      // Regular Supabase signout
       await supabase.auth.signOut();
       setUser(null);
+      
+      // Clear all cached auth data
+      await clearAuthCache();
+      
       toast({
         title: "Signed out successfully",
         description: "Come back soon!"
@@ -240,10 +250,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.warn('Signout error, forcing local logout:', error);
       // Force local logout even if Supabase fails
       setUser(null);
+      await clearAuthCache();
       toast({
         title: "Signed out",
         description: "You have been logged out."
       });
+    }
+  };
+
+  const clearAuthCache = async () => {
+    try {
+      console.log('Clearing authentication cache...');
+      
+      // Clear localStorage auth data
+      localStorage.removeItem('supabase.auth.token');
+      localStorage.removeItem('sb-' + (import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0] || 'unknown') + '-auth-token');
+      localStorage.removeItem('pwa_auth_state');
+      
+      // Clear sessionStorage auth data
+      sessionStorage.removeItem('supabase.auth.token');
+      sessionStorage.removeItem('sb-' + (import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0] || 'unknown') + '-auth-token');
+      
+      // Clear any IndexedDB auth data (common in PWAs)
+      if ('indexedDB' in window) {
+        try {
+          const databases = await indexedDB.databases();
+          for (const db of databases) {
+            if (db.name?.includes('supabase') || db.name?.includes('auth')) {
+              indexedDB.deleteDatabase(db.name);
+            }
+          }
+        } catch (e) {
+          console.warn('Could not clear IndexedDB:', e);
+        }
+      }
+      
+      console.log('Authentication cache cleared');
+    } catch (error) {
+      console.warn('Error clearing auth cache:', error);
     }
   };
 
@@ -286,7 +330,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         
         if (error) {
           console.error('Session error:', error);
-          throw error;
+          // Clear corrupted session data
+          await clearAuthCache();
+          setUser(null);
+          setLoading(false);
+          return;
         }
 
         if (session?.user) {
@@ -450,6 +498,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         signUp,
         signOut,
         updateUserProfile,
+        clearAuthCache,
         isAuthenticated: !!user,
         userRole: user?.role || null,
       }}
