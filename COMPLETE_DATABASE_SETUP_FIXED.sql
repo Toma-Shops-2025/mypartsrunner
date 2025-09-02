@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS profiles (
     city TEXT,
     state TEXT,
     zipCode TEXT,
+    stripeConnectAccountId TEXT, -- Stripe Connect account ID for payments
+    stripeConnectStatus TEXT CHECK (stripeConnectStatus IN ('pending', 'active', 'restricted', 'disabled')) DEFAULT 'pending',
     createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -85,6 +87,13 @@ CREATE TABLE IF NOT EXISTS orders (
     deliveryLongitude DECIMAL(11, 8),
     estimatedDeliveryTime TIMESTAMP WITH TIME ZONE,
     actualDeliveryTime TIMESTAMP WITH TIME ZONE,
+    -- Payout fields
+    merchantPayoutId TEXT,
+    merchantPayoutAmount DECIMAL(10, 2),
+    merchantPayoutStatus TEXT CHECK (merchantPayoutStatus IN ('pending', 'completed', 'failed')) DEFAULT 'pending',
+    driverPayoutId TEXT,
+    driverPayoutAmount DECIMAL(10, 2),
+    driverPayoutStatus TEXT CHECK (driverPayoutStatus IN ('pending', 'completed', 'failed')) DEFAULT 'pending',
     createdAt TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updatedAt TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

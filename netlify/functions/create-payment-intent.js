@@ -1,13 +1,13 @@
 const Stripe = require('stripe');
 const { createClient } = require('@supabase/supabase-js');
 
-const stripe = new Stripe(process.env.VITE_STRIPE_SECRET_KEY, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2024-12-18.acacia',
 });
 
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.VITE_SUPABASE_ANON_KEY
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
 );
 
 exports.handler = async (event, context) => {
@@ -29,14 +29,30 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // Get merchant's Stripe account ID
-    const { data: merchantProfile, error: merchantError } = await supabase
-      .from('merchant_profiles')
-      .select('stripe_account_id')
-      .eq('id', orderDetails.merchantId)
+    // Get merchant's Stripe account ID from stores table
+    const { data: store, error: storeError } = await supabase
+      .from('stores')
+      .select('merchantId')
+      .eq('id', orderDetails.storeId)
       .single();
 
-    if (merchantError || !merchantProfile?.stripe_account_id) {
+    if (storeError || !store) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ 
+          error: 'Store not found' 
+        })
+      };
+    }
+
+    // Get merchant's Stripe Connect account ID
+    const { data: merchantProfile, error: merchantError } = await supabase
+      .from('profiles')
+      .select('stripeConnectAccountId')
+      .eq('id', store.merchantId)
+      .single();
+
+    if (merchantError || !merchantProfile?.stripeConnectAccountId) {
       return {
         statusCode: 400,
         body: JSON.stringify({ 
@@ -56,12 +72,12 @@ exports.handler = async (event, context) => {
       currency: currency || 'usd',
       application_fee_amount: platformFeeAmount,
       transfer_data: {
-        destination: merchantProfile.stripe_account_id,
+        destination: merchantProfile.stripeConnectAccountId,
       },
       metadata: {
         order_id: `order_${Date.now()}`,
         customer_id: orderDetails.customerId,
-        merchant_id: orderDetails.merchantId,
+        merchant_id: store.merchantId,
         store_id: orderDetails.storeId,
         subtotal: (orderDetails.breakdown.subtotal * 100).toString(),
         delivery_fee: (orderDetails.breakdown.deliveryFee * 100).toString(),
@@ -92,61 +108,39 @@ exports.handler = async (event, context) => {
     const orderRecord = {
       id: paymentIntent.metadata.order_id,
       customerId: orderDetails.customerId,
-      merchantId: orderDetails.merchantId,
       storeId: orderDetails.storeId,
-      paymentIntentId: paymentIntent.id,
-      status: 'pending_payment',
-      paymentStatus: 'pending',
-      merchantPaymentStatus: 'pending',
-      deliveryPaymentStatus: 'pending',
-      paymentMethod: 'stripe',
-      itemTotal: orderDetails.breakdown.subtotal,
+      status: 'pending',
+      total: amount / 100, // Convert from cents
       deliveryFee: orderDetails.breakdown.deliveryFee,
-      serviceFee: orderDetails.breakdown.serviceFee,
-      tax: orderDetails.breakdown.tax,
-      total: amount / 100,
-      deliveryAddress: `${orderDetails.deliveryAddress.street}, ${orderDetails.deliveryAddress.city}, ${orderDetails.deliveryAddress.state} ${orderDetails.deliveryAddress.zipCode}`,
-      customerName: metadata.customerName,
-      customerEmail: metadata.customerEmail,
-      customerPhone: metadata.customerPhone,
-      items: JSON.stringify(orderDetails.items),
+      deliveryAddress: metadata.deliveryAddress,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
     const { error: orderError } = await supabase
       .from('orders')
-      .insert([orderRecord]);
+      .insert(orderRecord);
 
     if (orderError) {
-      console.error('Error creating order record:', orderError);
-      // Continue anyway - the payment intent is created
+      console.error('Error creating order:', orderError);
+      // Don't fail the payment if order creation fails
     }
 
     return {
       statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS'
-      },
       body: JSON.stringify({
         clientSecret: paymentIntent.client_secret,
         paymentIntentId: paymentIntent.id,
-        orderId: paymentIntent.metadata.order_id,
-        amount: amount,
-        platformFee: platformFeeAmount,
-        merchantReceives: amount - platformFeeAmount
+        orderId: orderRecord.id
       })
     };
 
   } catch (error) {
     console.error('Payment intent creation error:', error);
-    
     return {
       statusCode: 500,
       body: JSON.stringify({ 
-        error: 'Payment processing failed', 
+        error: 'Failed to create payment intent',
         details: error.message 
       })
     };

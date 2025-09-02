@@ -1,13 +1,13 @@
 const Stripe = require('stripe');
 const { createClient } = require('@supabase/supabase-js');
 
-const stripe = new Stripe(process.env.VITE_STRIPE_SECRET_KEY, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2024-12-18.acacia',
 });
 
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.VITE_SUPABASE_ANON_KEY
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
 );
 
 exports.handler = async (event, context) => {
@@ -19,176 +19,137 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { paymentIntentId, orderDetails } = JSON.parse(event.body);
+    const { orderId } = JSON.parse(event.body);
 
-    if (!paymentIntentId || !orderDetails) {
+    if (!orderId) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Missing required fields' })
+        body: JSON.stringify({ error: 'Order ID is required' })
       };
     }
 
-    // Get payment intent details
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-    
-    if (paymentIntent.status !== 'succeeded') {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Payment not successful' })
-      };
-    }
-
-    const orderId = paymentIntent.metadata.order_id;
-
-    // 1. MERCHANT PAYOUT (Immediate - already handled by transfer_data in payment intent)
-    // The merchant automatically receives: subtotal + tax
-    const merchantAmount = orderDetails.breakdown.subtotal + orderDetails.breakdown.tax;
-    
-    // Update order status to show merchant has been paid
-    await supabase
+    // Get order details
+    const { data: order, error: orderError } = await supabase
       .from('orders')
-      .update({
-        status: 'confirmed',
-        paymentStatus: 'completed',
-        merchantPaymentStatus: 'completed',
-        updatedAt: new Date().toISOString()
-      })
-      .eq('paymentIntentId', paymentIntentId);
+      .select(`
+        *,
+        stores!inner(merchantId),
+        profiles!inner(stripeConnectAccountId)
+      `)
+      .eq('id', orderId)
+      .single();
 
-    // Record merchant transaction
-    await supabase
-      .from('transactions')
-      .insert([{
-        recipient_id: orderDetails.merchantId,
-        amount: merchantAmount,
-        type: 'order_payment',
-        status: 'completed',
-        description: `Order payment for ${orderId}`,
-        metadata: JSON.stringify({
-          orderId: orderId,
-          paymentIntentId: paymentIntentId,
-          breakdown: {
-            subtotal: orderDetails.breakdown.subtotal,
-            tax: orderDetails.breakdown.tax
+    if (orderError || !order) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ error: 'Order not found' })
+      };
+    }
+
+    // Check if order is delivered and ready for payout
+    if (order.status !== 'delivered') {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Order is not delivered yet' })
+      };
+    }
+
+    // Calculate payout amounts
+    const orderTotal = order.total;
+    const deliveryFee = order.deliveryFee || 0;
+    const platformFee = orderTotal * 0.15; // 15% platform fee
+    const merchantPayout = orderTotal - platformFee;
+    const driverPayout = deliveryFee * 0.8; // Driver gets 80% of delivery fee
+
+    // Process merchant payout
+    if (merchantPayout > 0 && order.profiles.stripeConnectAccountId) {
+      try {
+        const transfer = await stripe.transfers.create({
+          amount: Math.round(merchantPayout * 100), // Convert to cents
+          currency: 'usd',
+          destination: order.profiles.stripeConnectAccountId,
+          description: `Payout for order ${orderId}`,
+          metadata: {
+            order_id: orderId,
+            type: 'merchant_payout',
+            amount: merchantPayout.toString()
           }
-        }),
-        created_at: new Date().toISOString()
-      }]);
+        });
 
-    // 2. DELIVERY FEE ALLOCATION (Held for driver assignment)
-    // This will be paid out when delivery is completed
-    const deliveryFee = orderDetails.breakdown.deliveryFee;
-    const driverShare = deliveryFee * 0.8; // 80% to driver
-    const houseDeliveryShare = deliveryFee * 0.2; // 20% to house
+        // Update order with payout information
+        await supabase
+          .from('orders')
+          .update({
+            merchantPayoutId: transfer.id,
+            merchantPayoutAmount: merchantPayout,
+            merchantPayoutStatus: 'completed',
+            updatedAt: new Date().toISOString()
+          })
+          .eq('id', orderId);
 
-    // 3. SERVICE FEE (Goes to house immediately)
-    const serviceFee = orderDetails.breakdown.serviceFee;
-    
-    // Record pending delivery transactions (will be completed when delivery finishes)
-    await supabase
-      .from('pending_payouts')
-      .insert([
-        {
-          order_id: orderId,
-          recipient_type: 'driver',
-          amount: driverShare,
-          type: 'delivery_fee',
-          description: `Delivery fee for order ${orderId}`,
-          status: 'pending_delivery',
-          created_at: new Date().toISOString()
-        },
-        {
-          order_id: orderId,
-          recipient_type: 'house',
-          amount: houseDeliveryShare + serviceFee,
-          type: 'service_fee',
-          description: `Service fee + delivery portion for order ${orderId}`,
-          status: 'pending_delivery',
-          created_at: new Date().toISOString()
+      } catch (transferError) {
+        console.error('Merchant payout failed:', transferError);
+        // Continue with driver payout even if merchant payout fails
+      }
+    }
+
+    // Process driver payout (if driver exists)
+    if (order.driverId && driverPayout > 0) {
+      try {
+        // Get driver's Stripe Connect account
+        const { data: driverProfile, error: driverError } = await supabase
+          .from('profiles')
+          .select('stripeConnectAccountId')
+          .eq('id', order.driverId)
+          .single();
+
+        if (!driverError && driverProfile?.stripeConnectAccountId) {
+          const driverTransfer = await stripe.transfers.create({
+            amount: Math.round(driverPayout * 100), // Convert to cents
+            currency: 'usd',
+            destination: driverProfile.stripeConnectAccountId,
+            description: `Delivery fee for order ${orderId}`,
+            metadata: {
+              order_id: orderId,
+              type: 'driver_payout',
+              amount: driverPayout.toString()
+            }
+          });
+
+          // Update order with driver payout information
+          await supabase
+            .from('orders')
+            .update({
+              driverPayoutId: driverTransfer.id,
+              driverPayoutAmount: driverPayout,
+              driverPayoutStatus: 'completed',
+              updatedAt: new Date().toISOString()
+            })
+            .eq('id', orderId);
         }
-      ]);
-
-    // Send notifications
-    await Promise.all([
-      sendMerchantNotification(orderDetails.merchantId, orderId, merchantAmount),
-      sendOrderConfirmationNotification(paymentIntent.metadata.customer_id, orderId)
-    ]);
+      } catch (driverTransferError) {
+        console.error('Driver payout failed:', driverTransferError);
+      }
+    }
 
     return {
       statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS'
-      },
       body: JSON.stringify({
-        success: true,
+        message: 'Payouts processed successfully',
         orderId: orderId,
-        payouts: {
-          merchant: {
-            amount: merchantAmount,
-            status: 'completed',
-            description: 'Immediate payment via Stripe Connect'
-          },
-          driver: {
-            amount: driverShare,
-            status: 'pending_delivery',
-            description: 'Will be paid upon delivery completion'
-          },
-          house: {
-            amount: houseDeliveryShare + serviceFee,
-            status: 'pending_delivery',
-            description: 'Service fee + delivery portion'
-          }
-        }
+        merchantPayout: merchantPayout,
+        driverPayout: driverPayout
       })
     };
 
   } catch (error) {
     console.error('Payout processing error:', error);
-    
     return {
       statusCode: 500,
       body: JSON.stringify({ 
-        error: 'Payout processing failed', 
+        error: 'Failed to process payouts',
         details: error.message 
       })
     };
   }
-};
-
-async function sendMerchantNotification(merchantId, orderId, amount) {
-  try {
-    // In a real app, this would send email/SMS/push notification
-    console.log(`Merchant ${merchantId} received $${amount} for order ${orderId}`);
-    
-    // You could integrate with email service here
-    // await sendEmail({
-    //   to: merchant.email,
-    //   subject: 'New Order - Payment Received',
-    //   template: 'merchant-order-notification',
-    //   data: { orderId, amount }
-    // });
-    
-  } catch (error) {
-    console.error('Error sending merchant notification:', error);
-  }
-}
-
-async function sendOrderConfirmationNotification(customerId, orderId) {
-  try {
-    // In a real app, this would send order confirmation to customer
-    console.log(`Order confirmation sent to customer ${customerId} for order ${orderId}`);
-    
-    // You could integrate with email service here
-    // await sendEmail({
-    //   to: customer.email,
-    //   subject: 'Order Confirmed - Fast Delivery Coming!',
-    //   template: 'customer-order-confirmation',
-    //   data: { orderId }
-    // });
-    
-  } catch (error) {
-    console.error('Error sending customer notification:', error);
-  }
-} 
+}; 
