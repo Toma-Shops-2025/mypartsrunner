@@ -89,143 +89,144 @@ const CartPage: React.FC = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-4xl font-bold">
+                    <h1 className="text-4xl font-bold">
             <span className="gradient-text">Shopping</span>{' '}
             <span className="neon-text">Cart</span>
           </h1>
         </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Cart Items */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Cart Items ({items.length})</CardTitle>
-                <Button variant="outline" size="sm" onClick={handleClearCart}>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Clear Cart
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {items.map((item) => (
-                  <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{item.product?.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {item.product?.description}
-                      </p>
-                      <div className="flex items-center mt-2">
-                        <Badge variant="secondary" className="mr-2">
-                          {item.product?.category}
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">
-                          SKU: {item.product?.sku || 'N/A'}
-                        </span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Cart Items */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Cart Items ({items.length})</CardTitle>
+                  <Button variant="outline" size="sm" onClick={handleClearCart}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Clear Cart
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {items.map((item) => (
+                    <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg">
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{item.product?.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {item.product?.description}
+                        </p>
+                        <div className="flex items-center mt-2">
+                          <Badge variant="secondary" className="mr-2">
+                            {item.product?.category}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">
+                            SKU: {item.product?.sku || 'N/A'}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
+                      
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
+                          disabled={item.quantity <= 1}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <Input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            if (!isNaN(value) && value > 0) {
+                              handleQuantityChange(item.productId, value);
+                            }
+                          }}
+                          className="w-16 text-center"
+                          min="1"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      
+                      <div className="text-right">
+                        <p className="font-semibold">
+                          ${((item.product?.price || 0) * item.quantity).toFixed(2)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          ${(item.product?.price || 0).toFixed(2)} each
+                        </p>
+                      </div>
+                      
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        onClick={() => handleQuantityChange(item.productId, item.quantity - 1)}
-                        disabled={item.quantity <= 1}
+                        onClick={() => handleRemoveItem(item.productId)}
                       >
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <Input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) => {
-                          const value = parseInt(e.target.value);
-                          if (!isNaN(value) && value > 0) {
-                            handleQuantityChange(item.productId, value);
-                          }
-                        }}
-                        className="w-16 text-center"
-                        min="1"
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleQuantityChange(item.productId, item.quantity + 1)}
-                      >
-                        <Plus className="h-3 w-3" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                    
-                    <div className="text-right">
-                      <p className="font-semibold">
-                        ${((item.product?.price || 0) * item.quantity).toFixed(2)}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        ${(item.product?.price || 0).toFixed(2)} each
-                      </p>
-                    </div>
-                    
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveItem(item.productId)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Order Summary */}
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span>Subtotal ({getCartTotal().toFixed(2)} items)</span>
-                  <span>${getCartTotal().toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Tax (8.25%)</span>
-                  <span>${(getCartTotal() * 0.0825).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Delivery Fee</span>
-                  <span>$5.99</span>
-                </div>
-                <div className="border-t pt-4">
-                  <div className="flex justify-between font-bold text-lg">
-                    <span>Total</span>
-                    <span>${(getCartTotal() * 1.0825 + 5.99).toFixed(2)}</span>
+          {/* Order Summary */}
+          <div className="lg:col-span-1">
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between">
+                    <span>Subtotal ({getCartTotal().toFixed(2)} items)</span>
+                    <span>${getCartTotal().toFixed(2)}</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span>Tax (8.25%)</span>
+                    <span>${(getCartTotal() * 0.0825).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Delivery Fee</span>
+                    <span>$5.99</span>
+                  </div>
+                  <div className="border-t pt-4">
+                    <div className="flex justify-between font-bold text-lg">
+                      <span>Total</span>
+                      <span>${(getCartTotal() * 1.0825 + 5.99).toFixed(2)}</span>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    className="w-full" 
+                    size="lg"
+                    onClick={handleCheckout}
+                    disabled={!isAuthenticated}
+                  >
+                    {isAuthenticated ? 'Proceed to Checkout' : 'Login to Checkout'}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={handleContinueShopping}
+                  >
+                    Continue Shopping
+                  </Button>
                 </div>
-                
-                <Button 
-                  className="w-full" 
-                  size="lg"
-                  onClick={handleCheckout}
-                  disabled={!isAuthenticated}
-                >
-                  {isAuthenticated ? 'Proceed to Checkout' : 'Login to Checkout'}
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={handleContinueShopping}
-                >
-                  Continue Shopping
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
