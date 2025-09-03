@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import BackButton from '@/components/ui/back-button';
 import { 
   Zap, 
   Target, 
@@ -13,7 +14,9 @@ import {
   Star,
   CheckCircle,
   Clock,
-  Shield
+  Shield,
+  Lightbulb,
+  Rocket
 } from 'lucide-react';
 
 const AboutPage: React.FC = () => {
@@ -60,7 +63,19 @@ const AboutPage: React.FC = () => {
         <div className="absolute top-1/2 left-1/4 w-72 h-72 bg-pink-500 rounded-full blur-3xl opacity-5"></div>
       </div>
 
-      <div className="container py-12 max-w-6xl mx-auto px-4 relative z-10">
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        {/* Header with Back Button */}
+        <div className="flex items-center mb-8">
+          <BackButton 
+            variant="ghost" 
+            className="mr-4 text-gray-300 hover:text-cyan-400 hover:bg-cyan-400/20 transition-colors"
+          />
+          <h1 className="text-4xl font-bold">
+            <span className="gradient-text">About</span>{' '}
+            <span className="neon-text">MyPartsRunner</span>
+          </h1>
+        </div>
+
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="w-20 h-20 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 pulse-neon">

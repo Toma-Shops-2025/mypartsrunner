@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import BackButton from '@/components/ui/back-button';
 import { 
   Mail, 
   Phone, 
@@ -149,21 +150,28 @@ const ContactPage: React.FC = () => {
         <div className="absolute top-1/2 left-1/4 w-72 h-72 bg-pink-500 rounded-full blur-3xl opacity-5"></div>
       </div>
 
-      <div className="container mx-auto px-4 py-12 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          {/* Hero Section */}
-          <div className="text-center mb-16">
-            <div className="w-16 h-16 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 pulse-neon">
-              <MessageSquare className="w-8 h-8 text-black" />
-            </div>
-            <h1 className="text-5xl font-bold mb-6">
-              <span className="gradient-text">Contact</span>{' '}
-              <span className="neon-text">Our Team</span>
-            </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Have questions about MyPartsRunner™? We're here to help! Get in touch with our team for support, partnerships, or general inquiries.
-            </p>
-          </div>
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        {/* Header with Back Button */}
+        <div className="flex items-center mb-8">
+          <BackButton 
+            variant="ghost" 
+            className="mr-4 text-gray-300 hover:text-cyan-400 hover:bg-cyan-400/20 transition-colors"
+          />
+          <h1 className="text-4xl font-bold">
+            <span className="gradient-text">Contact</span>{' '}
+            <span className="neon-text">Us</span>
+          </h1>
+        </div>
+          <h1 className="text-4xl font-bold">
+            <div className="max-w-6xl mx-auto">
+          <h1 className="text-4xl font-bold">
+            <span className="gradient-text">Contact</span>{' '}
+            <span className="neon-text">Our Team</span>
+          </h1>
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            Have questions about MyPartsRunner™? We're here to help! Get in touch with our team for support, partnerships, or general inquiries.
+          </p>
+        </div>
 
           {/* Contact Methods Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">

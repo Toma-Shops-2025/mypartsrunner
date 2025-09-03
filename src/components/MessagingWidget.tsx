@@ -37,23 +37,37 @@ const MessagingWidget: React.FC<MessagingWidgetProps> = ({ className = '' }) => 
   const [position, setPosition] = useState({ x: 20, y: 20 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [userClosed, setUserClosed] = useState(false); // Track if user manually closed
 
-  // Auto-open when new messages arrive
+  // Auto-open when new messages arrive (only if user hasn't manually closed)
   useEffect(() => {
-    if (totalUnreadCount > 0 && !isOpen) {
+    if (totalUnreadCount > 0 && !isOpen && !userClosed) {
       // Auto-open widget for new messages (with delay for user experience)
       const timer = setTimeout(() => {
         setIsOpen(true);
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [totalUnreadCount, isOpen]);
+  }, [totalUnreadCount, isOpen, userClosed]);
 
   // Handle conversation selection
   const handleSelectConversation = (conversationId: string) => {
     setActiveConversation(conversationId);
     markAsRead(conversationId);
     setIsMinimized(false);
+  };
+
+  // Handle close button click
+  const handleClose = () => {
+    setIsOpen(false);
+    setActiveConversation(null);
+    setUserClosed(true); // Mark as user-closed
+  };
+
+  // Handle open button click
+  const handleOpen = () => {
+    setIsOpen(true);
+    setUserClosed(false); // Reset user-closed state
   };
 
   // Get other participant in conversation
@@ -137,7 +151,7 @@ const MessagingWidget: React.FC<MessagingWidgetProps> = ({ className = '' }) => 
           onMouseDown={handleMouseDown}
         >
           <Button
-            onClick={() => setIsOpen(true)}
+            onClick={handleOpen}
             className="w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 relative"
             style={{ 
               background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
@@ -196,10 +210,7 @@ const MessagingWidget: React.FC<MessagingWidgetProps> = ({ className = '' }) => 
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  setIsOpen(false);
-                  setActiveConversation(null);
-                }}
+                onClick={handleClose}
                 className="h-8 w-8 p-0"
               >
                 <X className="h-4 w-4" />

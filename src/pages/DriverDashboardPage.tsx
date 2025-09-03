@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import BackButton from '@/components/ui/back-button';
 import { 
   Car, 
   DollarSign, 
@@ -99,7 +100,26 @@ const DriverDashboardPage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 pb-24">
+    <div className="min-h-screen animated-bg">
+      {/* Background Effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-cyan-400 rounded-full blur-3xl opacity-10 animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-purple-500 rounded-full blur-3xl opacity-10 animate-pulse animation-delay-1000"></div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        {/* Header with Back Button */}
+        <div className="flex items-center mb-8">
+          <BackButton 
+            variant="ghost" 
+            className="mr-4 text-gray-300 hover:text-cyan-400 hover:bg-cyan-400/20 transition-colors"
+          />
+          <h1 className="text-4xl font-bold">
+            <span className="gradient-text">Driver</span>{' '}
+            <span className="neon-text">Dashboard</span>
+          </h1>
+        </div>
+      
       <DeviceStatusBar />
       
       {/* Driver Status Card */}

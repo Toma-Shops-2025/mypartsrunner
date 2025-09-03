@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import BackButton from '@/components/ui/back-button';
 import { 
   BookOpen, 
   User, 
@@ -152,13 +153,19 @@ export const HelpPage: React.FC = () => {
         <div className="absolute bottom-20 right-10 w-80 h-80 bg-purple-500 rounded-full blur-3xl opacity-10 animate-pulse animation-delay-1000"></div>
       </div>
       <div className="container mx-auto py-10 space-y-8 relative z-10">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Help & Support Center</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Everything you need to know about MyPartsRunner™. Find answers, learn features, 
-            and get support when you need it.
-          </p>
+        {/* Header with Back Button */}
+        <div className="flex items-center mb-8">
+          <BackButton 
+            variant="ghost" 
+            className="mr-4 text-gray-300 hover:text-cyan-400 hover:bg-cyan-400/20 transition-colors"
+          />
+          <div className="text-center flex-1">
+            <h1 className="text-4xl font-bold mb-4">Help & Support Center</h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Everything you need to know about MyPartsRunner™. Find answers, learn features, 
+              and get support when you need it.
+            </p>
+          </div>
         </div>
 
         {/* Quick Links */}

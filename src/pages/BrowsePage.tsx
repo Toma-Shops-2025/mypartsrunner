@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, ShoppingCart, Loader2, Star, MapPin } from "lucide-react";
+import { Heart, ShoppingCart, Loader2, Star, MapPin, ArrowLeft } from "lucide-react";
 import { Product } from "@/types";
 import { DatabaseService } from "@/lib/database";
 import { useCart } from "@/contexts/CartContext";
 import { useAppContext } from "@/contexts/AppContext";
 import AdvancedSearch from "@/components/AdvancedSearch";
+import BackButton from "@/components/ui/back-button";
 
 interface SearchResult {
   id: string;
@@ -133,12 +135,24 @@ const BrowsePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Browse Auto Parts</h1>
-          <p className="text-gray-600">Find the perfect parts for your vehicle with AI-powered search</p>
+    <div className="min-h-screen animated-bg">
+      {/* Background Effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-cyan-400 rounded-full blur-3xl opacity-10 animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-80 h-80 bg-purple-500 rounded-full blur-3xl opacity-10 animate-pulse animation-delay-1000"></div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        {/* Header with Back Button */}
+        <div className="flex items-center mb-8">
+          <BackButton 
+            variant="ghost" 
+            className="mr-4 text-gray-300 hover:text-cyan-400 hover:bg-cyan-400/20 transition-colors"
+          />
+          <h1 className="text-4xl font-bold">
+            <span className="gradient-text">Browse</span>{' '}
+            <span className="neon-text">Products</span>
+          </h1>
         </div>
 
         {/* Advanced Search */}

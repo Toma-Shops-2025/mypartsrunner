@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppContext } from '@/contexts/AppContext';
+import BackButton from '@/components/ui/back-button';
 import DriverProfile from '@/components/DriverProfile';
 import DriverDashboard from '@/components/DriverDashboard';
 import CustomerProfile from '@/components/CustomerProfile';
@@ -92,12 +93,18 @@ const DashboardPage: React.FC = () => {
 
       <div className="container mx-auto py-10 relative z-10">
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold">
-              <span className="neon-text">Welcome,</span>{' '}
-              <span className="gradient-text">{user.firstName || user.name}!</span>
-            </h1>
-            <p className="text-gray-300">Your MyPartsRunner™ Dashboard</p>
+          <div className="flex items-center">
+            <BackButton 
+              variant="ghost" 
+              className="mr-4 text-gray-300 hover:text-cyan-400 hover:bg-cyan-400/20 transition-colors"
+            />
+            <div>
+              <h1 className="text-4xl font-bold">
+                <span className="neon-text">Welcome,</span>{' '}
+                <span className="gradient-text">{user.firstName || user.name}!</span>
+              </h1>
+              <p className="text-gray-300">Your MyPartsRunner™ Dashboard</p>
+            </div>
           </div>
           <Button 
             variant="outline" 
