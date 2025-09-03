@@ -60,6 +60,7 @@ const BrowsePage = () => {
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [showManualDelivery, setShowManualDelivery] = useState(false);
   const { addToCart, isInCart } = useCart();
   const { isAuthenticated } = useAppContext();
 
@@ -466,6 +467,54 @@ const BrowsePage = () => {
               </p>
             </div>
 
+            {/* Manual Order Delivery - NEW FEATURE! */}
+            <Card className="border-2 border-cyan-400/50 bg-gradient-to-r from-cyan-900/20 to-purple-900/20">
+              <CardContent className="p-6">
+                <div className="text-center mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Truck className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-cyan-400 mb-2">
+                    🚀 Manual Order Delivery
+                  </h3>
+                  <p className="text-gray-300 mb-4">
+                    Already ordered from a store? We'll pick it up and deliver it to you!
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="text-center p-3 bg-gray-800/50 rounded-lg">
+                    <div className="text-2xl mb-2">1️⃣</div>
+                    <h4 className="font-semibold text-cyan-400">Order Normally</h4>
+                    <p className="text-sm text-gray-400">Shop and pay on any store's website</p>
+                  </div>
+                  <div className="text-center p-3 bg-gray-800/50 rounded-lg">
+                    <div className="text-2xl mb-2">2️⃣</div>
+                    <h4 className="font-semibold text-cyan-400">Request Delivery</h4>
+                    <p className="text-sm text-gray-400">Tell us where to pick up and deliver</p>
+                  </div>
+                  <div className="text-center p-3 bg-gray-800/50 rounded-lg">
+                    <div className="text-2xl mb-2">3️⃣</div>
+                    <h4 className="font-semibold text-cyan-400">Get Delivered</h4>
+                    <p className="text-sm text-gray-400">We pick up and deliver ASAP</p>
+                  </div>
+                </div>
+
+                <div className="text-center">
+                  <Button 
+                    onClick={() => setShowManualDelivery(true)}
+                    className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white px-8 py-3"
+                  >
+                    <Truck className="h-5 w-5 mr-2" />
+                    Request Manual Delivery
+                  </Button>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Perfect for stores not yet integrated with our platform
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Store Type Filter */}
             <div className="flex justify-center mb-6">
               <div className="flex gap-2 p-1 bg-gray-800 rounded-lg">
@@ -715,6 +764,128 @@ const BrowsePage = () => {
                 </CardContent>
               </Card>
             )}
+          </div>
+        )}
+
+        {/* Manual Delivery Modal */}
+        {showManualDelivery && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xl text-cyan-600">
+                    🚀 Manual Order Delivery Request
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowManualDelivery(false)}
+                  >
+                    ✕
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="text-center p-4 bg-cyan-50 rounded-lg">
+                  <Truck className="h-8 w-8 text-cyan-600 mx-auto mb-2" />
+                  <p className="text-sm text-cyan-800">
+                    <strong>How it works:</strong> You order and pay on the store's website, 
+                    then we pick it up and deliver it to you for a delivery fee.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Store Name *</label>
+                    <Input placeholder="e.g., AutoZone, Home Depot" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Store Location *</label>
+                    <Input placeholder="e.g., 123 Main St, Louisville, KY" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Your Order Details *</label>
+                  <textarea 
+                    className="w-full p-3 border rounded-lg h-24"
+                    placeholder="Describe what you ordered (e.g., 'Brake pads, oil filter, 2 spark plugs')"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Order Total *</label>
+                    <Input placeholder="$0.00" type="number" step="0.01" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Pickup Time *</label>
+                    <select className="w-full p-3 border rounded-lg">
+                      <option>Ready now</option>
+                      <option>Ready in 1 hour</option>
+                      <option>Ready in 2 hours</option>
+                      <option>Ready tomorrow</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Delivery Address *</label>
+                  <Input placeholder="Your full delivery address" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Contact Phone *</label>
+                    <Input placeholder="Your phone number" type="tel" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Special Instructions</label>
+                    <Input placeholder="e.g., 'Call when arriving', 'Leave at back door'" />
+                  </div>
+                </div>
+
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-semibold mb-2">Delivery Fee Estimate:</h4>
+                  <div className="flex justify-between items-center">
+                    <span>Base delivery fee:</span>
+                    <span className="font-semibold">$9.99</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Distance fee:</span>
+                    <span className="font-semibold">$2.50</span>
+                  </div>
+                  <div className="flex justify-between items-center border-t pt-2">
+                    <span className="font-semibold">Total delivery fee:</span>
+                    <span className="font-bold text-lg text-cyan-600">$12.49</span>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2">
+                    * Final fee may vary based on actual distance and order size
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowManualDelivery(false)}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      // In production, this would submit the delivery request
+                      alert('Delivery request submitted! We\'ll contact you within 15 minutes to confirm details and arrange pickup.');
+                      setShowManualDelivery(false);
+                    }}
+                    className="flex-1 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700"
+                  >
+                    <Truck className="h-4 w-4 mr-2" />
+                    Submit Delivery Request
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
       </div>
