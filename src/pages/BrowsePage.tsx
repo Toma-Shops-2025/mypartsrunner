@@ -3,13 +3,32 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, ShoppingCart, Loader2, Star, MapPin, ArrowLeft } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Heart, ShoppingCart, Loader2, Star, MapPin, ArrowLeft, Search, Store, Globe, Truck, ExternalLink, Package } from "lucide-react";
 import { Product } from "@/types";
 import { DatabaseService } from "@/lib/database";
 import { useCart } from "@/contexts/CartContext";
 import { useAppContext } from "@/contexts/AppContext";
 import AdvancedSearch from "@/components/AdvancedSearch";
 import BackButton from "@/components/ui/back-button";
+
+interface Merchant {
+  id: string;
+  name: string;
+  description: string;
+  website: string;
+  storeType: 'auto' | 'hardware' | 'general';
+  address: string;
+  city: string;
+  state: string;
+  distance: number;
+  rating: number;
+  reviewCount: number;
+  isIntegrated: boolean; // Whether we can search their inventory directly
+  hasDeliveryButton: boolean; // Whether they have our delivery button
+  logo?: string;
+  categories: string[];
+}
 
 interface SearchResult {
   id: string;
@@ -25,6 +44,7 @@ interface SearchResult {
   availability: 'in-stock' | 'low-stock' | 'out-of-stock' | 'pre-order';
   distance: number;
   merchantName: string;
+  merchantId: string;
   imageUrl: string;
   aiMatch?: number;
   tags: string[];
@@ -32,49 +52,163 @@ interface SearchResult {
 }
 
 const BrowsePage = () => {
+  const [merchants, setMerchants] = useState<Merchant[]>([]);
+  const [selectedMerchant, setSelectedMerchant] = useState<Merchant | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [showAdvancedSearch, setShowAdvancedSearch] = useState(true);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const { addToCart, isInCart } = useCart();
   const { isAuthenticated } = useAppContext();
 
   useEffect(() => {
-    loadProducts();
+    loadMerchants();
   }, []);
 
-  const loadProducts = async () => {
+  const loadMerchants = async () => {
     try {
       setLoading(true);
-      const productsData = await DatabaseService.getProducts();
-      setProducts(productsData);
+      // In production, this would fetch from your database
+      const mockMerchants: Merchant[] = [
+        {
+          id: '1',
+          name: "AutoZone",
+          description: "America's leading auto parts retailer with over 6,000 stores",
+          website: "https://www.autozone.com",
+          storeType: 'auto',
+          address: '123 Auto Parts Way',
+          city: 'Louisville',
+          state: 'KY',
+          distance: 2.1,
+          rating: 4.6,
+          reviewCount: 1247,
+          isIntegrated: true, // We can search their inventory
+          hasDeliveryButton: true, // They have our delivery button
+          logo: '/api/placeholder/64/64',
+          categories: ['Brakes', 'Engine', 'Electrical', 'Suspension', 'Exhaust']
+        },
+        {
+          id: '2',
+          name: "O'Reilly Auto Parts",
+          description: "Professional auto parts and expert advice",
+          website: "https://www.oreillyauto.com",
+          storeType: 'auto',
+          address: '456 Car Care Blvd',
+          city: 'Louisville',
+          state: 'KY',
+          distance: 3.2,
+          rating: 4.7,
+          reviewCount: 892,
+          isIntegrated: true,
+          hasDeliveryButton: true,
+          logo: '/api/placeholder/64/64',
+          categories: ['Brakes', 'Engine', 'Electrical', 'Suspension', 'Exhaust']
+        },
+        {
+          id: '3',
+          name: "Advance Auto Parts",
+          description: "Quality parts, expert advice, and fast delivery",
+          website: "https://www.advanceautoparts.com",
+          storeType: 'auto',
+          address: '789 Parts Street',
+          city: 'Louisville',
+          state: 'KY',
+          distance: 1.8,
+          rating: 4.5,
+          reviewCount: 567,
+          isIntegrated: false, // We can't search their inventory yet
+          hasDeliveryButton: false, // They don't have our delivery button yet
+          logo: '/api/placeholder/64/64',
+          categories: ['Brakes', 'Engine', 'Electrical', 'Suspension', 'Exhaust']
+        },
+        {
+          id: '4',
+          name: "Home Depot",
+          description: "Hardware and home improvement supplies",
+          website: "https://www.homedepot.com",
+          storeType: 'hardware',
+          address: '321 Hardware Ave',
+          city: 'Louisville',
+          state: 'KY',
+          distance: 4.1,
+          rating: 4.4,
+          reviewCount: 2341,
+          isIntegrated: false,
+          hasDeliveryButton: false,
+          logo: '/api/placeholder/64/64',
+          categories: ['Tools', 'Hardware', 'Plumbing', 'Electrical', 'Garden']
+        }
+      ];
       
-      // Convert products to search results format
-      const results: SearchResult[] = productsData.map(product => ({
-        id: product.id,
-        name: product.name,
-        description: product.description || '',
-        price: product.price,
-        originalPrice: product.originalPrice,
-        brand: product.brand || 'Generic',
-        category: product.category,
-        condition: 'new' as const,
-        rating: product.rating || 4.5,
-        reviewCount: Math.floor(Math.random() * 200) + 10,
-        availability: product.inStock ? 'in-stock' as const : 'out-of-stock' as const,
-        distance: Math.round(Math.random() * 15 + 1),
-        merchantName: `${product.brand || 'Auto'} Parts Store`,
-        imageUrl: product.imageUrl || '/api/placeholder/300/200',
-        aiMatch: Math.floor(Math.random() * 20) + 80,
-        tags: [product.category.toLowerCase()],
-        compatibleVehicles: [`2018-2023 ${product.brand || 'Generic'} Models`]
-      }));
-      
-      setSearchResults(results);
+      setMerchants(mockMerchants);
     } catch (error) {
-      console.error('Error loading products:', error);
+      console.error('Error loading merchants:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMerchantSelect = async (merchant: Merchant) => {
+    setSelectedMerchant(merchant);
+    setSearchResults([]);
+    
+    if (merchant.isIntegrated) {
+      // Search through integrated merchant's inventory
+      await searchMerchantInventory(merchant);
+    }
+  };
+
+  const searchMerchantInventory = async (merchant: Merchant) => {
+    try {
+      // In production, this would call the merchant's API or your database
+      // For now, we'll simulate searching their inventory
+      const mockResults: SearchResult[] = [
+        {
+          id: '1',
+          name: 'Brake Pads - Front Set',
+          description: 'High-quality ceramic brake pads for front wheels',
+          price: 89.99,
+          originalPrice: 119.99,
+          brand: 'Duralast',
+          category: 'Brakes',
+          condition: 'new',
+          rating: 4.8,
+          reviewCount: 156,
+          availability: 'in-stock',
+          distance: merchant.distance,
+          merchantName: merchant.name,
+          merchantId: merchant.id,
+          imageUrl: '/api/placeholder/300/200',
+          aiMatch: 95,
+          tags: ['brakes', 'front', 'ceramic'],
+          compatibleVehicles: ['2018-2023 Toyota Camry', '2019-2023 Honda Accord']
+        },
+        {
+          id: '2',
+          name: 'Oil Filter',
+          description: 'Premium oil filter for extended engine life',
+          price: 12.49,
+          brand: 'Fram',
+          category: 'Engine',
+          condition: 'new',
+          rating: 4.6,
+          reviewCount: 89,
+          availability: 'in-stock',
+          distance: merchant.distance,
+          merchantName: merchant.name,
+          merchantId: merchant.id,
+          imageUrl: '/api/placeholder/300/200',
+          aiMatch: 92,
+          tags: ['oil', 'filter', 'engine'],
+          compatibleVehicles: ['Most vehicles 2010+']
+        }
+      ];
+      
+      setSearchResults(mockResults);
+    } catch (error) {
+      console.error('Error searching merchant inventory:', error);
     }
   };
 
@@ -100,34 +234,22 @@ const BrowsePage = () => {
     addToCart(product);
   };
 
-  const getAvailabilityColor = (availability: string) => {
-    switch (availability) {
-      case 'in-stock': return 'bg-green-500';
-      case 'low-stock': return 'bg-yellow-500';
-      case 'out-of-stock': return 'bg-red-500';
-      case 'pre-order': return 'bg-blue-500';
-      default: return 'bg-gray-500';
-    }
+  const handleVisitMerchantWebsite = (merchant: Merchant) => {
+    window.open(merchant.website, '_blank');
   };
 
-  const getConditionColor = (condition: string) => {
-    switch (condition) {
-      case 'new': return 'bg-green-100 text-green-800';
-      case 'used': return 'bg-yellow-100 text-yellow-800';
-      case 'refurbished': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const handleRequestIntegration = (merchant: Merchant) => {
+    // In production, this would open a form or contact system
+    alert(`Integration request sent to ${merchant.name}. We'll contact them about adding our delivery button to their website.`);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-              <p className="text-gray-600">Loading products...</p>
-            </div>
+      <div className="min-h-screen animated-bg flex items-center justify-center">
+        <div className="glass-card p-8 border border-cyan-400/30 glow-card">
+          <div className="flex items-center gap-4">
+            <div className="neon-spinner w-8 h-8"></div>
+            <span className="text-white text-lg">Loading merchants...</span>
           </div>
         </div>
       </div>
@@ -151,173 +273,240 @@ const BrowsePage = () => {
           />
           <h1 className="text-4xl font-bold">
             <span className="gradient-text">Browse</span>{' '}
-            <span className="neon-text">Products</span>
+            <span className="neon-text">Auto Parts</span>
           </h1>
         </div>
 
-        {/* Advanced Search */}
-        {showAdvancedSearch && (
-          <AdvancedSearch
-            onResultsChange={handleSearchResults}
-            initialQuery=""
-            className="mb-8"
-          />
-        )}
+        {!selectedMerchant ? (
+          /* MERCHANT SELECTION VIEW */
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-semibold text-gray-300 mb-4">
+                Choose Your Auto Parts Store
+              </h2>
+              <p className="text-gray-400 max-w-2xl mx-auto">
+                Select a store to browse their inventory, or visit their website directly. 
+                Integrated stores allow you to search and order through our platform.
+              </p>
+            </div>
 
-        {/* Results Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold">
-              {searchResults.length > 0 ? `${searchResults.length} Products Found` : 'All Products'}
-            </h2>
-            <p className="text-gray-600 text-sm">
-              {searchResults.length > 0 && 'Sorted by relevance and AI match score'}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-          >
-            {showAdvancedSearch ? 'Hide' : 'Show'} Advanced Search
-          </Button>
-        </div>
-
-        {/* Product Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {searchResults.map((result) => (
-            <Card key={result.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="relative">
-                <img
-                  src={result.imageUrl}
-                  alt={result.name}
-                  className="w-full h-48 object-cover"
-                />
-                {result.aiMatch && result.aiMatch > 90 && (
-                  <Badge className="absolute top-2 right-2 bg-blue-600">
-                    AI Match: {result.aiMatch}%
-                  </Badge>
-                )}
-                {result.originalPrice && result.originalPrice > result.price && (
-                  <Badge className="absolute top-2 left-2 bg-red-600">
-                    Sale
-                  </Badge>
-                )}
-              </div>
-              
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  {/* Header */}
-                  <div>
-                    <h3 className="font-semibold text-lg line-clamp-2">{result.name}</h3>
-                    <p className="text-sm text-gray-600">{result.brand}</p>
-                  </div>
-
-                  {/* Badges */}
-                  <div className="flex flex-wrap gap-2">
-                    <Badge className={getAvailabilityColor(result.availability)}>
-                      {result.availability.replace('-', ' ')}
-                    </Badge>
-                    <Badge variant="outline" className={getConditionColor(result.condition)}>
-                      {result.condition}
-                    </Badge>
-                    <Badge variant="outline">
-                      {result.category}
-                    </Badge>
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-sm text-gray-600 line-clamp-2">{result.description}</p>
-
-                  {/* Tags */}
-                  {result.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {result.tags.slice(0, 3).map((tag, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Rating and Reviews */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                      <span className="text-sm font-medium">{result.rating}</span>
-                    </div>
-                    <span className="text-sm text-gray-600">({result.reviewCount} reviews)</span>
-                  </div>
-
-                  {/* Merchant and Distance */}
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <MapPin className="h-4 w-4" />
-                    <span>{result.merchantName} • {result.distance} miles</span>
-                  </div>
-
-                  {/* Compatible Vehicles */}
-                  {result.compatibleVehicles && result.compatibleVehicles.length > 0 && (
-                    <div className="bg-blue-50 p-2 rounded text-xs">
-                      <span className="font-medium text-blue-800">Compatible: </span>
-                      <span className="text-blue-600">{result.compatibleVehicles[0]}</span>
-                    </div>
-                  )}
-
-                  {/* Price */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl font-bold text-green-600">
-                          ${result.price.toFixed(2)}
-                        </span>
-                        {result.originalPrice && result.originalPrice > result.price && (
-                          <span className="text-sm text-gray-500 line-through">
-                            ${result.originalPrice.toFixed(2)}
-                          </span>
-                        )}
+            {/* Merchant Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {merchants.map((merchant) => (
+                <Card key={merchant.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-16 h-16 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-lg flex items-center justify-center">
+                        <Store className="h-8 w-8 text-white" />
                       </div>
-                      {result.originalPrice && result.originalPrice > result.price && (
-                        <div className="text-sm text-green-600">
-                          Save ${(result.originalPrice - result.price).toFixed(2)}
-                        </div>
+                      <div className="flex-1">
+                        <CardTitle className="text-lg">{merchant.name}</CardTitle>
+                        <p className="text-sm text-gray-600">{merchant.description}</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Store Info */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <MapPin className="h-4 w-4" />
+                        <span>{merchant.address}, {merchant.city}, {merchant.state}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Star className="h-4 w-4 text-yellow-500" />
+                        <span>{merchant.rating} ({merchant.reviewCount} reviews)</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Truck className="h-4 w-4" />
+                        <span>{merchant.distance} miles away</span>
+                      </div>
+                    </div>
+
+                    {/* Integration Status */}
+                    <div className="space-y-2">
+                      {merchant.isIntegrated ? (
+                        <Badge className="bg-green-100 text-green-800">
+                          ✓ Integrated - Search Inventory
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-orange-600">
+                          ⚠️ Not Integrated
+                        </Badge>
+                      )}
+                      
+                      {merchant.hasDeliveryButton ? (
+                        <Badge className="bg-blue-100 text-blue-800">
+                          ✓ Has Delivery Button
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-gray-600">
+                          No Delivery Button
+                        </Badge>
                       )}
                     </div>
-                  </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-2 pt-2">
+                    {/* Action Buttons */}
+                    <div className="space-y-2">
+                      {merchant.isIntegrated ? (
+                        <Button 
+                          onClick={() => handleMerchantSelect(merchant)}
+                          className="w-full"
+                        >
+                          <Search className="h-4 w-4 mr-2" />
+                          Browse Inventory
+                        </Button>
+                      ) : (
+                        <Button 
+                          onClick={() => handleVisitMerchantWebsite(merchant)}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Visit Website
+                        </Button>
+                      )}
+                      
+                      {!merchant.hasDeliveryButton && (
+                        <Button 
+                          onClick={() => handleRequestIntegration(merchant)}
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                        >
+                          Request Delivery Button
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* MERCHANT INVENTORY VIEW */
+          <div className="space-y-6">
+            {/* Merchant Header */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
                     <Button
-                      onClick={() => handleAddToCart(result)}
-                      disabled={result.availability === 'out-of-stock' || isInCart(result.id)}
-                      className="flex-1"
+                      variant="ghost"
+                      onClick={() => setSelectedMerchant(null)}
+                      className="p-2"
                     >
-                      <ShoppingCart className="h-4 w-4 mr-2" />
-                      {isInCart(result.id) ? 'In Cart' : 
-                       result.availability === 'out-of-stock' ? 'Out of Stock' : 'Add to Cart'}
+                      <ArrowLeft className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="icon">
-                      <Heart className="h-4 w-4" />
+                    <div className="w-16 h-16 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-lg flex items-center justify-center">
+                      <Store className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold">{selectedMerchant.name}</h2>
+                      <p className="text-gray-600">{selectedMerchant.description}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleVisitMerchantWebsite(selectedMerchant)}
+                    >
+                      <Globe className="h-4 w-4 mr-2" />
+                      Visit Website
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+                    >
+                      {showAdvancedSearch ? 'Hide Advanced Search' : 'Advanced Search'}
                     </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
 
-        {/* No Results */}
-        {searchResults.length === 0 && !loading && (
-          <div className="text-center py-12">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
-            <p className="text-gray-600">Try adjusting your search filters or search terms.</p>
-          </div>
-        )}
+            {/* Search Bar */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex gap-4">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder={`Search ${selectedMerchant.name} inventory...`}
+                      className="pl-10"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  <Button 
+                    onClick={() => searchMerchantInventory(selectedMerchant)}
+                    className="px-8"
+                  >
+                    Search
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Load More */}
-        {searchResults.length > 0 && (
-          <div className="text-center pt-8">
-            <Button variant="outline" size="lg">
-              Load More Products
-            </Button>
+            {/* Advanced Search */}
+            {showAdvancedSearch && (
+              <Card>
+                <CardContent className="p-6">
+                  <AdvancedSearch onSearchResults={handleSearchResults} />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Search Results */}
+            {searchResults.length > 0 ? (
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold text-gray-300">
+                  Search Results ({searchResults.length})
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {searchResults.map((result) => (
+                    <Card key={result.id} className="hover:shadow-lg transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center">
+                          <Package className="h-12 w-12 text-gray-400" />
+                        </div>
+                        <h4 className="font-semibold mb-2">{result.name}</h4>
+                        <p className="text-sm text-gray-600 mb-3">{result.description}</p>
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-lg font-bold">${result.price.toFixed(2)}</span>
+                          {result.originalPrice && (
+                            <span className="text-sm text-gray-500 line-through">
+                              ${result.originalPrice.toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge variant="outline">{result.category}</Badge>
+                          <Badge variant="outline">{result.brand}</Badge>
+                        </div>
+                        <Button 
+                          onClick={() => handleAddToCart(result)}
+                          className="w-full"
+                          disabled={isInCart(result.id)}
+                        >
+                          <ShoppingCart className="h-4 w-4 mr-2" />
+                          {isInCart(result.id) ? 'In Cart' : 'Add to Cart'}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+                  <p className="text-gray-600">
+                    Try adjusting your search terms or browse categories
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
       </div>
