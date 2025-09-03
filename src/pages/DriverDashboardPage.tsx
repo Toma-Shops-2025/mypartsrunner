@@ -317,6 +317,7 @@ const DriverDashboardPage: React.FC = () => {
         </CardContent>
       </Card>
     </div>
+  </div>
   );
 };
 
