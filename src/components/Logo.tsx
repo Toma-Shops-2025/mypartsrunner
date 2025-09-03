@@ -6,7 +6,7 @@ interface LogoProps {
 }
 
 const Logo: React.FC<LogoProps> = ({ size = 'medium', withText = true }) => {
-  const logoUrl = "/logo.png";
+  const logoUrl = "/header-logo.png";
   
   // Adjust size classes to make the logo image larger and more prominent
   const getSizeClass = () => {
