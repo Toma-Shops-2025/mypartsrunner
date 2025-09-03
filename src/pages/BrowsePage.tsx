@@ -211,6 +211,114 @@ const BrowsePage = () => {
           hasDeliveryButton: false, // No delivery button yet
           logo: '/api/placeholder/64/64',
           categories: ['Tools', 'Automotive Tools', 'Welding', 'Air Tools', 'Hand Tools', 'Power Tools']
+        },
+
+        // PHARMACIES & CONVENIENCE STORES
+        {
+          id: '9',
+          name: "Local Pharmacy Plus",
+          description: "Family-owned pharmacy with personal service and health products",
+          website: "https://www.localpharmacy.com",
+          storeType: 'pharmacy',
+          address: '456 Health Street',
+          city: 'Louisville',
+          state: 'KY',
+          distance: 2.3,
+          rating: 4.9,
+          reviewCount: 156,
+          isIntegrated: false, // Local store, harder to integrate
+          hasDeliveryButton: false, // No delivery button yet
+          logo: '/api/placeholder/64/64',
+          categories: ['Vitamins', 'First Aid', 'Beauty', 'Snacks', 'Health Products']
+        },
+        {
+          id: '10',
+          name: "Quick Stop Convenience",
+          description: "24/7 convenience store with snacks, drinks, and essentials",
+          website: "https://www.quickstop.com",
+          storeType: 'convenience',
+          address: '789 Quick Lane',
+          city: 'Louisville',
+          state: 'KY',
+          distance: 0.8,
+          rating: 4.2,
+          reviewCount: 89,
+          isIntegrated: false, // Local store, harder to integrate
+          hasDeliveryButton: false, // No delivery button yet
+          logo: '/api/placeholder/64/64',
+          categories: ['Snacks', 'Drinks', 'Essentials', 'Tobacco', 'Lottery']
+        },
+
+        // LIQUOR STORES
+        {
+          id: '11',
+          name: "Bourbon & Wine Emporium",
+          description: "Premium liquor store with extensive bourbon and wine selection",
+          website: "https://www.bourbonwine.com",
+          storeType: 'liquor',
+          address: '321 Spirit Street',
+          city: 'Louisville',
+          state: 'KY',
+          distance: 3.5,
+          rating: 4.7,
+          reviewCount: 234,
+          isIntegrated: false, // Liquor delivery has restrictions
+          hasDeliveryButton: false, // No delivery button yet
+          logo: '/api/placeholder/64/64',
+          categories: ['Bourbon', 'Wine', 'Beer', 'Spirits', 'Mixers', 'Gifts']
+        },
+        {
+          id: '12',
+          name: "Craft Beer & Spirits",
+          description: "Specialty store for craft beer, local spirits, and unique beverages",
+          website: "https://www.craftbeerspirits.com",
+          storeType: 'liquor',
+          address: '654 Brew Street',
+          city: 'Louisville',
+          state: 'KY',
+          distance: 4.8,
+          rating: 4.6,
+          reviewCount: 189,
+          isIntegrated: false, // Liquor delivery has restrictions
+          hasDeliveryButton: false, // No delivery button yet
+          logo: '/api/placeholder/64/64',
+          categories: ['Craft Beer', 'Local Spirits', 'Wine', 'Mixers', 'Bar Supplies']
+        },
+
+        // SMOKE SHOPS & SPECIALTY STORES
+        {
+          id: '13',
+          name: "Vape & Smoke Shop",
+          description: "Premium vaping products, smoking accessories, and CBD products",
+          website: "https://www.vapesmoke.com",
+          storeType: 'smoke',
+          address: '147 Vape Street',
+          city: 'Louisville',
+          state: 'KY',
+          distance: 2.7,
+          rating: 4.4,
+          reviewCount: 123,
+          isIntegrated: false, // Specialty store, harder to integrate
+          hasDeliveryButton: false, // No delivery button yet
+          logo: '/api/placeholder/64/64',
+          categories: ['Vaping', 'Smoking Accessories', 'CBD', 'Glass', 'Tobacco']
+        },
+        {
+          id: '14',
+          name: "Artisan Bakery",
+          description: "Fresh-baked bread, pastries, and custom cakes made daily",
+          website: "https://www.artisanbakery.com",
+          storeType: 'bakery',
+          address: '258 Bread Street',
+          city: 'Louisville',
+          state: 'KY',
+          distance: 1.9,
+          rating: 4.9,
+          reviewCount: 267,
+          isIntegrated: false, // Local bakery, harder to integrate
+          hasDeliveryButton: false, // No delivery button yet
+          logo: '/api/placeholder/64/64',
+          categories: ['Bread', 'Pastries', 'Cakes', 'Cookies', 'Coffee', 'Sandwiches']
         }
       ];
       
@@ -382,6 +490,145 @@ const BrowsePage = () => {
           }
         ];
         setSearchResults(mockResults);
+      } else if (merchant.storeType === 'pharmacy') {
+        // Pharmacy inventory
+        const mockResults: SearchResult[] = [
+          {
+            id: '1',
+            name: 'Vitamin D3 2000 IU - 120 Count',
+            description: 'High-potency vitamin D3 for bone health and immune support',
+            price: 18.99,
+            brand: 'Nature Made',
+            category: 'Vitamins',
+            condition: 'new',
+            rating: 4.7,
+            reviewCount: 234,
+            availability: 'in-stock',
+            distance: merchant.distance,
+            merchantName: merchant.name,
+            merchantId: merchant.id,
+            imageUrl: '/api/placeholder/300/200',
+            aiMatch: 94,
+            tags: ['vitamin', 'D3', 'immune', 'bone health'],
+            compatibleVehicles: ['N/A - Health product']
+          },
+          {
+            id: '2',
+            name: 'First Aid Kit - 100 Piece',
+            description: 'Comprehensive first aid kit for home and travel',
+            price: 24.99,
+            brand: 'First Aid Only',
+            category: 'First Aid',
+            condition: 'new',
+            rating: 4.6,
+            reviewCount: 89,
+            availability: 'in-stock',
+            distance: merchant.distance,
+            merchantName: merchant.name,
+            merchantId: merchant.id,
+            imageUrl: '/api/placeholder/300/200',
+            aiMatch: 92,
+            tags: ['first aid', 'emergency', 'travel', 'home'],
+            compatibleVehicles: ['N/A - Health product']
+          }
+        ];
+        setSearchResults(mockResults);
+      } else if (merchant.storeType === 'convenience') {
+        // Convenience store inventory
+        const mockResults: SearchResult[] = [
+          {
+            id: '1',
+            name: 'Assorted Snack Pack',
+            description: 'Variety pack of chips, nuts, and crackers',
+            price: 12.99,
+            brand: 'Assorted',
+            category: 'Snacks',
+            condition: 'new',
+            rating: 4.3,
+            reviewCount: 45,
+            availability: 'in-stock',
+            distance: merchant.distance,
+            merchantName: merchant.name,
+            merchantId: merchant.id,
+            imageUrl: '/api/placeholder/300/200',
+            aiMatch: 88,
+            tags: ['snacks', 'variety', 'chips', 'nuts'],
+            compatibleVehicles: ['N/A - Food product']
+          }
+        ];
+        setSearchResults(mockResults);
+      } else if (merchant.storeType === 'liquor') {
+        // Liquor store inventory (note: delivery restrictions apply)
+        const mockResults: SearchResult[] = [
+          {
+            id: '1',
+            name: 'Woodford Reserve Bourbon - 750ml',
+            description: 'Premium Kentucky straight bourbon whiskey',
+            price: 39.99,
+            brand: 'Woodford Reserve',
+            category: 'Bourbon',
+            condition: 'new',
+            rating: 4.8,
+            reviewCount: 156,
+            availability: 'in-stock',
+            distance: merchant.distance,
+            merchantName: merchant.name,
+            merchantId: merchant.id,
+            imageUrl: '/api/placeholder/300/200',
+            aiMatch: 95,
+            tags: ['bourbon', 'whiskey', 'premium', 'Kentucky'],
+            compatibleVehicles: ['N/A - Alcohol product']
+          }
+        ];
+        setSearchResults(mockResults);
+      } else if (merchant.storeType === 'smoke') {
+        // Smoke shop inventory
+        const mockResults: SearchResult[] = [
+          {
+            id: '1',
+            name: 'Premium Glass Water Pipe',
+            description: 'Hand-crafted glass water pipe with percolator',
+            price: 89.99,
+            brand: 'Artisan Glass',
+            category: 'Glass',
+            condition: 'new',
+            rating: 4.6,
+            reviewCount: 78,
+            availability: 'in-stock',
+            distance: merchant.distance,
+            merchantName: merchant.name,
+            merchantId: merchant.id,
+            imageUrl: '/api/placeholder/300/200',
+            aiMatch: 91,
+            tags: ['glass', 'water pipe', 'percolator', 'premium'],
+            compatibleVehicles: ['N/A - Smoking accessory']
+          }
+        ];
+        setSearchResults(mockResults);
+      } else if (merchant.storeType === 'bakery') {
+        // Bakery inventory
+        const mockResults: SearchResult[] = [
+          {
+            id: '1',
+            name: 'Artisan Sourdough Bread',
+            description: 'Fresh-baked sourdough bread made with traditional methods',
+            price: 6.99,
+            brand: 'Artisan Bakery',
+            category: 'Bread',
+            condition: 'fresh',
+            rating: 4.9,
+            reviewCount: 123,
+            availability: 'in-stock',
+            distance: merchant.distance,
+            merchantName: merchant.name,
+            merchantId: merchant.id,
+            imageUrl: '/api/placeholder/300/200',
+            aiMatch: 96,
+            tags: ['bread', 'sourdough', 'artisan', 'fresh'],
+            compatibleVehicles: ['N/A - Food product']
+          }
+        ];
+        setSearchResults(mockResults);
       }
     } catch (error) {
       console.error('Error searching merchant inventory:', error);
@@ -449,7 +696,7 @@ const BrowsePage = () => {
           />
           <h1 className="text-4xl font-bold">
             <span className="gradient-text">Browse</span>{' '}
-            <span className="neon-text">Stores</span>
+            <span className="neon-text">All Stores</span>
           </h1>
         </div>
 
@@ -460,10 +707,10 @@ const BrowsePage = () => {
               <h2 className="text-2xl font-semibold text-gray-300 mb-4">
                 Choose Your Store
               </h2>
-              <p className="text-gray-400 max-w-2xl mx-auto">
-                Select from auto parts stores, hardware stores, and more. 
-                Integrated stores allow you to search and order through our platform, 
-                while others provide direct links to their websites.
+              <p className="text-gray-400 max-w-3xl mx-auto">
+                Select from auto parts stores, hardware stores, pharmacies, convenience stores, 
+                liquor stores, smoke shops, bakeries, and more. Integrated stores allow you to 
+                search and order through our platform, while others provide direct links to their websites.
               </p>
             </div>
 
@@ -517,7 +764,7 @@ const BrowsePage = () => {
 
             {/* Store Type Filter */}
             <div className="flex justify-center mb-6">
-              <div className="flex gap-2 p-1 bg-gray-800 rounded-lg">
+              <div className="flex gap-2 p-1 bg-gray-800 rounded-lg flex-wrap justify-center">
                 <Button
                   variant={selectedCategory === 'all' ? 'default' : 'ghost'}
                   size="sm"
@@ -541,6 +788,46 @@ const BrowsePage = () => {
                   className="text-xs"
                 >
                   🔧 Hardware
+                </Button>
+                <Button
+                  variant={selectedCategory === 'pharmacy' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setSelectedCategory('pharmacy')}
+                  className="text-xs"
+                >
+                  🏥 Pharmacy
+                </Button>
+                <Button
+                  variant={selectedCategory === 'convenience' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setSelectedCategory('convenience')}
+                  className="text-xs"
+                >
+                  🛒 Convenience
+                </Button>
+                <Button
+                  variant={selectedCategory === 'liquor' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setSelectedCategory('liquor')}
+                  className="text-xs"
+                >
+                  🍷 Liquor
+                </Button>
+                <Button
+                  variant={selectedCategory === 'smoke' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setSelectedCategory('smoke')}
+                  className="text-xs"
+                >
+                  🚬 Smoke Shop
+                </Button>
+                <Button
+                  variant={selectedCategory === 'bakery' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setSelectedCategory('bakery')}
+                  className="text-xs"
+                >
+                  🥖 Bakery
                 </Button>
               </div>
             </div>
