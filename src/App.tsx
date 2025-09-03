@@ -6,7 +6,7 @@ import { MessagingProvider } from "@/contexts/MessagingContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import HomePage from "@/pages/HomePage";
 import AboutPage from "@/pages/AboutPage";
-import ContactPage from "@/pages/ContactPage";
+
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import DashboardPage from "@/pages/DashboardPage";

@@ -1,4 +1,4 @@
--- Complete Database Fix for MyPartsRunner
++--- Complete Database Fix for MyPartsRunner
 -- Run this ENTIRE script in your Supabase SQL Editor to fix all current issues
 
 -- =====================================================
