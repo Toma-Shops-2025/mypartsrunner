@@ -72,6 +72,7 @@ const BrowsePage = () => {
       setLoading(true);
       // In production, this would fetch from your database
       const mockMerchants: Merchant[] = [
+        // AUTO PARTS STORES
         {
           id: '1',
           name: "AutoZone",
@@ -123,10 +124,12 @@ const BrowsePage = () => {
           logo: '/api/placeholder/64/64',
           categories: ['Brakes', 'Engine', 'Electrical', 'Suspension', 'Exhaust']
         },
+        
+        // HARDWARE STORES
         {
           id: '4',
           name: "Home Depot",
-          description: "Hardware and home improvement supplies",
+          description: "The world's largest home improvement retailer with tools, lumber, and supplies",
           website: "https://www.homedepot.com",
           storeType: 'hardware',
           address: '321 Hardware Ave',
@@ -135,10 +138,78 @@ const BrowsePage = () => {
           distance: 4.1,
           rating: 4.4,
           reviewCount: 2341,
-          isIntegrated: false,
-          hasDeliveryButton: false,
+          isIntegrated: true, // We can search their inventory
+          hasDeliveryButton: true, // They have our delivery button
           logo: '/api/placeholder/64/64',
-          categories: ['Tools', 'Hardware', 'Plumbing', 'Electrical', 'Garden']
+          categories: ['Tools', 'Lumber', 'Plumbing', 'Electrical', 'Garden', 'Paint', 'Hardware']
+        },
+        {
+          id: '5',
+          name: "Lowe's",
+          description: "Home improvement and hardware supplies for DIY enthusiasts and professionals",
+          website: "https://www.lowes.com",
+          storeType: 'hardware',
+          address: '654 Builders Blvd',
+          city: 'Louisville',
+          state: 'KY',
+          distance: 3.8,
+          rating: 4.3,
+          reviewCount: 1892,
+          isIntegrated: true,
+          hasDeliveryButton: true,
+          logo: '/api/placeholder/64/64',
+          categories: ['Tools', 'Lumber', 'Plumbing', 'Electrical', 'Garden', 'Paint', 'Hardware']
+        },
+        {
+          id: '6',
+          name: "Menards",
+          description: "Midwest's largest home improvement chain with competitive prices",
+          website: "https://www.menards.com",
+          storeType: 'hardware',
+          address: '987 Contractor Way',
+          city: 'Louisville',
+          state: 'KY',
+          distance: 5.2,
+          rating: 4.2,
+          reviewCount: 756,
+          isIntegrated: false, // Not integrated yet
+          hasDeliveryButton: false, // No delivery button yet
+          logo: '/api/placeholder/64/64',
+          categories: ['Tools', 'Lumber', 'Plumbing', 'Electrical', 'Garden', 'Paint', 'Hardware']
+        },
+        {
+          id: '7',
+          name: "Ace Hardware",
+          description: "Local hardware store with personal service and expert advice",
+          website: "https://www.acehardware.com",
+          storeType: 'hardware',
+          address: '147 Local Hardware St',
+          city: 'Louisville',
+          state: 'KY',
+          distance: 1.2,
+          rating: 4.8,
+          reviewCount: 423,
+          isIntegrated: false, // Local store, harder to integrate
+          hasDeliveryButton: false, // No delivery button yet
+          logo: '/api/placeholder/64/64',
+          categories: ['Tools', 'Hardware', 'Garden', 'Paint', 'Plumbing', 'Electrical']
+        },
+        {
+          id: '8',
+          name: "Harbor Freight Tools",
+          description: "Quality tools at discount prices for professionals and hobbyists",
+          website: "https://www.harborfreight.com",
+          storeType: 'hardware',
+          address: '258 Tool Street',
+          city: 'Louisville',
+          state: 'KY',
+          distance: 6.7,
+          rating: 4.1,
+          reviewCount: 892,
+          isIntegrated: false, // Not integrated yet
+          hasDeliveryButton: false, // No delivery button yet
+          logo: '/api/placeholder/64/64',
+          categories: ['Tools', 'Automotive Tools', 'Welding', 'Air Tools', 'Hand Tools', 'Power Tools']
         }
       ];
       
@@ -163,50 +234,154 @@ const BrowsePage = () => {
   const searchMerchantInventory = async (merchant: Merchant) => {
     try {
       // In production, this would call the merchant's API or your database
-      // For now, we'll simulate searching their inventory
-      const mockResults: SearchResult[] = [
-        {
-          id: '1',
-          name: 'Brake Pads - Front Set',
-          description: 'High-quality ceramic brake pads for front wheels',
-          price: 89.99,
-          originalPrice: 119.99,
-          brand: 'Duralast',
-          category: 'Brakes',
-          condition: 'new',
-          rating: 4.8,
-          reviewCount: 156,
-          availability: 'in-stock',
-          distance: merchant.distance,
-          merchantName: merchant.name,
-          merchantId: merchant.id,
-          imageUrl: '/api/placeholder/300/200',
-          aiMatch: 95,
-          tags: ['brakes', 'front', 'ceramic'],
-          compatibleVehicles: ['2018-2023 Toyota Camry', '2019-2023 Honda Accord']
-        },
-        {
-          id: '2',
-          name: 'Oil Filter',
-          description: 'Premium oil filter for extended engine life',
-          price: 12.49,
-          brand: 'Fram',
-          category: 'Engine',
-          condition: 'new',
-          rating: 4.6,
-          reviewCount: 89,
-          availability: 'in-stock',
-          distance: merchant.distance,
-          merchantName: merchant.name,
-          merchantId: merchant.id,
-          imageUrl: '/api/placeholder/300/200',
-          aiMatch: 92,
-          tags: ['oil', 'filter', 'engine'],
-          compatibleVehicles: ['Most vehicles 2010+']
-        }
-      ];
+      // For now, we'll simulate searching their inventory based on store type
       
-      setSearchResults(mockResults);
+      if (merchant.storeType === 'auto') {
+        // Auto parts inventory
+        const mockResults: SearchResult[] = [
+          {
+            id: '1',
+            name: 'Brake Pads - Front Set',
+            description: 'High-quality ceramic brake pads for front wheels',
+            price: 89.99,
+            originalPrice: 119.99,
+            brand: 'Duralast',
+            category: 'Brakes',
+            condition: 'new',
+            rating: 4.8,
+            reviewCount: 156,
+            availability: 'in-stock',
+            distance: merchant.distance,
+            merchantName: merchant.name,
+            merchantId: merchant.id,
+            imageUrl: '/api/placeholder/300/200',
+            aiMatch: 95,
+            tags: ['brakes', 'front', 'ceramic'],
+            compatibleVehicles: ['2018-2023 Toyota Camry', '2019-2023 Honda Accord']
+          },
+          {
+            id: '2',
+            name: 'Oil Filter',
+            description: 'Premium oil filter for extended engine life',
+            price: 12.49,
+            brand: 'Fram',
+            category: 'Engine',
+            condition: 'new',
+            rating: 4.6,
+            reviewCount: 89,
+            availability: 'in-stock',
+            distance: merchant.distance,
+            merchantName: merchant.name,
+            merchantId: merchant.id,
+            imageUrl: '/api/placeholder/300/200',
+            aiMatch: 92,
+            tags: ['oil', 'filter', 'engine'],
+            compatibleVehicles: ['Most vehicles 2010+']
+          },
+          {
+            id: '3',
+            name: 'Spark Plugs - Set of 4',
+            description: 'Iridium spark plugs for better performance and fuel economy',
+            price: 24.99,
+            brand: 'NGK',
+            category: 'Engine',
+            condition: 'new',
+            rating: 4.7,
+            reviewCount: 234,
+            availability: 'in-stock',
+            distance: merchant.distance,
+            merchantName: merchant.name,
+            merchantId: merchant.id,
+            imageUrl: '/api/placeholder/300/200',
+            aiMatch: 88,
+            tags: ['spark plugs', 'ignition', 'performance'],
+            compatibleVehicles: ['Most 4-cylinder engines']
+          }
+        ];
+        setSearchResults(mockResults);
+      } else if (merchant.storeType === 'hardware') {
+        // Hardware store inventory
+        const mockResults: SearchResult[] = [
+          {
+            id: '1',
+            name: 'DeWalt 20V MAX Cordless Drill',
+            description: 'Professional grade cordless drill with 2 batteries and charger',
+            price: 199.99,
+            originalPrice: 249.99,
+            brand: 'DeWalt',
+            category: 'Power Tools',
+            condition: 'new',
+            rating: 4.9,
+            reviewCount: 567,
+            availability: 'in-stock',
+            distance: merchant.distance,
+            merchantName: merchant.name,
+            merchantId: merchant.id,
+            imageUrl: '/api/placeholder/300/200',
+            aiMatch: 96,
+            tags: ['drill', 'cordless', 'power tool', 'professional'],
+            compatibleVehicles: ['N/A - Hardware item']
+          },
+          {
+            id: '2',
+            name: '2x4 Premium Pine Lumber - 8ft',
+            description: 'Premium grade pine lumber, perfect for construction and DIY projects',
+            price: 8.49,
+            brand: 'Premium Pine',
+            category: 'Lumber',
+            condition: 'new',
+            rating: 4.5,
+            reviewCount: 123,
+            availability: 'in-stock',
+            distance: merchant.distance,
+            merchantName: merchant.name,
+            merchantId: merchant.id,
+            imageUrl: '/api/placeholder/300/200',
+            aiMatch: 94,
+            tags: ['lumber', 'pine', 'construction', '2x4'],
+            compatibleVehicles: ['N/A - Hardware item']
+          },
+          {
+            id: '3',
+            name: 'Milwaukee M18 Fuel Circular Saw',
+            description: '18V cordless circular saw with 6-1/2 inch blade',
+            price: 299.99,
+            brand: 'Milwaukee',
+            category: 'Power Tools',
+            condition: 'new',
+            rating: 4.8,
+            reviewCount: 234,
+            availability: 'in-stock',
+            distance: merchant.distance,
+            merchantName: merchant.name,
+            merchantId: merchant.id,
+            imageUrl: '/api/placeholder/300/200',
+            aiMatch: 91,
+            tags: ['circular saw', 'cordless', 'power tool', 'professional'],
+            compatibleVehicles: ['N/A - Hardware item']
+          },
+          {
+            id: '4',
+            name: 'SharkBite Push-to-Connect Fitting',
+            description: '1/2 inch push-to-connect copper fitting for easy plumbing',
+            price: 4.99,
+            brand: 'SharkBite',
+            category: 'Plumbing',
+            condition: 'new',
+            rating: 4.7,
+            reviewCount: 89,
+            availability: 'in-stock',
+            distance: merchant.distance,
+            merchantName: merchant.name,
+            merchantId: merchant.id,
+            imageUrl: '/api/placeholder/300/200',
+            aiMatch: 93,
+            tags: ['plumbing', 'fitting', 'copper', 'push-to-connect'],
+            compatibleVehicles: ['N/A - Hardware item']
+          }
+        ];
+        setSearchResults(mockResults);
+      }
     } catch (error) {
       console.error('Error searching merchant inventory:', error);
     }
@@ -273,7 +448,7 @@ const BrowsePage = () => {
           />
           <h1 className="text-4xl font-bold">
             <span className="gradient-text">Browse</span>{' '}
-            <span className="neon-text">Auto Parts</span>
+            <span className="neon-text">Stores</span>
           </h1>
         </div>
 
@@ -282,17 +457,50 @@ const BrowsePage = () => {
           <div className="space-y-6">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-semibold text-gray-300 mb-4">
-                Choose Your Auto Parts Store
+                Choose Your Store
               </h2>
               <p className="text-gray-400 max-w-2xl mx-auto">
-                Select a store to browse their inventory, or visit their website directly. 
-                Integrated stores allow you to search and order through our platform.
+                Select from auto parts stores, hardware stores, and more. 
+                Integrated stores allow you to search and order through our platform, 
+                while others provide direct links to their websites.
               </p>
+            </div>
+
+            {/* Store Type Filter */}
+            <div className="flex justify-center mb-6">
+              <div className="flex gap-2 p-1 bg-gray-800 rounded-lg">
+                <Button
+                  variant={selectedCategory === 'all' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setSelectedCategory('all')}
+                  className="text-xs"
+                >
+                  All Stores
+                </Button>
+                <Button
+                  variant={selectedCategory === 'auto' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setSelectedCategory('auto')}
+                  className="text-xs"
+                >
+                  🚗 Auto Parts
+                </Button>
+                <Button
+                  variant={selectedCategory === 'hardware' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setSelectedCategory('hardware')}
+                  className="text-xs"
+                >
+                  🔧 Hardware
+                </Button>
+              </div>
             </div>
 
             {/* Merchant Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {merchants.map((merchant) => (
+              {merchants
+                .filter(merchant => selectedCategory === 'all' || merchant.storeType === selectedCategory)
+                .map((merchant) => (
                 <Card key={merchant.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-3">
