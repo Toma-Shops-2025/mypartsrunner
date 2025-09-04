@@ -89,8 +89,8 @@ const Footer: React.FC = () => {
                   <MapPin className="w-4 h-4" />
                   <span className="font-semibold">Service Area</span>
                 </div>
-                <p className="text-gray-300 text-sm">Louisville, KY Metro Area</p>
-                <p className="text-gray-400 text-xs mt-1">More cities coming soon!</p>
+                <p className="text-gray-300 text-sm">Nationwide USA</p>
+                <p className="text-gray-400 text-xs mt-1">Serving all 50 states!</p>
               </div>
 
               {/* Contact Info */}
