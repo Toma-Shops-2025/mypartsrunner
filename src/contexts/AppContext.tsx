@@ -180,9 +180,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             id: data.user.id,
             email: data.user.email!,
             name: userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            businessName: userData.businessName || '',
+            first_name: userData.firstName,
+            last_name: userData.lastName,
+            business_name: userData.businessName || '',
             role: userData.role || 'customer',
           };
 
