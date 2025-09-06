@@ -134,7 +134,7 @@ export default function App() {
       <elevenlabs-convai 
         agent-id="agent_8801k496zf0kenz9k7pjwswzv92y"
         avatar-url="/tomabot_avatar.png"
-        position="bottom-right"
+        position="top-left"
         theme="dark">
       </elevenlabs-convai>
       <script src="https://unpkg.com/@elevenlabs/convai-widget-embed@latest/dist/index.js" async type="text/javascript"></script>

@@ -85,11 +85,6 @@ const HomePage: React.FC = () => {
       <section className="relative py-20 px-4 overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <div className="mb-8">
-            <Badge className="px-4 py-2 mb-6 bg-gradient-to-r from-cyan-500 to-purple-600 text-black font-bold text-sm border-0 pulse-neon">
-              <Sparkles className="w-4 h-4 mr-2" />
-              LOUISVILLE'S #1 PARTS DELIVERY
-            </Badge>
-            
             <h1 className="text-6xl md:text-8xl font-bold mb-6 leading-tight">
               <span className="gradient-text">Parts</span>{' '}
               <span className="neon-text">Delivered</span>{' '}
