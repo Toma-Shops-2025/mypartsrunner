@@ -169,7 +169,7 @@ const Navbar: React.FC = () => {
               <div className="glass-card p-3 border border-gray-600">
                 <div className="flex items-center gap-2 text-cyan-400">
                   <MapPin className="w-4 h-4" />
-                  <span className="text-sm font-medium">Louisville, KY</span>
+                  <span className="text-sm font-medium">Nationwide Service</span>
                 </div>
                 <p className="text-xs text-gray-400 mt-1">Service Area</p>
               </div>

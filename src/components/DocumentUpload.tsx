@@ -55,6 +55,12 @@ export function DocumentUpload({
 
     setIsUploading(true);
     
+    // Add timeout to prevent stuck uploading state
+    const uploadTimeout = setTimeout(() => {
+      setIsUploading(false);
+      setError('Upload timeout. Please try again.');
+    }, 30000); // 30 second timeout
+    
     try {
       // Create preview URL for images
       if (file.type.startsWith('image/')) {
@@ -83,6 +89,7 @@ export function DocumentUpload({
         setPreviewUrl(null);
       }
     } finally {
+      clearTimeout(uploadTimeout);
       setIsUploading(false);
     }
   };

@@ -307,7 +307,7 @@ const HomePage: React.FC = () => {
           <div className="glass-card p-6 glow-card">
             <div className="flex items-center justify-center gap-2 text-cyan-400 mb-2">
               <MapPin className="w-5 h-5" />
-              <span className="font-semibold">Proudly Serving Louisville, KY</span>
+              <span className="font-semibold">Proudly Serving Nationwide</span>
             </div>
             <p className="text-gray-400">
               More cities coming soon. Follow us for updates!

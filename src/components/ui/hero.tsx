@@ -15,7 +15,7 @@ interface HeroProps {
 
 const Hero: React.FC<HeroProps> = ({
   title = "Fast Delivery for Auto Parts & Hardware",
-  subtitle = "Get the parts you need delivered quickly from local auto and hardware stores in Louisville, Kentucky and surrounding Jefferson County. Coming soon to Frankfort KY, Lexington KY, Indianapolis IN, Cincinnati OH, and more!",
+  subtitle = "Get the parts you need delivered quickly from local auto and hardware stores nationwide. Fast, reliable delivery to your door.",
   ctaText = "Get Started",
   ctaLink = "/register",
   secondaryCtaText = "Learn More",
@@ -70,7 +70,7 @@ const Hero: React.FC<HeroProps> = ({
             
             <p className="text-xl md:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed font-medium">
               Get the parts you need delivered quickly from local stores in 
-              <span className="text-yellow-300 font-bold"> Louisville, KY </span>
+              <span className="text-yellow-300 font-bold"> Nationwide </span>
               and surrounding areas. Coming soon to Frankfort, Lexington, Indianapolis, Cincinnati, and more!
             </p>
           </div>
