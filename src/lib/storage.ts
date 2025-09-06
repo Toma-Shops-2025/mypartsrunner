@@ -12,8 +12,8 @@ export async function uploadDocument(
   fileName?: string
 ): Promise<UploadResult> {
   try {
-    const uniqueFileName = fileName || ${Date.now()}_;
-    const filePath = ${folder}/;
+    const uniqueFileName = fileName || `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const filePath = `${folder}/${uniqueFileName}`;
 
     const { data, error } = await supabase.storage
       .from('driver-documents')
