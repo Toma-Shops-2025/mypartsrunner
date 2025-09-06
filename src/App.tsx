@@ -131,7 +131,12 @@ export default function App() {
       </AppProvider>
       
       {/* TomaBot AI Assistant */}
-      <elevenlabs-convai agent-id="agent_8801k496zf0kenz9k7pjwswzv92y"></elevenlabs-convai>
+      <elevenlabs-convai 
+        agent-id="agent_8801k496zf0kenz9k7pjwswzv92y"
+        avatar-url="/tomabot_avatar.png"
+        position="bottom-right"
+        theme="dark">
+      </elevenlabs-convai>
       <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
     </div>
   );
