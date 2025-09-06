@@ -60,36 +60,7 @@
       "purpose": "maskable any"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/screenshots/driver-dashboard.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Driver Dashboard"
-    },
-    {
-      "src": "/screenshots/driver-delivery.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Delivery Management"
-    },
-    {
-      "src": "/screenshots/driver-earnings.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Earnings Tracker"
-    },
-    {
-      "src": "/screenshots/driver-navigation.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "GPS Navigation"
-    }
-  ],
+  "screenshots": [],
   "shortcuts": [
     {
       "name": "Go Online",

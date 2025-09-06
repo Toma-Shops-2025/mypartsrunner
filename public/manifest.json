@@ -60,43 +60,7 @@
       "purpose": "maskable any"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/screenshots/home.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "MyPartsRunner Home Screen"
-    },
-    {
-      "src": "/screenshots/browse.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Browse Products"
-    },
-    {
-      "src": "/screenshots/cart.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Shopping Cart"
-    },
-    {
-      "src": "/screenshots/mobile-home.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Mobile Home Screen"
-    },
-    {
-      "src": "/screenshots/mobile-browse.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Mobile Browse Screen"
-    }
-  ],
+  "screenshots": [],
   "shortcuts": [
     {
       "name": "Browse Products",
