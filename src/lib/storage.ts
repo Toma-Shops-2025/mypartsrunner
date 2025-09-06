@@ -19,11 +19,14 @@ export async function uploadDocument(
       .from('driver-documents')
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: false
+        upsert: true  // Allow overwriting if file exists
       });
 
     if (error) {
       console.error('Upload error:', error);
+      console.error('File path:', filePath);
+      console.error('File size:', file.size);
+      console.error('File type:', file.type);
       return { url: '', path: '', error: error.message };
     }
 

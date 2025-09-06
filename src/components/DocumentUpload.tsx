@@ -73,8 +73,15 @@ export function DocumentUpload({
       onChange(result.url);
       
     } catch (err) {
-      setError('Failed to upload file. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(`Failed to upload file: ${errorMessage}. Please try again.`);
       console.error('Upload error:', err);
+      
+      // Clear preview if upload failed
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
+      }
     } finally {
       setIsUploading(false);
     }

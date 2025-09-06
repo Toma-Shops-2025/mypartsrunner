@@ -405,7 +405,7 @@ const DriverApplicationPage: React.FC = () => {
             
             <DocumentUpload
               label="Driver's License Photo"
-              description="Upload a clear photo of your driver's license (front and back)"
+              description="Upload a clear photo of your driver's license (front only)"
               required
               acceptedTypes={['image/jpeg', 'image/png', 'image/webp']}
               maxSizeMB={5}
