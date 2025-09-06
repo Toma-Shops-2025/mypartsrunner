@@ -133,7 +133,7 @@ export default function App() {
       {/* TomaBot AI Assistant */}
       <elevenlabs-convai 
         agent-id="agent_8801k496zf0kenz9k7pjwswzv92y"
-        avatar-url="/tomabot_avatar.png"
+        avatar-image-url="https://mypartsrunner.com/tomabot_avatar.png"
         position="top-left"
         theme="dark">
       </elevenlabs-convai>
