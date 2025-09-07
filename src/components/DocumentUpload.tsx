@@ -54,6 +54,7 @@ export function DocumentUpload({
     }
 
     setIsUploading(true);
+    setError(null); // Clear any previous errors immediately
     
     // Add timeout to prevent stuck uploading state
     const uploadTimeout = setTimeout(() => {
@@ -75,11 +76,12 @@ export function DocumentUpload({
         throw new Error(result.error);
       }
       
+      // Clear timeout and error immediately on success
+      clearTimeout(uploadTimeout);
+      setError(null);
+      
       // Update the form with the real URL
       onChange(result.url);
-      
-      // Clear any previous errors on successful upload
-      setError(null);
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
