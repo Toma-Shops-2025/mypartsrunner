@@ -377,7 +377,7 @@ const DriverApplicationPage: React.FC = () => {
                           handleChange('firstName', e.target.value);
                         }}
                         required
-                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                         placeholder="Enter your first name"
                         autoComplete="given-name"
                       />
@@ -394,7 +394,7 @@ const DriverApplicationPage: React.FC = () => {
                           handleChange('lastName', e.target.value);
                         }}
                         required
-                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                         placeholder="Enter your last name"
                         autoComplete="family-name"
                       />
@@ -409,7 +409,7 @@ const DriverApplicationPage: React.FC = () => {
                         value={formData.email}
                         onChange={(e) => handleChange('email', e.target.value)}
                         required
-                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                         readOnly={!!user?.email}
                         autoComplete="email"
                       />
@@ -423,7 +423,7 @@ const DriverApplicationPage: React.FC = () => {
                         value={formData.phone}
                         onChange={(e) => handleChange('phone', e.target.value)}
                         required
-                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                         autoComplete="tel"
                       />
                     </div>
@@ -435,7 +435,7 @@ const DriverApplicationPage: React.FC = () => {
                         value={formData.address}
                         onChange={(e) => handleChange('address', e.target.value)}
                         required
-                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                         autoComplete="street-address"
                       />
                     </div>
@@ -447,7 +447,7 @@ const DriverApplicationPage: React.FC = () => {
                         value={formData.city}
                         onChange={(e) => handleChange('city', e.target.value)}
                         required
-                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                         autoComplete="address-level2"
                       />
                     </div>
@@ -459,7 +459,7 @@ const DriverApplicationPage: React.FC = () => {
                         value={formData.state}
                         onChange={(e) => handleChange('state', e.target.value)}
                         required
-                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                         autoComplete="address-level1"
                       />
                     </div>
@@ -471,7 +471,7 @@ const DriverApplicationPage: React.FC = () => {
                         value={formData.zipCode}
                         onChange={(e) => handleChange('zipCode', e.target.value)}
                         required
-                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                         autoComplete="postal-code"
                       />
                     </div>
@@ -502,7 +502,7 @@ const DriverApplicationPage: React.FC = () => {
                         value={formData.vehicleMake}
                         onChange={(e) => handleChange('vehicleMake', e.target.value)}
                         required
-                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
@@ -512,7 +512,7 @@ const DriverApplicationPage: React.FC = () => {
                         value={formData.vehicleModel}
                         onChange={(e) => handleChange('vehicleModel', e.target.value)}
                         required
-                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
@@ -522,7 +522,7 @@ const DriverApplicationPage: React.FC = () => {
                         value={formData.vehicleYear}
                         onChange={(e) => handleChange('vehicleYear', e.target.value)}
                         required
-                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
@@ -532,7 +532,7 @@ const DriverApplicationPage: React.FC = () => {
                         value={formData.licensePlate}
                         onChange={(e) => handleChange('licensePlate', e.target.value)}
                         required
-                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
@@ -542,7 +542,7 @@ const DriverApplicationPage: React.FC = () => {
                         value={formData.vehicleColor}
                         onChange={(e) => handleChange('vehicleColor', e.target.value)}
                         required
-                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
@@ -565,7 +565,7 @@ const DriverApplicationPage: React.FC = () => {
                           id="cashAppUsername"
                           value={formData.cashAppUsername}
                           onChange={(e) => handleChange('cashAppUsername', e.target.value)}
-                          className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                          className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                         />
                       </div>
                     )}
@@ -576,7 +576,7 @@ const DriverApplicationPage: React.FC = () => {
                           id="venmoUsername"
                           value={formData.venmoUsername}
                           onChange={(e) => handleChange('venmoUsername', e.target.value)}
-                          className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                          className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                         />
                       </div>
                     )}
@@ -587,7 +587,7 @@ const DriverApplicationPage: React.FC = () => {
                         value={formData.emergencyContact}
                         onChange={(e) => handleChange('emergencyContact', e.target.value)}
                         required
-                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
@@ -598,7 +598,7 @@ const DriverApplicationPage: React.FC = () => {
                         value={formData.emergencyPhone}
                         onChange={(e) => handleChange('emergencyPhone', e.target.value)}
                         required
-                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        className="!bg-white !text-black !opacity-100 border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                   </div>
