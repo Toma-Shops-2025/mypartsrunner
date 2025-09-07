@@ -165,45 +165,14 @@ const DriverApplicationPage: React.FC = () => {
         return;
       }
 
-      // Prepare data for database (convert camelCase to snake_case)
+      // Prepare minimal data for database (test with basic fields only)
       const applicationData = {
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
         phone: formData.phone,
-        date_of_birth: formData.dateOfBirth,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        zip_code: formData.zipCode,
-        license_number: formData.licenseNumber,
-        license_state: formData.licenseState,
-        license_expiry: formData.licenseExpiry,
-        has_commercial_license: formData.hasCommercialLicense,
-        vehicle_type: formData.vehicleType,
-        vehicle_make: formData.vehicleMake,
-        vehicle_model: formData.vehicleModel,
-        vehicle_year: formData.vehicleYear,
-        license_plate: formData.licensePlate,
-        vehicle_color: formData.vehicleColor,
-        insurance_company: formData.insuranceCompany,
-        policy_number: formData.policyNumber,
-        policy_expiry: formData.policyExpiry,
-        has_commercial_insurance: formData.hasCommercialInsurance,
-        driving_experience: formData.drivingExperience,
-        preferred_areas: formData.preferredAreas,
-        availability: formData.availability,
-        max_distance: formData.maxDistance,
-        payment_method: formData.paymentMethod,
-        cash_app_username: formData.cashAppUsername,
-        venmo_username: formData.venmoUsername,
-        emergency_contact: formData.emergencyContact,
-        emergency_phone: formData.emergencyPhone,
         agree_to_terms: formData.agreeToTerms,
         agree_to_vehicle_inspection: formData.agreeToVehicleInspection,
-        driver_license_url: formData.driverLicenseUrl,
-        insurance_card_url: formData.insuranceCardUrl,
-        vehicle_registration_url: formData.vehicleRegistrationUrl,
       };
 
       // Insert application into database
