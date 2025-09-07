@@ -70,15 +70,13 @@ const DriverApplicationPage: React.FC = () => {
     
     // Agreements
     agreeToTerms: false,
-    agreeToBackgroundCheck: false,
     agreeToDrugTest: false,
     agreeToVehicleInspection: false,
     
     // Document Uploads
     driverLicenseUrl: '',
     insuranceCardUrl: '',
-    vehicleRegistrationUrl: '',
-    backgroundCheckConsentUrl: ''
+    vehicleRegistrationUrl: ''
   });
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -92,7 +90,7 @@ const DriverApplicationPage: React.FC = () => {
     { number: 3, title: "Vehicle Information", icon: <Car className="h-4 w-4" /> },
     { number: 4, title: "Insurance", icon: <FileText className="h-4 w-4" /> },
     { number: 5, title: "Experience & Availability", icon: <MapPin className="h-4 w-4" /> },
-    { number: 6, title: "Payment & Background", icon: <DollarSign className="h-4 w-4" /> }
+    { number: 6, title: "Payment & Agreements", icon: <DollarSign className="h-4 w-4" /> }
   ];
 
   const handleInputChange = (field: string, value: any) => {
@@ -702,15 +700,6 @@ const DriverApplicationPage: React.FC = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id="agreeToBackgroundCheck"
-                  checked={formData.agreeToBackgroundCheck}
-                  onCheckedChange={(checked) => handleInputChange('agreeToBackgroundCheck', checked)}
-                  required
-                />
-                <Label htmlFor="agreeToBackgroundCheck">I consent to a background check *</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
                   id="agreeToDrugTest"
                   checked={formData.agreeToDrugTest}
                   onCheckedChange={(checked) => handleInputChange('agreeToDrugTest', checked)}
@@ -729,17 +718,6 @@ const DriverApplicationPage: React.FC = () => {
               </div>
             </div>
             
-            <DocumentUpload
-              label="Background Check Consent Form"
-              description="Upload a signed background check consent form (PDF or image)"
-              required
-              acceptedTypes={['image/jpeg', 'image/png', 'image/webp', 'application/pdf']}
-              value={formData.backgroundCheckConsentUrl}
-              onChange={(url) => handleInputChange('backgroundCheckConsentUrl', url)}
-              onRemove={() => handleInputChange('backgroundCheckConsentUrl', '')}
-              placeholder="Upload your signed consent form"
-              folder="background-check"
-            />
           </div>
         );
 
