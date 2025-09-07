@@ -410,6 +410,13 @@ const DriverApplicationPage: React.FC = () => {
               placeholder="Upload your driver's license photo"
               folder="drivers-license"
             />
+            
+            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> If you see an error message but your license photo appears in the viewer below, 
+                your upload was successful and you can continue to the next step.
+              </p>
+            </div>
           </div>
         );
 
