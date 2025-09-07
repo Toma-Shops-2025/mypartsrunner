@@ -78,6 +78,9 @@ export function DocumentUpload({
       // Update the form with the real URL
       onChange(result.url);
       
+      // Clear any previous errors on successful upload
+      setError(null);
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setError(`Failed to upload file: ${errorMessage}. Please try again.`);
