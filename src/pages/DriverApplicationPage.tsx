@@ -218,8 +218,26 @@ const DriverApplicationPage: React.FC = () => {
     }
   };
 
+  const isCurrentStepValid = () => {
+    switch (currentStep) {
+      case 1:
+        return formData.firstName && formData.lastName && formData.email && formData.phone && 
+               formData.address && formData.city && formData.state && formData.zipCode;
+      case 2:
+        return formData.vehicleType && formData.vehicleMake && formData.vehicleModel && 
+               formData.vehicleYear && formData.licensePlate && formData.vehicleColor && 
+               formData.paymentMethod && formData.emergencyContact && formData.emergencyPhone;
+      case 3:
+        return formData.documentsSentViaEmail;
+      case 4:
+        return formData.agreeToTerms && formData.agreeToVehicleInspection;
+      default:
+        return false;
+    }
+  };
+
   const nextStep = () => {
-    if (currentStep < 4) {
+    if (currentStep < 4 && isCurrentStepValid()) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -372,6 +390,7 @@ const DriverApplicationPage: React.FC = () => {
                         onChange={(e) => handleChange('email', e.target.value)}
                         required
                         className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        readOnly={!!user?.email}
                       />
                     </div>
                     <div>
@@ -655,21 +674,31 @@ const DriverApplicationPage: React.FC = () => {
                 )}
 
                 {/* Navigation Buttons */}
-                <div className="flex justify-between pt-6">
+                <div className="flex justify-between pt-6 border-t border-gray-700">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={prevStep}
                     disabled={currentStep === 1}
+                    className="border-gray-600 text-gray-300 hover:border-cyan-400 hover:text-cyan-400"
                   >
                     Previous
                   </Button>
                   {currentStep < 4 ? (
-                    <Button type="button" onClick={nextStep}>
+                    <Button 
+                      type="button" 
+                      onClick={nextStep}
+                      disabled={!isCurrentStepValid()}
+                      className="bg-cyan-400 hover:bg-cyan-500 text-black font-semibold px-8 disabled:bg-gray-600 disabled:text-gray-400"
+                    >
                       Next
                     </Button>
                   ) : (
-                    <Button type="submit" disabled={isSubmitting}>
+                    <Button 
+                      type="submit" 
+                      disabled={isSubmitting}
+                      className="bg-green-400 hover:bg-green-500 text-black font-semibold px-8"
+                    >
                       {isSubmitting ? 'Submitting...' : 'Submit Application'}
                     </Button>
                   )}
