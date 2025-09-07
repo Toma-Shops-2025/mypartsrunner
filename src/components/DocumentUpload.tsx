@@ -154,13 +154,24 @@ export function DocumentUpload({
       )}
 
       {error && (
-        <div className="flex items-center gap-2 text-sm text-red-600">
-          <AlertCircle className="h-4 w-4" />
-          {error}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm text-red-600">
+            <AlertCircle className="h-4 w-4" />
+            {error}
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={openFileDialog}
+            disabled={isUploading}
+            className="w-full"
+          >
+            {isUploading ? 'Uploading...' : 'Try Again'}
+          </Button>
         </div>
       )}
 
-      {!value ? (
+      {!value && !error ? (
         <Card 
           className={`border-2 border-dashed border-muted-foreground/25 hover:border-muted-foreground/50 transition-colors cursor-pointer ${
             isUploading ? 'opacity-50' : ''

@@ -206,7 +206,7 @@ const HomePage: React.FC = () => {
             ].map((step, index) => (
               <div key={index} className="text-center relative">
                 <div className="glass-card p-8 glow-card group">
-                  <div className="text-6xl font-bold neon-text mb-4 pulse-neon">
+                  <div className="text-6xl font-bold neon-text mb-4">
                     {step.step}
                   </div>
                   <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-r from-cyan-400 to-purple-600 flex items-center justify-center text-black group-hover:scale-110 transition-transform duration-300">
@@ -234,7 +234,7 @@ const HomePage: React.FC = () => {
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-6xl font-bold mb-6">
               <span className="gradient-text">Customer</span>{' '}
-              <span className="neon-text-pink pulse-neon">Love</span>
+              <span className="neon-text-pink">Love</span>
             </h2>
             <p className="text-xl text-gray-300">See what our customers say about MyPartsRunner</p>
           </div>
@@ -275,7 +275,7 @@ const HomePage: React.FC = () => {
           <div className="glass-card p-12 glow-card">
             <h2 className="text-4xl md:text-6xl font-bold mb-6">
               <span className="gradient-text">Ready to</span>{' '}
-              <span className="neon-text pulse-neon">Start?</span>
+              <span className="neon-text">Start?</span>
             </h2>
             <p className="text-xl text-gray-300 mb-8 leading-relaxed">
               Join thousands of satisfied customers in Louisville. Get your parts delivered faster than ever.
