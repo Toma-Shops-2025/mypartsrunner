@@ -25,7 +25,7 @@ export async function uploadDocument(
     const filePath = `${folder}/${uniqueFileName}`;
 
     const { data, error } = await supabase.storage
-      .from('driver-documents')
+      .from('drivers-license')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: true  // Allow overwriting if file exists
@@ -40,7 +40,7 @@ export async function uploadDocument(
     }
 
     const { data: urlData } = supabase.storage
-      .from('driver-documents')
+      .from('drivers-license')
       .getPublicUrl(filePath);
 
     return {
@@ -61,7 +61,7 @@ export async function uploadDocument(
 export async function deleteDocument(filePath: string): Promise<boolean> {
   try {
     const { error } = await supabase.storage
-      .from('driver-documents')
+      .from('drivers-license')
       .remove([filePath]);
 
     if (error) {
