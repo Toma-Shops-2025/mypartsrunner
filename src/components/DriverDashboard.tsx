@@ -149,27 +149,31 @@ export default function DriverDashboard() {
       {/* Driver Quick Actions */}
       <DriverQuickActions />
 
-      {/* Application Status Card */}
+      {/* Onboarding Status Card */}
       {loadingApplication ? (
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
               <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-500" />
-              <p>Checking your application status...</p>
+              <p>Checking your onboarding status...</p>
             </div>
           </CardContent>
         </Card>
-      ) : application ? (
-        <Card className={`border-2 ${getStatusColor(application.status)}`}>
+      ) : (
+        <Card className={`border-2 ${user?.onboardingComplete ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
-                {getStatusIcon(application.status)}
-                Driver Application Status
+                {user?.onboardingComplete ? (
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 text-orange-600" />
+                )}
+                Driver Onboarding Status
               </CardTitle>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className={getStatusColor(application.status)}>
-                  {application.status.replace('_', ' ').toUpperCase()}
+                <Badge variant="outline" className={user?.onboardingComplete ? 'bg-green-100 text-green-800 border-green-200' : 'bg-orange-100 text-orange-800 border-orange-200'}>
+                  {user?.onboardingComplete ? 'COMPLETE' : 'INCOMPLETE'}
                 </Badge>
                 <Button 
                   variant="outline" 
@@ -183,67 +187,56 @@ export default function DriverDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <Alert className={`${getStatusColor(application.status)} border-2`}>
-              <AlertDescription>
-                {getStatusMessage(application)}
-              </AlertDescription>
-            </Alert>
+            {user?.onboardingComplete ? (
+              <Alert className="border-green-200 bg-green-50">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800">
+                  <strong>🎉 Onboarding Complete!</strong> You can now accept deliveries and get paid. You're all set to start earning!
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Alert className="border-orange-200 bg-orange-50">
+                <AlertCircle className="h-4 w-4 text-orange-600" />
+                <AlertDescription className="text-orange-800">
+                  <strong>Onboarding Required:</strong> You're online and ready to drive, but you need to complete your onboarding to accept deliveries and get paid. Complete the driver application to start earning!
+                </AlertDescription>
+              </Alert>
+            )}
 
-            {application.status === 'approved' && (
+            {!user?.onboardingComplete && (
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Shield className="h-5 w-5 text-blue-600" />
+                  <span className="font-semibold text-blue-800">Complete Your Onboarding</span>
+                </div>
+                <p className="text-sm text-blue-700 mb-3">
+                  You're online and ready to drive! Complete your driver application to:
+                </p>
+                <ul className="text-sm text-blue-700 space-y-1 mb-4">
+                  <li>• Accept delivery requests</li>
+                  <li>• Get paid for deliveries</li>
+                  <li>• Access all driver features</li>
+                </ul>
+                <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                  <a href="/driver-application">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Complete Driver Application
+                  </a>
+                </Button>
+              </div>
+            )}
+
+            {user?.onboardingComplete && (
               <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
                 <div className="flex items-center gap-2 mb-2">
                   <CheckCircle className="h-5 w-5 text-green-600" />
-                  <span className="font-semibold text-green-800">🎉 Congratulations!</span>
+                  <span className="font-semibold text-green-800">Ready to Earn!</span>
                 </div>
                 <p className="text-sm text-green-700">
-                  You're approved to drive with MyPartsRunner! Click "Go Online" below to start accepting delivery requests.
+                  Your onboarding is complete! You can now accept deliveries and get paid. Click "Go Online" below to start receiving delivery requests.
                 </p>
               </div>
             )}
-
-            {application.status === 'rejected' && (
-              <div className="mt-4 flex gap-3">
-                <Button variant="outline" size="sm">
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  Contact Support
-                </Button>
-                <Button variant="outline" size="sm">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Reapply
-                </Button>
-              </div>
-            )}
-
-            <div className="mt-4 text-xs text-gray-500">
-              Application submitted: {new Date(application.created_at).toLocaleString()}
-              {application.updated_at !== application.created_at && (
-                <> • Last updated: {new Date(application.updated_at).toLocaleString()}</>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="border-2 border-orange-200 bg-orange-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-orange-600" />
-              No Driver Application Found
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Alert className="border-orange-200 bg-orange-50">
-              <AlertDescription>
-                You need to submit a driver application before you can go online for deliveries.
-              </AlertDescription>
-            </Alert>
-            <div className="mt-4">
-              <Button asChild>
-                <a href="/driver-application">
-                  <FileText className="mr-2 h-4 w-4" />
-                  Submit Driver Application
-                </a>
-              </Button>
-            </div>
           </CardContent>
         </Card>
       )}
@@ -309,13 +302,13 @@ export default function DriverDashboard() {
           </div>
 
           {/* Go Online Instructions */}
-          {!status.isOnline && application?.status !== 'approved' && (
+          {!status.isOnline && (
             <Alert className="mt-4 border-blue-200 bg-blue-50">
               <Shield className="h-4 w-4 text-blue-600" />
               <AlertDescription className="text-blue-800">
-                <strong>How to Go Online:</strong> Click "Go Online" to check your application status and start accepting deliveries. 
-                {!application && ' You\'ll be guided through the application process if needed.'}
-                {application && application.status !== 'approved' && ' Your application status will be displayed automatically.'}
+                <strong>How to Go Online:</strong> Click "Go Online" to start driving! 
+                {!user?.onboardingComplete && ' You can go online immediately, but you\'ll need to complete your onboarding to accept deliveries and get paid.'}
+                {user?.onboardingComplete && ' You\'re all set to start accepting deliveries and earning money!'}
               </AlertDescription>
             </Alert>
           )}

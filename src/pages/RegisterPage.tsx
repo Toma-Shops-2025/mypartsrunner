@@ -74,7 +74,13 @@ const RegisterPage: React.FC = () => {
       }
       
       await signUp(formData.email, formData.password, userData);
-      navigate('/login');
+      
+      // Redirect drivers to dashboard, others to login
+      if (formData.role === 'driver') {
+        navigate('/dashboard');
+      } else {
+        navigate('/login');
+      }
     } catch (error) {
       console.error('Registration error:', error);
     }

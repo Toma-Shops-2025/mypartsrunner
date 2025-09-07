@@ -14,6 +14,7 @@ export interface User {
   businessName?: string;
   role: UserRole;
   isAvailable?: boolean; // Add this field for driver availability
+  onboardingComplete?: boolean; // Track if driver has completed onboarding
   // Profile information
   address?: string;
   city?: string;

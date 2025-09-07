@@ -184,6 +184,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             last_name: userData.lastName,
             business_name: userData.businessName || '',
             role: userData.role || 'customer',
+            // For drivers: set as online but with incomplete onboarding
+            is_available: userData.role === 'driver' ? true : false,
+            onboarding_complete: userData.role === 'driver' ? false : true,
           };
 
           const { error: profileError } = await supabase
@@ -201,7 +204,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         toast({
           title: "Registration successful!",
-          description: "You can now sign in with your credentials."
+          description: userData.role === 'driver' 
+            ? "Welcome! You're now online and can start driving. Complete your onboarding to accept deliveries."
+            : "You can now sign in with your credentials."
         });
       }
     } catch (error: any) {

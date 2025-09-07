@@ -17,7 +17,7 @@ import DriverAppOptions from '@/components/DriverAppOptions';
 
 const DriverApplicationPage: React.FC = () => {
   const { toast } = useToast();
-  const { user } = useAppContext();
+  const { user, updateUserProfile } = useAppContext();
   
   const [formData, setFormData] = useState({
     // Personal Information
@@ -187,10 +187,17 @@ const DriverApplicationPage: React.FC = () => {
         throw new Error(`Failed to save application: ${error.message}`);
       }
 
-      toast({
-        title: "Application Submitted Successfully!",
-        description: `Thank you for applying to be a MyPartsRunner driver. Your application ID is: ${data.id}. We'll review your application and contact you within 2-3 business days.`,
-      });
+        // Update user's onboarding status to complete
+        try {
+          await updateUserProfile({ onboardingComplete: true });
+        } catch (profileError) {
+          console.warn('Could not update onboarding status:', profileError);
+        }
+
+        toast({
+          title: "Application Submitted Successfully!",
+          description: `🎉 Congratulations! You're now fully onboarded and can accept deliveries. Your application ID is: ${data.id}. You can start earning money right away!`,
+        });
       
       // Reset form
       setFormData({
