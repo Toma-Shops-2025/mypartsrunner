@@ -91,7 +91,12 @@ const DriverApplicationPage: React.FC = () => {
   }, [user?.email]);
 
   const handleChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    console.log('handleChange called:', field, value);
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      console.log('New form data:', newData);
+      return newData;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -366,20 +371,30 @@ const DriverApplicationPage: React.FC = () => {
                       <Input
                         id="firstName"
                         value={formData.firstName}
-                        onChange={(e) => handleChange('firstName', e.target.value)}
+                        onChange={(e) => {
+                          console.log('firstName onChange:', e.target.value);
+                          handleChange('firstName', e.target.value);
+                        }}
                         required
                         className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        placeholder="Enter your first name"
                       />
+                      <p className="text-xs text-gray-400 mt-1">Current value: {formData.firstName}</p>
                     </div>
                     <div>
                       <Label htmlFor="lastName" className="text-white">Last Name *</Label>
                       <Input
                         id="lastName"
                         value={formData.lastName}
-                        onChange={(e) => handleChange('lastName', e.target.value)}
+                        onChange={(e) => {
+                          console.log('lastName onChange:', e.target.value);
+                          handleChange('lastName', e.target.value);
+                        }}
                         required
                         className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        placeholder="Enter your last name"
                       />
+                      <p className="text-xs text-gray-400 mt-1">Current value: {formData.lastName}</p>
                     </div>
                     <div>
                       <Label htmlFor="email" className="text-white">Email *</Label>
