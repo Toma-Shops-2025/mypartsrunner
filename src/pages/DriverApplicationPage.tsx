@@ -370,6 +370,7 @@ const DriverApplicationPage: React.FC = () => {
                       <Label htmlFor="firstName" className="text-white">First Name *</Label>
                       <Input
                         id="firstName"
+                        name="firstName"
                         value={formData.firstName}
                         onChange={(e) => {
                           console.log('firstName onChange:', e.target.value);
@@ -378,6 +379,7 @@ const DriverApplicationPage: React.FC = () => {
                         required
                         className="bg-white text-black border-gray-300 focus:border-cyan-400"
                         placeholder="Enter your first name"
+                        autoComplete="given-name"
                       />
                       <p className="text-xs text-gray-400 mt-1">Current value: {formData.firstName}</p>
                     </div>
@@ -385,6 +387,7 @@ const DriverApplicationPage: React.FC = () => {
                       <Label htmlFor="lastName" className="text-white">Last Name *</Label>
                       <Input
                         id="lastName"
+                        name="lastName"
                         value={formData.lastName}
                         onChange={(e) => {
                           console.log('lastName onChange:', e.target.value);
@@ -393,6 +396,7 @@ const DriverApplicationPage: React.FC = () => {
                         required
                         className="bg-white text-black border-gray-300 focus:border-cyan-400"
                         placeholder="Enter your last name"
+                        autoComplete="family-name"
                       />
                       <p className="text-xs text-gray-400 mt-1">Current value: {formData.lastName}</p>
                     </div>
@@ -400,63 +404,75 @@ const DriverApplicationPage: React.FC = () => {
                       <Label htmlFor="email" className="text-white">Email *</Label>
                       <Input
                         id="email"
+                        name="email"
                         type="email"
                         value={formData.email}
                         onChange={(e) => handleChange('email', e.target.value)}
                         required
                         className="bg-white text-black border-gray-300 focus:border-cyan-400"
                         readOnly={!!user?.email}
+                        autoComplete="email"
                       />
                     </div>
                     <div>
                       <Label htmlFor="phone" className="text-white">Phone *</Label>
                       <Input
                         id="phone"
+                        name="phone"
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => handleChange('phone', e.target.value)}
                         required
                         className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        autoComplete="tel"
                       />
                     </div>
                     <div className="md:col-span-2">
                       <Label htmlFor="address" className="text-white">Address *</Label>
                       <Input
                         id="address"
+                        name="address"
                         value={formData.address}
                         onChange={(e) => handleChange('address', e.target.value)}
                         required
                         className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        autoComplete="street-address"
                       />
                     </div>
                     <div>
                       <Label htmlFor="city" className="text-white">City *</Label>
                       <Input
                         id="city"
+                        name="city"
                         value={formData.city}
                         onChange={(e) => handleChange('city', e.target.value)}
                         required
                         className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        autoComplete="address-level2"
                       />
                     </div>
                     <div>
                       <Label htmlFor="state" className="text-white">State *</Label>
                       <Input
                         id="state"
+                        name="state"
                         value={formData.state}
                         onChange={(e) => handleChange('state', e.target.value)}
                         required
                         className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        autoComplete="address-level1"
                       />
                     </div>
                     <div>
                       <Label htmlFor="zipCode" className="text-white">ZIP Code *</Label>
                       <Input
                         id="zipCode"
+                        name="zipCode"
                         value={formData.zipCode}
                         onChange={(e) => handleChange('zipCode', e.target.value)}
                         required
                         className="bg-white text-black border-gray-300 focus:border-cyan-400"
+                        autoComplete="postal-code"
                       />
                     </div>
                   </div>
