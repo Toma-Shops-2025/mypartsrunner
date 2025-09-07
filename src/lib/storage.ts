@@ -12,6 +12,15 @@ export async function uploadDocument(
   fileName?: string
 ): Promise<UploadResult> {
   try {
+    // Test Supabase connection first
+    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+    if (bucketsError) {
+      console.error('Storage buckets error:', bucketsError);
+      return { url: '', path: '', error: `Storage error: ${bucketsError.message}` };
+    }
+    
+    console.log('Available buckets:', buckets?.map(b => b.name));
+    
     const uniqueFileName = fileName || `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const filePath = `${folder}/${uniqueFileName}`;
 
