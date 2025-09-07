@@ -403,6 +403,13 @@ export default function DriverDashboard() {
             </Button>
             
             <Button variant="outline" className="h-12" asChild>
+              <a href="/driver-training">
+                <FileText className="mr-2 h-4 w-4" />
+                Driver Training
+              </a>
+            </Button>
+            
+            <Button variant="outline" className="h-12" asChild>
               <a href="/help">
                 <FileText className="mr-2 h-4 w-4" />
                 Get Help

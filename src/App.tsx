@@ -29,6 +29,7 @@ import AdminGuidePage from "@/pages/AdminGuidePage";
 import ShippingHandlingPage from "@/pages/ShippingHandlingPage";
 import MerchantIntegrationPage from "@/pages/MerchantIntegrationPage";
 import DriverApplicationPage from "@/pages/DriverApplicationPage";
+import DriverTrainingPage from "@/pages/DriverTrainingPage";
 import MerchantApplicationPage from "@/pages/MerchantApplicationPage";
 import AdminDriverReviewPage from "@/pages/AdminDriverReviewPage";
 import HelpPage from "@/pages/HelpPage";
@@ -115,6 +116,7 @@ export default function App() {
                     <Route path="/shipping-handling" element={<ShippingHandlingPage />} />
                     <Route path="/merchant-integration" element={<MerchantIntegrationPage />} />
                     <Route path="/driver-application" element={<DriverApplicationPage />} />
+                    <Route path="/driver-training" element={<DriverTrainingPage />} />
                     <Route path="/admin/driver-review" element={<AdminDriverReviewPage />} />
                     <Route path="/merchant-application" element={<MerchantApplicationPage />} />
                     <Route path="/merchant-stripe-onboarding" element={<MerchantStripeOnboardingPage />} />
