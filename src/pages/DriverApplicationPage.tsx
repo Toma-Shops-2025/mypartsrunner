@@ -159,8 +159,7 @@ const DriverApplicationPage: React.FC = () => {
 
     try {
       // Validate required agreements
-      if (!formData.agreeToTerms || !formData.agreeToBackgroundCheck || 
-          !formData.agreeToDrugTest || !formData.agreeToVehicleInspection) {
+      if (!formData.agreeToTerms || !formData.agreeToDrugTest || !formData.agreeToVehicleInspection) {
         toast({
           title: "Agreements Required",
           description: "Please agree to all required terms and conditions.",
@@ -206,13 +205,11 @@ const DriverApplicationPage: React.FC = () => {
         emergency_contact: formData.emergencyContact,
         emergency_phone: formData.emergencyPhone,
         agree_to_terms: formData.agreeToTerms,
-        agree_to_background_check: formData.agreeToBackgroundCheck,
         agree_to_drug_test: formData.agreeToDrugTest,
         agree_to_vehicle_inspection: formData.agreeToVehicleInspection,
         driver_license_url: formData.driverLicenseUrl,
         insurance_card_url: formData.insuranceCardUrl,
         vehicle_registration_url: formData.vehicleRegistrationUrl,
-        background_check_consent_url: formData.backgroundCheckConsentUrl
       };
 
       // Insert application into database
@@ -243,9 +240,9 @@ const DriverApplicationPage: React.FC = () => {
     preferredAreas: '', availability: [], maxDistance: '', paymentMethod: '',
     cashAppUsername: '', venmoUsername: '', hasCriminalRecord: false,
     criminalRecordDetails: '', emergencyContact: '', emergencyPhone: '',
-    agreeToTerms: false, agreeToBackgroundCheck: false, agreeToDrugTest: false,
-    agreeToVehicleInspection: false, driverLicenseUrl: '', insuranceCardUrl: '',
-    vehicleRegistrationUrl: '', backgroundCheckConsentUrl: ''
+        agreeToTerms: false, agreeToDrugTest: false,
+        agreeToVehicleInspection: false, driverLicenseUrl: '', insuranceCardUrl: '',
+        vehicleRegistrationUrl: ''
       });
       setCurrentStep(1);
       
