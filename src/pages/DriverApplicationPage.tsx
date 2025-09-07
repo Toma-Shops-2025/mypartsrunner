@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, AlertCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AppContext';
+import { useAppContext } from '@/contexts/AppContext';
 import { supabase } from '@/lib/supabase';
 
 interface FormData {
@@ -30,7 +30,7 @@ interface FormData {
 }
 
 const DriverApplicationPage: React.FC = () => {
-  const { user, updateUserProfile } = useAuth();
+  const { user, updateUserProfile } = useAppContext();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
