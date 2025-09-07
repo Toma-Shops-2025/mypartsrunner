@@ -155,6 +155,45 @@ const DriverApplicationPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
+      // Validate required fields
+      const requiredFields = [
+        { field: 'firstName', label: 'First Name' },
+        { field: 'lastName', label: 'Last Name' },
+        { field: 'email', label: 'Email' },
+        { field: 'phone', label: 'Phone' },
+        { field: 'dateOfBirth', label: 'Date of Birth' },
+        { field: 'address', label: 'Address' },
+        { field: 'city', label: 'City' },
+        { field: 'state', label: 'State' },
+        { field: 'zipCode', label: 'ZIP Code' },
+        { field: 'licenseNumber', label: 'License Number' },
+        { field: 'licenseState', label: 'License State' },
+        { field: 'licenseExpiry', label: 'License Expiry' },
+        { field: 'vehicleType', label: 'Vehicle Type' },
+        { field: 'vehicleMake', label: 'Vehicle Make' },
+        { field: 'vehicleModel', label: 'Vehicle Model' },
+        { field: 'vehicleYear', label: 'Vehicle Year' },
+        { field: 'licensePlate', label: 'License Plate' },
+        { field: 'vehicleColor', label: 'Vehicle Color' },
+        { field: 'insuranceCompany', label: 'Insurance Company' },
+        { field: 'policyNumber', label: 'Policy Number' },
+        { field: 'policyExpiry', label: 'Policy Expiry' },
+        { field: 'drivingExperience', label: 'Driving Experience' },
+        { field: 'paymentMethod', label: 'Payment Method' },
+        { field: 'emergencyContact', label: 'Emergency Contact' },
+        { field: 'emergencyPhone', label: 'Emergency Phone' },
+      ];
+
+      const missingField = requiredFields.find(({ field }) => !formData[field as keyof typeof formData]);
+      if (missingField) {
+        toast({
+          title: "Missing Required Information",
+          description: `Please fill in the ${missingField.label} field.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Validate required agreements
       if (!formData.agreeToTerms || !formData.agreeToVehicleInspection) {
         toast({
@@ -165,14 +204,47 @@ const DriverApplicationPage: React.FC = () => {
         return;
       }
 
-      // Prepare minimal data for database (test with basic fields only)
+      // Prepare data for database (convert camelCase to snake_case)
       const applicationData = {
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
         phone: formData.phone,
+        date_of_birth: formData.dateOfBirth,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zip_code: formData.zipCode,
+        license_number: formData.licenseNumber,
+        license_state: formData.licenseState,
+        license_expiry: formData.licenseExpiry,
+        has_commercial_license: formData.hasCommercialLicense,
+        vehicle_type: formData.vehicleType,
+        vehicle_make: formData.vehicleMake,
+        vehicle_model: formData.vehicleModel,
+        vehicle_year: formData.vehicleYear,
+        license_plate: formData.licensePlate,
+        vehicle_color: formData.vehicleColor,
+        insurance_company: formData.insuranceCompany,
+        policy_number: formData.policyNumber,
+        policy_expiry: formData.policyExpiry,
+        has_commercial_insurance: formData.hasCommercialInsurance,
+        driving_experience: formData.drivingExperience,
+        preferred_areas: formData.preferredAreas,
+        availability: formData.availability,
+        max_distance: formData.maxDistance,
+        payment_method: formData.paymentMethod,
+        cash_app_username: formData.cashAppUsername,
+        venmo_username: formData.venmoUsername,
+        emergency_contact: formData.emergencyContact,
+        emergency_phone: formData.emergencyPhone,
         agree_to_terms: formData.agreeToTerms,
         agree_to_vehicle_inspection: formData.agreeToVehicleInspection,
+        // Set default values for removed fields
+        has_criminal_record: false,
+        criminal_record_details: null,
+        agree_to_background_check: true,
+        agree_to_drug_test: true,
       };
 
       // Insert application into database
