@@ -156,7 +156,7 @@ export function DocumentUpload({
         <p className="text-sm text-muted-foreground">{description}</p>
       )}
 
-      {error && (
+      {error && !value && (
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-red-600">
             <AlertCircle className="h-4 w-4" />
