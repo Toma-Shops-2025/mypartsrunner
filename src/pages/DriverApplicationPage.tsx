@@ -63,14 +63,11 @@ const DriverApplicationPage: React.FC = () => {
     venmoUsername: '',
     
     // Background & References
-    hasCriminalRecord: false,
-    criminalRecordDetails: '',
     emergencyContact: '',
     emergencyPhone: '',
     
     // Agreements
     agreeToTerms: false,
-    agreeToDrugTest: false,
     agreeToVehicleInspection: false,
     
     // Document Uploads
@@ -159,7 +156,7 @@ const DriverApplicationPage: React.FC = () => {
 
     try {
       // Validate required agreements
-      if (!formData.agreeToTerms || !formData.agreeToDrugTest || !formData.agreeToVehicleInspection) {
+      if (!formData.agreeToTerms || !formData.agreeToVehicleInspection) {
         toast({
           title: "Agreements Required",
           description: "Please agree to all required terms and conditions.",
@@ -200,16 +197,15 @@ const DriverApplicationPage: React.FC = () => {
         payment_method: formData.paymentMethod,
         cash_app_username: formData.cashAppUsername,
         venmo_username: formData.venmoUsername,
-        has_criminal_record: formData.hasCriminalRecord,
-        criminal_record_details: formData.criminalRecordDetails,
         emergency_contact: formData.emergencyContact,
         emergency_phone: formData.emergencyPhone,
         agree_to_terms: formData.agreeToTerms,
-        agree_to_drug_test: formData.agreeToDrugTest,
         agree_to_vehicle_inspection: formData.agreeToVehicleInspection,
         driver_license_url: formData.driverLicenseUrl,
         insurance_card_url: formData.insuranceCardUrl,
         vehicle_registration_url: formData.vehicleRegistrationUrl,
+        status: 'approved', // Auto-approve drivers
+        is_active: true, // Set as active driver
       };
 
       // Insert application into database
@@ -225,8 +221,8 @@ const DriverApplicationPage: React.FC = () => {
       }
 
       toast({
-        title: "Application Submitted Successfully!",
-        description: `Thank you for applying to be a MyPartsRunner driver. Your application ID is: ${data.id}. We'll review your application and contact you within 2-3 business days.`,
+        title: "Application Approved!",
+        description: `Congratulations! You've been automatically approved as a MyPartsRunner driver. Your application ID is: ${data.id}. You can now start accepting delivery requests!`,
       });
       
       // Reset form
@@ -238,9 +234,8 @@ const DriverApplicationPage: React.FC = () => {
     licensePlate: '', vehicleColor: '', insuranceCompany: '', policyNumber: '',
     policyExpiry: '', hasCommercialInsurance: false, drivingExperience: '',
     preferredAreas: '', availability: [], maxDistance: '', paymentMethod: '',
-    cashAppUsername: '', venmoUsername: '', hasCriminalRecord: false,
-    criminalRecordDetails: '', emergencyContact: '', emergencyPhone: '',
-        agreeToTerms: false, agreeToDrugTest: false,
+        cashAppUsername: '', venmoUsername: '', emergencyContact: '', emergencyPhone: '',
+        agreeToTerms: false,
         agreeToVehicleInspection: false, driverLicenseUrl: '', insuranceCardUrl: '',
         vehicleRegistrationUrl: ''
       });
@@ -502,6 +497,13 @@ const DriverApplicationPage: React.FC = () => {
               placeholder="Upload your vehicle registration"
               folder="vehicle-registration"
             />
+            
+            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> If you see an error message but your registration document appears in the viewer below, 
+                your upload was successful and you can continue to the next step.
+              </p>
+            </div>
           </div>
         );
 
@@ -559,6 +561,13 @@ const DriverApplicationPage: React.FC = () => {
               placeholder="Upload your insurance card"
               folder="insurance"
             />
+            
+            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> If you see an error message but your insurance card appears in the viewer below, 
+                your upload was successful and you can continue to the next step.
+              </p>
+            </div>
           </div>
         );
 
@@ -672,25 +681,6 @@ const DriverApplicationPage: React.FC = () => {
                 />
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="hasCriminalRecord"
-                checked={formData.hasCriminalRecord}
-                onCheckedChange={(checked) => handleInputChange('hasCriminalRecord', checked)}
-              />
-              <Label htmlFor="hasCriminalRecord">I have a criminal record</Label>
-            </div>
-            {formData.hasCriminalRecord && (
-              <div>
-                <Label htmlFor="criminalRecordDetails">Please provide details</Label>
-                <Textarea
-                  id="criminalRecordDetails"
-                  placeholder="Please provide details about your criminal record..."
-                  value={formData.criminalRecordDetails}
-                  onChange={(e) => handleInputChange('criminalRecordDetails', e.target.value)}
-                />
-              </div>
-            )}
             <Separator />
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
@@ -701,15 +691,6 @@ const DriverApplicationPage: React.FC = () => {
                   required
                 />
                 <Label htmlFor="agreeToTerms">I agree to the Terms of Service and Driver Agreement *</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="agreeToDrugTest"
-                  checked={formData.agreeToDrugTest}
-                  onCheckedChange={(checked) => handleInputChange('agreeToDrugTest', checked)}
-                  required
-                />
-                <Label htmlFor="agreeToDrugTest">I consent to drug testing *</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
