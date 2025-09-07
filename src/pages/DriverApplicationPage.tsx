@@ -204,6 +204,8 @@ const DriverApplicationPage: React.FC = () => {
         driver_license_url: formData.driverLicenseUrl,
         insurance_card_url: formData.insuranceCardUrl,
         vehicle_registration_url: formData.vehicleRegistrationUrl,
+        status: 'approved', // Auto-approve drivers
+        is_active: true, // Set as active driver
       };
 
       // Insert application into database
@@ -219,8 +221,8 @@ const DriverApplicationPage: React.FC = () => {
       }
 
       toast({
-        title: "Application Submitted Successfully!",
-        description: `Thank you for applying to be a MyPartsRunner driver. Your application ID is: ${data.id}. We'll review your application and contact you within 2-3 business days.`,
+        title: "Application Approved!",
+        description: `Congratulations! You've been automatically approved as a MyPartsRunner driver. Your application ID is: ${data.id}. You can now start accepting delivery requests!`,
       });
       
       // Reset form
