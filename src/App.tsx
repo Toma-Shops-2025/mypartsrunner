@@ -137,7 +137,7 @@ export default function App() {
         position="top-left"
         theme="dark">
       </elevenlabs-convai>
-      <script src="https://cdn.jsdelivr.net/npm/@elevenlabs/convai-widget-embed@latest/dist/index.js" async type="text/javascript"></script>
+      <script src="https://unpkg.com/@elevenlabs/convai-widget-embed@latest/dist/index.js" async type="text/javascript"></script>
     </div>
   );
 }
