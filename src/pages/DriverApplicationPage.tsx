@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,7 @@ interface FormData {
 const DriverApplicationPage: React.FC = () => {
   const { user, updateUserProfile } = useAppContext();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -89,8 +91,11 @@ const DriverApplicationPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
+      console.log('Starting form submission...');
+      
       // Submit to database
-      const { error } = await supabase
+      console.log('Submitting to database...');
+      const { data, error } = await supabase
         .from('driver_applications')
         .insert({
           first_name: formData.firstName,
@@ -113,30 +118,35 @@ const DriverApplicationPage: React.FC = () => {
           is_active: true,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-        });
+        })
+        .select();
 
       if (error) {
-        throw error;
+        console.error('Database error:', error);
+        throw new Error(`Database error: ${error.message}`);
       }
 
+      console.log('Database submission successful:', data);
+
       // Update user profile to mark onboarding complete
+      console.log('Updating user profile...');
       await updateUserProfile({ onboardingComplete: true });
+      console.log('User profile updated successfully');
 
       toast({
         title: "🎉 Onboarding Complete!",
         description: "You're now approved and can start accepting deliveries immediately!",
       });
 
-      // Redirect to dashboard
-      setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 2000);
+      // Redirect to dashboard using React Router
+      console.log('Redirecting to dashboard...');
+      navigate('/dashboard');
 
     } catch (error) {
       console.error('Error submitting application:', error);
       toast({
         title: "Submission Error",
-        description: "There was an error submitting your application. Please try again.",
+        description: `There was an error submitting your application: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`,
         variant: "destructive",
       });
     } finally {
