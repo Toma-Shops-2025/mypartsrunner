@@ -320,19 +320,19 @@ const DriverApplicationPage: React.FC = () => {
           </div>
 
           <form onSubmit={handleSubmit}>
-            <Card className="glass-card">
+            <Card className="bg-gray-900/90 border border-gray-700 shadow-2xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {currentStep === 1 && <Car className="h-5 w-5" />}
-                  {currentStep === 2 && <Car className="h-5 w-5" />}
-                  {currentStep === 3 && <FileText className="h-5 w-5" />}
-                  {currentStep === 4 && <CheckCircle className="h-5 w-5" />}
+                <CardTitle className="flex items-center gap-2 text-white">
+                  {currentStep === 1 && <Car className="h-5 w-5 text-cyan-400" />}
+                  {currentStep === 2 && <Car className="h-5 w-5 text-cyan-400" />}
+                  {currentStep === 3 && <FileText className="h-5 w-5 text-cyan-400" />}
+                  {currentStep === 4 && <CheckCircle className="h-5 w-5 text-cyan-400" />}
                   {currentStep === 1 && 'Personal Information'}
                   {currentStep === 2 && 'Vehicle Information'}
                   {currentStep === 3 && 'Document Submission'}
                   {currentStep === 4 && 'Review & Submit'}
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-300">
                   {currentStep === 1 && 'Tell us about yourself'}
                   {currentStep === 2 && 'Tell us about your vehicle'}
                   {currentStep === 3 && 'Submit your documents via email'}
@@ -344,77 +344,85 @@ const DriverApplicationPage: React.FC = () => {
                 {currentStep === 1 && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="firstName">First Name *</Label>
+                      <Label htmlFor="firstName" className="text-white">First Name *</Label>
                       <Input
                         id="firstName"
                         value={formData.firstName}
                         onChange={(e) => handleChange('firstName', e.target.value)}
                         required
+                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="lastName">Last Name *</Label>
+                      <Label htmlFor="lastName" className="text-white">Last Name *</Label>
                       <Input
                         id="lastName"
                         value={formData.lastName}
                         onChange={(e) => handleChange('lastName', e.target.value)}
                         required
+                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="email">Email *</Label>
+                      <Label htmlFor="email" className="text-white">Email *</Label>
                       <Input
                         id="email"
                         type="email"
                         value={formData.email}
                         onChange={(e) => handleChange('email', e.target.value)}
                         required
+                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="phone">Phone *</Label>
+                      <Label htmlFor="phone" className="text-white">Phone *</Label>
                       <Input
                         id="phone"
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => handleChange('phone', e.target.value)}
                         required
+                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div className="md:col-span-2">
-                      <Label htmlFor="address">Address *</Label>
+                      <Label htmlFor="address" className="text-white">Address *</Label>
                       <Input
                         id="address"
                         value={formData.address}
                         onChange={(e) => handleChange('address', e.target.value)}
                         required
+                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="city">City *</Label>
+                      <Label htmlFor="city" className="text-white">City *</Label>
                       <Input
                         id="city"
                         value={formData.city}
                         onChange={(e) => handleChange('city', e.target.value)}
                         required
+                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="state">State *</Label>
+                      <Label htmlFor="state" className="text-white">State *</Label>
                       <Input
                         id="state"
                         value={formData.state}
                         onChange={(e) => handleChange('state', e.target.value)}
                         required
+                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="zipCode">ZIP Code *</Label>
+                      <Label htmlFor="zipCode" className="text-white">ZIP Code *</Label>
                       <Input
                         id="zipCode"
                         value={formData.zipCode}
                         onChange={(e) => handleChange('zipCode', e.target.value)}
                         required
+                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                   </div>
@@ -424,9 +432,9 @@ const DriverApplicationPage: React.FC = () => {
                 {currentStep === 2 && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="vehicleType">Vehicle Type *</Label>
+                      <Label htmlFor="vehicleType" className="text-white">Vehicle Type *</Label>
                       <Select value={formData.vehicleType} onValueChange={(value) => handleChange('vehicleType', value)}>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-white text-black border-gray-300 focus:border-cyan-400">
                           <SelectValue placeholder="Select vehicle type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -438,54 +446,59 @@ const DriverApplicationPage: React.FC = () => {
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="vehicleMake">Vehicle Make *</Label>
+                      <Label htmlFor="vehicleMake" className="text-white">Vehicle Make *</Label>
                       <Input
                         id="vehicleMake"
                         value={formData.vehicleMake}
                         onChange={(e) => handleChange('vehicleMake', e.target.value)}
                         required
+                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="vehicleModel">Vehicle Model *</Label>
+                      <Label htmlFor="vehicleModel" className="text-white">Vehicle Model *</Label>
                       <Input
                         id="vehicleModel"
                         value={formData.vehicleModel}
                         onChange={(e) => handleChange('vehicleModel', e.target.value)}
                         required
+                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="vehicleYear">Vehicle Year *</Label>
+                      <Label htmlFor="vehicleYear" className="text-white">Vehicle Year *</Label>
                       <Input
                         id="vehicleYear"
                         value={formData.vehicleYear}
                         onChange={(e) => handleChange('vehicleYear', e.target.value)}
                         required
+                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="licensePlate">License Plate *</Label>
+                      <Label htmlFor="licensePlate" className="text-white">License Plate *</Label>
                       <Input
                         id="licensePlate"
                         value={formData.licensePlate}
                         onChange={(e) => handleChange('licensePlate', e.target.value)}
                         required
+                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="vehicleColor">Vehicle Color *</Label>
+                      <Label htmlFor="vehicleColor" className="text-white">Vehicle Color *</Label>
                       <Input
                         id="vehicleColor"
                         value={formData.vehicleColor}
                         onChange={(e) => handleChange('vehicleColor', e.target.value)}
                         required
+                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="paymentMethod">Preferred Payment Method *</Label>
+                      <Label htmlFor="paymentMethod" className="text-white">Preferred Payment Method *</Label>
                       <Select value={formData.paymentMethod} onValueChange={(value) => handleChange('paymentMethod', value)}>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-white text-black border-gray-300 focus:border-cyan-400">
                           <SelectValue placeholder="Select payment method" />
                         </SelectTrigger>
                         <SelectContent>
@@ -497,41 +510,45 @@ const DriverApplicationPage: React.FC = () => {
                     </div>
                     {formData.paymentMethod === 'cashapp' && (
                       <div>
-                        <Label htmlFor="cashAppUsername">Cash App Username</Label>
+                        <Label htmlFor="cashAppUsername" className="text-white">Cash App Username</Label>
                         <Input
                           id="cashAppUsername"
                           value={formData.cashAppUsername}
                           onChange={(e) => handleChange('cashAppUsername', e.target.value)}
+                          className="bg-white text-black border-gray-300 focus:border-cyan-400"
                         />
                       </div>
                     )}
                     {formData.paymentMethod === 'venmo' && (
                       <div>
-                        <Label htmlFor="venmoUsername">Venmo Username</Label>
+                        <Label htmlFor="venmoUsername" className="text-white">Venmo Username</Label>
                         <Input
                           id="venmoUsername"
                           value={formData.venmoUsername}
                           onChange={(e) => handleChange('venmoUsername', e.target.value)}
+                          className="bg-white text-black border-gray-300 focus:border-cyan-400"
                         />
                       </div>
                     )}
                     <div>
-                      <Label htmlFor="emergencyContact">Emergency Contact Name *</Label>
+                      <Label htmlFor="emergencyContact" className="text-white">Emergency Contact Name *</Label>
                       <Input
                         id="emergencyContact"
                         value={formData.emergencyContact}
                         onChange={(e) => handleChange('emergencyContact', e.target.value)}
                         required
+                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="emergencyPhone">Emergency Contact Phone *</Label>
+                      <Label htmlFor="emergencyPhone" className="text-white">Emergency Contact Phone *</Label>
                       <Input
                         id="emergencyPhone"
                         type="tel"
                         value={formData.emergencyPhone}
                         onChange={(e) => handleChange('emergencyPhone', e.target.value)}
                         required
+                        className="bg-white text-black border-gray-300 focus:border-cyan-400"
                       />
                     </div>
                   </div>
