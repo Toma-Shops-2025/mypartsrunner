@@ -720,6 +720,33 @@ const DriverApplicationPage: React.FC = () => {
         </p>
       </div>
 
+      {/* Auto-Approval Notice */}
+      <Card className="mb-6 border-green-200 bg-green-50">
+        <CardContent className="pt-6">
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-3">
+              <div className="bg-green-100 rounded-full p-3">
+                <Shield className="h-8 w-8 text-green-600" />
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold text-green-800 mb-3">
+              🚀 Automatic Approval Process
+            </h2>
+            <div className="text-green-700 space-y-2 max-w-4xl mx-auto">
+              <p className="text-lg font-medium">
+                Once your onboarding application is completely finished and submitted, you will automatically be approved to go online and start driving and delivering immediately while your application is being processed.
+              </p>
+              <p className="text-base">
+                If any problems occur during this process, you will be notified promptly and decisive action will occur depending on the level of severity.
+              </p>
+              <p className="text-lg font-bold text-green-800 mt-4">
+                Welcome to the MyPartsRunner delivery team. You can go online immediately!!!
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Application Status */}
       {!isLoadingApplication && existingApplication && (
         <Card className="mb-6 border-blue-200 bg-blue-50">
