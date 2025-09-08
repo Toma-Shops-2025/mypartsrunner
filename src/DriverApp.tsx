@@ -236,7 +236,7 @@ const DriverApp: React.FC = () => {
       <elevenlabs-convai 
         agent-id="agent_8801k496zf0kenz9k7pjwswzv92y"
         avatar-image-url="https://mypartsrunner.com/tomabot_avatar.png"
-        position="top-left"
+        position="bottom-left"
         theme="dark">
       </elevenlabs-convai>
     </div>

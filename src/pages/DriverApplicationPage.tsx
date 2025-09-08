@@ -99,7 +99,7 @@ const DriverApplicationPage: React.FC = () => {
 
       // Redirect immediately
       setTimeout(() => {
-        navigate('/dashboard');
+        window.location.href = '/dashboard';
       }, 1500);
 
     } catch (error) {
@@ -127,7 +127,7 @@ const DriverApplicationPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
