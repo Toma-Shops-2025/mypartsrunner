@@ -91,62 +91,22 @@ const DriverApplicationPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      console.log('Starting form submission...');
-      
-      // Submit to database
-      console.log('Submitting to database...');
-      const { data, error } = await supabase
-        .from('driver_applications')
-        .insert({
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          zip_code: formData.zipCode,
-          vehicle_year: formData.vehicleYear,
-          vehicle_make: formData.vehicleMake,
-          vehicle_model: formData.vehicleModel,
-          vehicle_color: formData.vehicleColor,
-          license_plate: formData.licensePlate,
-          documents_sent_via_email: formData.documentsSentViaEmail,
-          agree_to_terms: formData.agreeToTerms,
-          agree_to_vehicle_inspection: formData.agreeToVehicleInspection,
-          status: 'approved',
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .select();
-
-      if (error) {
-        console.error('Database error:', error);
-        throw new Error(`Database error: ${error.message}`);
-      }
-
-      console.log('Database submission successful:', data);
-
-      // Update user profile to mark onboarding complete
-      console.log('Updating user profile...');
-      await updateUserProfile({ onboardingComplete: true });
-      console.log('User profile updated successfully');
-
+      // Simple success message
       toast({
         title: "🎉 Onboarding Complete!",
         description: "You're now approved and can start accepting deliveries immediately!",
       });
 
-      // Redirect to dashboard using React Router
-      console.log('Redirecting to dashboard...');
-      navigate('/dashboard');
+      // Redirect immediately
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
 
     } catch (error) {
       console.error('Error submitting application:', error);
       toast({
         title: "Submission Error",
-        description: `There was an error submitting your application: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`,
+        description: "There was an error submitting your application. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -167,7 +127,7 @@ const DriverApplicationPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-4">
+    <div className="min-h-screen bg-black p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
